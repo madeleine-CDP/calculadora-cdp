@@ -57,7 +57,7 @@ alter table orcamentos add column if not exists pedido_tiny text;
 --    - marca "fechado_em" quando vira fechado (e limpa se reabrir)
 --    - TRAVA: orçamento fechado não aceita mudança de itens ou valores; precisa "Reabrir" antes
 create or replace function orcamentos_ao_salvar() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public as $$
 begin
   new.updated_at := now();
   if tg_op = 'UPDATE' then
