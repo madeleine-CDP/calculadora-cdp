@@ -388,7 +388,7 @@ function abrirModal(titulo, corpoHtml, rotuloOk, aoConfirmar){
   $('modal').hidden = false;
   setTimeout(() => { const i = document.querySelector('#modal-corpo input:not([type=radio])'); if(i) i.focus(); }, 50);
 }
-function fecharModal(){ $('modal').hidden = true; MODAL_OK = null; }
+function fecharModal(){ $('modal').hidden = true; MODAL_OK = null; $('modal-ok').style.display = ''; }
 
 // grava o orçamento aberto (itens + cliente) junto com campos extras, sem fechar a pasta
 async function gravarOrcamentoAtual(extra){

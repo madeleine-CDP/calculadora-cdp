@@ -72,12 +72,13 @@ function irPasso(n, semConferir){
 function passoAvancar(){
   if(PASSO < 3) return irPasso(PASSO + 1);
   if(PASSO === 3) return irPasso(4);
+  if(!EDITING_ORC_ID) return usarCalculo('novo');   // Cálculo rápido → criar orçamento
   addToCart();             // passo 4: adiciona (ou substitui) e volta para a pasta
 }
 
 function passoVoltar(){
   if(PASSO > 1) return irPasso(PASSO - 1, true);
-  if(orcamentoAberto()) abrirPasta(); else switchTab('hist');
+  if(EDITING_ORC_ID) abrirPasta(); else sairCalculoRapido();
 }
 
 function calcularOutro(){ CALC_OUTRO = true; addToCart(); }
@@ -96,10 +97,10 @@ function renderPassos(){
   const nome = ($('cli-nome').value || '').trim();
   $('passos-contexto').innerHTML = EDITANDO_ITEM_ID
     ? '<strong>Editando item</strong> · ' + escHtml(nome || 'orçamento') + (e ? ' · ' + numCDP(e.numero) : '')
-    : (orcamentoAberto()
+    : (EDITING_ORC_ID
         ? '<strong>Novo item</strong> · Orçamento de ' + escHtml(nome || 'cliente sem nome') + (e ? ' · ' + numCDP(e.numero) : '')
         : '<strong>Cálculo rápido</strong> · sem cliente');
-  if(orcamentoAberto()) $('passos-contexto').innerHTML += ' <button type="button" class="passos-ver" onclick="abrirPasta()">' + (EDITANDO_ITEM_ID ? 'cancelar edição' : 'ver orçamento') + '</button>';
+  if(EDITING_ORC_ID) $('passos-contexto').innerHTML += ' <button type="button" class="passos-ver" onclick="abrirPasta()">' + (EDITANDO_ITEM_ID ? 'cancelar edição' : 'ver orçamento') + '</button>';
 
   // ambiente escolhido, com "Trocar", nos passos 2 a 4
   const amb = ($('item-ambiente').value || '').trim();
@@ -126,7 +127,18 @@ function renderPassos(){
 
   // passo 4: o que o orçamento já tem + "Adicionar e calcular outro"
   const res = $('passo-orc-resumo');
-  if(PASSO === 4 && STATE.lastResult){
+  if(PASSO === 4 && STATE.lastResult && !EDITING_ORC_ID){
+    const n = CART.length + 1, tot = CART.reduce((s,i)=>s+(i.avista||0),0) + (STATE.lastResult.avista||0);
+    res.innerHTML = (CART.length
+        ? '<div class="passo-ja-tem"><div>Neste cálculo rápido:</div>' + CART.map(i => `<div class="passo-ja-item"><span>${escHtml(i.label)}</span><strong>${fmt(i.avista)}</strong></div>`).join('')
+          + `<div class="passo-ja-item"><span><em>+ este item</em></span><strong>${fmt(STATE.lastResult.avista)}</strong></div><div class="passo-ja-item total"><span>Total à vista (${n} itens)</span><strong>${fmt(tot)}</strong></div></div>`
+        : '')
+      + `<div class="rapido-acoes">
+          <button type="button" class="passo-outro-btn" onclick="usarCalculo('existente')">${ic('orcamentos',17)} Adicionar a um orçamento existente</button>
+          <button type="button" class="passo-outro-btn" onclick="usarCalculo('outro')">${ic('mais',17)} Somar outro item a este cálculo</button>
+          <button type="button" class="rapido-novo" onclick="novoCalculoRapido()">${ic('limpar',15)} Descartar e fazer novo cálculo</button>
+        </div>`;
+  } else if(PASSO === 4 && STATE.lastResult){
     const outros = CART.filter(i => i.id !== EDITANDO_ITEM_ID);
     res.innerHTML = (outros.length
         ? '<div class="passo-ja-tem"><div>Este orçamento já tem:</div>' + outros.map(i => `<div class="passo-ja-item"><span>${escHtml(i.label)}</span><strong>${fmt(i.avista)}</strong></div>`).join('') + '</div>'
@@ -136,10 +148,10 @@ function renderPassos(){
 
   // barra do rodapé
   const voltar = $('passo-voltar'), avancar = $('passo-avancar');
-  voltar.innerHTML = PASSO === 1 ? ic('fechar',16) + (orcamentoAberto() ? ' Voltar ao orçamento' : ' Cancelar') : ic('limpar',16) + ' Voltar';
+  voltar.innerHTML = PASSO === 1 ? ic('fechar',16) + (EDITING_ORC_ID ? ' Voltar ao orçamento' : ' Sair') : ic('limpar',16) + ' Voltar';
   if(PASSO < 3) avancar.innerHTML = 'Continuar';
   else if(PASSO === 3) avancar.innerHTML = ic('calculadora',17) + ' Calcular';
-  else avancar.innerHTML = ic('ok',17) + (EDITANDO_ITEM_ID ? ' Substituir item' : ' Adicionar ao orçamento');
+  else avancar.innerHTML = ic('ok',17) + (EDITANDO_ITEM_ID ? ' Substituir item' : (EDITING_ORC_ID ? ' Adicionar ao orçamento' : ' Criar orçamento'));
 }
 
 function escolherAmbiente(a){
@@ -154,3 +166,79 @@ document.addEventListener('DOMContentLoaded', () => {
   const a = $('item-ambiente');
   if(a) a.addEventListener('keydown', ev => { if(ev.key === 'Enter'){ ev.preventDefault(); irPasso(2); } });
 });
+
+
+// ═══════════════════════════════════════════════════════
+// CÁLCULO RÁPIDO (Etapa D2) — calcular sem cliente e depois virar orçamento
+// O item calculado vai para CART; PENDENTES guarda os itens enquanto se escolhe o destino.
+// ═══════════════════════════════════════════════════════
+let DESTINO_RAPIDO = null;   // 'novo' | 'existente' | 'outro'
+let PENDENTES = [];          // itens do cálculo rápido esperando um orçamento
+
+function usarCalculo(destino){
+  DESTINO_RAPIDO = destino;
+  if(destino === 'outro') CALC_OUTRO = true;
+  addToCart();               // pede o nome do item e põe no CART; o resto segue em destinoRapido()
+}
+
+// chamado pelo addToCart quando não há orçamento aberto
+function destinoRapido(){
+  const d = DESTINO_RAPIDO; DESTINO_RAPIDO = null;
+  if(d === 'existente'){ PENDENTES = CART.map(i => ({...i})); escolherOrcamentoDestino(); return true; }
+  if(d === 'novo'){
+    PENDENTES = CART.map(i => ({...i}));
+    ORC_SUJO = false;
+    novoOrcamento();
+    const n = PENDENTES.length, tot = PENDENTES.reduce((s,i)=>s+(i.avista||0),0);
+    const sub = document.querySelector('#tab-novo .hist-sub');
+    if(sub) sub.innerHTML = '<span class="rapido-pendente">' + ic('calculadora',15) + ' ' + n + (n>1?' itens':' item') + ' do cálculo rápido (' + fmt(tot) + ' à vista) vão entrar neste orçamento.</span>';
+    return true;
+  }
+  return false;              // 'outro' segue o fluxo de "calcular outro"
+}
+
+async function escolherOrcamentoDestino(){
+  if(!HIST_CARREGADO){ try{ HISTORY_CACHE = await sbFetchHistory(); HIST_CARREGADO = true; }catch(e){} }
+  const abertos = HISTORY_CACHE.filter(e => e.etapa !== 'fechado' && e.etapa !== 'perdido' && !evoluidoPara(e.id))
+    .sort((a,b) => (b.numero||0) - (a.numero||0));
+  const n = PENDENTES.length;
+  abrirModal('Adicionar a qual orçamento?',
+    `<p>${n} ${n>1?'itens':'item'} do cálculo rápido (${fmt(PENDENTES.reduce((s,i)=>s+(i.avista||0),0))} à vista).</p>
+     <div class="hist-busca"><input type="search" id="destino-busca" placeholder="Buscar cliente, bairro ou nº" oninput="filtrarDestino()" autocomplete="off"></div>
+     <div class="destino-lista" id="destino-lista">${abertos.length ? abertos.map(e => `
+       <button type="button" class="destino-item" data-busca="${escHtml(semAcento([e.client, e.bairro, numCDP(e.numero)].join(' ')))}" onclick="escolherDestino(${e.id})">
+         <span><strong>${escHtml(e.client)}</strong><em>${numCDP(e.numero)}${e.bairro ? ' · ' + escHtml(e.bairro) : ''} · ${ETAPA_NOME[e.etapa]||e.etapa}</em></span>
+         <span>${fmt(e.totalAvista||0)}</span></button>`).join('') : '<div class="pasta-vazio">Nenhum orçamento em aberto.</div>'}</div>`,
+    '', () => {});
+  $('modal-ok').style.display = 'none';
+}
+function filtrarDestino(){
+  const t = semAcento(($('destino-busca').value||'').trim());
+  document.querySelectorAll('#destino-lista .destino-item').forEach(b => { b.style.display = !t || b.dataset.busca.includes(t) ? '' : 'none'; });
+}
+function escolherDestino(id){
+  fecharModal();
+  const itens = PENDENTES; PENDENTES = [];
+  ORC_SUJO = false;
+  reopenOrc(id);                                   // abre a pasta do orçamento escolhido
+  const base = Date.now();
+  itens.forEach((it, i) => CART.push({ ...it, id: base + i }));
+  ORC_SUJO = true;
+  updateCartBar();
+  renderPasta();
+  const e = orcEmEdicao();
+  avisoTopo(itens.length + (itens.length>1?' itens adicionados':' item adicionado') + ' ao <strong>' + (e ? numCDP(e.numero) : 'orçamento') + '</strong>. Confira e toque em Salvar e fechar.');
+}
+
+function novoCalculoRapido(){
+  if(CART.length && !confirm('Descartar ' + (CART.length>1 ? 'os ' + CART.length + ' itens' : 'o item') + ' deste cálculo rápido?')) return;
+  limparOrcamentoEmAndamento();
+  PENDENTES = [];
+  irParaTab('calc'); irPasso(1, true);
+}
+
+function sairCalculoRapido(){
+  if(CART.length && !confirm('Sair do cálculo rápido? ' + (CART.length>1 ? 'Os ' + CART.length + ' itens somados não serão guardados.' : 'O item somado não será guardado.'))) return;
+  limparOrcamentoEmAndamento();
+  switchTab('hist');
+}

@@ -64,7 +64,7 @@ Fonte: Guia de Processos de Atendimento (Google Drive). Função `calcSobra()`.
 Arquivos (desde a fase 0 o antigo arquivo único foi separado, sem mudar nenhuma fórmula):
 
 - `index.html`: as telas (login, lista de orçamentos, novo orçamento, pasta do orçamento, calculadora, proposta). Carrega os scripts nesta ordem: `js/login.js`, `js/icones.js`, `js/precos.js`, `js/app.js`, `js/pasta.js`, `js/passos.js`, `js/pwa.js`.
-- `js/icones.js`: ícones de traço (`ic('nome')`). `js/passos.js`: calculadora em 4 passos (Ambiente, Produto, Medidas, Resultado), blocos marcados com `data-passo` no HTML; `irPasso(n)` confere cada passo e o Resultado sempre recalcula. `js/pasta.js`: a pasta do orçamento (itens por ambiente, etapa, totais, "Salvar e fechar", aviso de alteração não salva).
+- `js/icones.js`: ícones de traço (`ic('nome')`). `js/passos.js`: calculadora em 4 passos (Ambiente, Produto, Medidas, Resultado), blocos marcados com `data-passo` no HTML; `irPasso(n)` confere cada passo e o Resultado sempre recalcula. Sem orçamento aberto (`EDITING_ORC_ID` vazio) a calculadora é o **Cálculo rápido**: `usarCalculo('novo'|'existente'|'outro')` leva os itens (`PENDENTES`) para um orçamento novo, um existente, ou soma outro item. `js/pasta.js`: a pasta do orçamento (itens por ambiente, etapa, totais, "Salvar e fechar", aviso de alteração não salva).
 - `css/tema.css`: visual novo (carregado depois do `app.css`). `sql/`: comandos já aplicados no banco, para histórico.
 - `js/precos.js`: **todas as tabelas de preço e regras das fábricas** (DB_*, ACC_*, IMPOSTOS_PE, TUBOS, FABRIC_W, CDP_TRAD). É aqui que se atualiza tabela nova.
 - `js/app.js`: lógica da tela, cálculo, carrinho, orçamentos salvos (Supabase) e proposta.

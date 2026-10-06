@@ -1696,12 +1696,13 @@ function addToCart(){
   pararEdicaoItem();
 
   updateCartBar();
+  if(!EDITING_ORC_ID && typeof destinoRapido === 'function' && destinoRapido()) return;
   if(CALC_OUTRO){
     // D1: "Adicionar e calcular outro" → mesmo ambiente, já no passo Produto
     CALC_OUTRO = false;
     const ambOutro = r.ambiente || '';
     ORC_SUJO = true;
-    resetCalc();
+    const guardados = CART; resetCalc(); CART = guardados;   // no cálculo rápido os itens somados ficam
     $('item-ambiente').value = ambOutro; STATE.ambiente = ambOutro;
     irParaTab('calc');
     irPasso(ambOutro ? 2 : 1, true);
@@ -1986,6 +1987,7 @@ function novoOrcamento(){
   document.querySelectorAll('#tab-novo [data-origem]').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-checked','false'); });
   const mais = document.querySelector('#tab-novo .novo-mais'); if(mais) mais.open = false;
   $('novo-erro').textContent = '';
+  const subN = document.querySelector('#tab-novo .hist-sub'); if(subN) subN.textContent = 'O número CDP é gerado sozinho ao criar.';
   limparAvisoRepetido();
   irParaTab('novo');
   window.scrollTo({top:0});
@@ -2012,7 +2014,13 @@ function limparOrcamentoEmAndamento(){
   resetCalc();
 }
 
-function cancelarNovo(){ switchTab('hist'); }
+function cancelarNovo(){
+  if(typeof PENDENTES !== 'undefined' && PENDENTES.length){
+    if(!confirm('Voltar sem criar o orçamento?\n\nO item do cálculo rápido não será guardado.')) return;
+    PENDENTES = [];
+  }
+  switchTab('hist');
+}
 
 // ── Aviso de cliente repetido (C3c) ──
 let REPETIDO_OK = false;
@@ -2113,6 +2121,17 @@ async function criarOrcamento(){
   $('cli-end').value = $('novo-end').value.trim(); $('cli-cpf').value = $('novo-cpf').value.trim(); $('cli-email').value = $('novo-email').value.trim();
   syncCliente();
   updateCartBar();
+  if(typeof PENDENTES !== 'undefined' && PENDENTES.length){
+    // D2: veio do Cálculo rápido → os itens entram e já ficam gravados
+    const base = Date.now();
+    CART = PENDENTES.map((it, i) => ({ ...it, id: base + i })); PENDENTES = [];
+    try{ await gravarOrcamentoAtual({}); ORC_SUJO = false; }
+    catch(err){ ORC_SUJO = true; }
+    const ent = HISTORY_CACHE.find(x => x.id === linha.id); if(ent) ent.items = CART.map(i => ({...i}));
+    abrirPasta();
+    avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado para ' + escHtml(nome) + ' com ' + CART.length + (CART.length>1?' itens':' item') + ' do cálculo rápido.' + (ORC_SUJO ? ' Toque em Salvar e fechar.' : ''));
+    return;
+  }
   irParaTab('calc');
   window.scrollTo({top:0});
   avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado para ' + escHtml(nome) + '. Agora adicione os itens.');
