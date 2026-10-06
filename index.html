@@ -345,6 +345,61 @@
 </div>
 
 
+<!-- ═══════════ NOVO ORÇAMENTO (C2): começa pelo cliente ═══════════ -->
+<div id="tab-novo" class="tab-panel">
+<div class="wrap novo-wrap">
+  <button type="button" class="novo-voltar" onclick="cancelarNovo()"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Orçamentos</button>
+  <div class="hist-titulo">Novo orçamento</div>
+  <div class="hist-sub">O número CDP é gerado sozinho ao criar.</div>
+
+  <div class="card novo-card">
+    <div class="novo-secao">Cliente</div>
+    <label class="novo-campo"><span>Nome <b>*</b></span>
+      <input type="text" id="novo-nome" autocomplete="off" placeholder="Ex.: Maria Souza"></label>
+    <div class="novo-linha">
+      <label class="novo-campo"><span>WhatsApp <b>*</b></span>
+        <input type="tel" id="novo-tel" inputmode="tel" autocomplete="off" placeholder="(81) 9 0000-0000" oninput="mascaraTel(this)"></label>
+      <label class="novo-campo"><span>Bairro</span>
+        <input type="text" id="novo-bairro" autocomplete="off" placeholder="Ex.: Boa Viagem"></label>
+    </div>
+    <details class="novo-mais">
+      <summary>+ Endereço, CPF/CNPJ e e-mail <span>(opcional)</span></summary>
+      <label class="novo-campo"><span>Endereço completo</span><input type="text" id="novo-end" autocomplete="off"></label>
+      <div class="novo-linha">
+        <label class="novo-campo"><span>CPF/CNPJ</span><input type="text" id="novo-cpf" inputmode="numeric" autocomplete="off"></label>
+        <label class="novo-campo"><span>E-mail</span><input type="email" id="novo-email" autocomplete="off"></label>
+      </div>
+      <div class="novo-obs">Esses três ficam só na tela para a proposta. O cadastro oficial do cliente continua no Tiny.</div>
+    </details>
+  </div>
+
+  <div class="card novo-card">
+    <div class="novo-secao">Como começa este atendimento? <b>*</b></div>
+    <div class="novo-opcoes" role="radiogroup" aria-label="Como começa este atendimento">
+      <button type="button" class="novo-opcao" role="radio" aria-checked="false" data-comeco="pre_orcamento" onclick="escolherComeco(this)">
+        <strong>Pré-orçamento</strong><span>Com as medidas que o cliente mandou</span></button>
+      <button type="button" class="novo-opcao" role="radio" aria-checked="false" data-comeco="visita_direta" onclick="escolherComeco(this)">
+        <strong>Visita direta</strong><span>Agendar a medição na casa do cliente</span></button>
+    </div>
+  </div>
+
+  <div class="card novo-card">
+    <div class="novo-secao">Como nos conheceu?</div>
+    <div class="novo-chips" role="radiogroup" aria-label="Como nos conheceu">
+      <button type="button" class="hist-chip" data-origem="Instagram" onclick="escolherOrigem(this)">Instagram</button>
+      <button type="button" class="hist-chip" data-origem="Indicação" onclick="escolherOrigem(this)">Indicação</button>
+      <button type="button" class="hist-chip" data-origem="Google" onclick="escolherOrigem(this)">Google</button>
+      <button type="button" class="hist-chip" data-origem="Já é cliente" onclick="escolherOrigem(this)">Já é cliente</button>
+      <button type="button" class="hist-chip" data-origem="Outro" onclick="escolherOrigem(this)">Outro</button>
+    </div>
+  </div>
+
+  <div class="novo-erro" id="novo-erro" role="alert"></div>
+  <button type="button" class="btn novo-criar" id="novo-criar" onclick="criarOrcamento()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Criar e adicionar itens</button>
+</div>
+</div>
+
+
 <!-- ═══════════ TAB: PROPOSTA ═══════════ -->
 <div id="tab-proposta" class="tab-panel">
 <div class="wrap">

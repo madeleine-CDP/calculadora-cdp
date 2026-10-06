@@ -869,6 +869,11 @@ let HISTORY_CACHE = [];
 // Número automático do orçamento (gerado pelo banco): 6 → "CDP-0006"
 function numCDP(n){ return n ? 'CDP-' + String(n).padStart(4,'0') : ''; }
 // Nome curto do orçamento em edição: número CDP, senão nº do Tiny
+// Orçamento criado agora pela tela "Novo orçamento" e ainda sem itens salvos
+function orcRecemCriado(){
+  const e = HISTORY_CACHE.find(x => x.id === EDITING_ORC_ID);
+  return !!(e && Array.isArray(e.items) && e.items.length === 0);
+}
 function nomeOrcEditando(){
   const e = HISTORY_CACHE.find(x => x.id === EDITING_ORC_ID);
   return (e && numCDP(e.numero)) || ($('cli-tiny').value ? '#' + $('cli-tiny').value : 'salvo');
@@ -1851,7 +1856,10 @@ function updateCartBar(){
   }
   bar.style.display = 'block';
   count.textContent = CART.length + ' item' + (CART.length>1?'s':'') + ' adicionado' + (CART.length>1?'s':'');
-  if(EDITING_ORC_ID){
+  if(EDITING_ORC_ID && orcRecemCriado()){
+    banner.style.display = 'none';
+    saveBtn.innerHTML = ic('salvar',16)+' Salvar orçamento';
+  } else if(EDITING_ORC_ID){
     banner.style.display = 'block';
     banner.textContent = 'Editando o orçamento ' + nomeOrcEditando() + ', já salvo — ao clicar em Atualizar, a versão antiga é substituída (não cria um novo).';
     saveBtn.innerHTML = ic('salvar',16)+' Atualizar orçamento';
@@ -1918,24 +1926,119 @@ function clearCart(){
 // NOVO ORÇAMENTO — reset completo (carrinho + cliente + calculadora)
 // separado de "Abrir Orçamentos" (que reabre um já salvo, ver reopenOrc)
 // ═══════════════════════════════════════════════════
+// ── Novo orçamento (C2): começa pelo cliente ──
+// Limpa o que estiver em andamento e abre a tela "Novo orçamento".
 function novoOrcamento(){
-  const temCoisa = CART.length > 0 || (($('cli-nome') && $('cli-nome').value.trim()));
-  if(temCoisa && !confirm('Isso limpa o orçamento em andamento (itens já adicionados e dados do cliente) pra começar um novo do zero.\n\nSe algo aqui ainda não foi salvo, vai se perder. Continuar?')) return;
+  if(CART.length > 0 && !confirm('Isso fecha o orçamento em andamento pra começar um novo.\n\nSe algo aqui ainda não foi salvo, vai se perder. Continuar?')) return;
+  limparOrcamentoEmAndamento();
+  ['novo-nome','novo-tel','novo-bairro','novo-end','novo-cpf','novo-email'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  document.querySelectorAll('#tab-novo .novo-opcao').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-checked','false'); });
+  document.querySelectorAll('#tab-novo [data-origem]').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-checked','false'); });
+  const mais = document.querySelector('#tab-novo .novo-mais'); if(mais) mais.open = false;
+  $('novo-erro').textContent = '';
+  irParaTab('novo');
+  window.scrollTo({top:0});
+  setTimeout(() => { const n=$('novo-nome'); if(n && window.innerWidth > 720) n.focus(); }, 50);
+}
 
+// Zera carrinho, cliente e calculadora (sem perguntar)
+function limparOrcamentoEmAndamento(){
   CART = [];
   EDITING_ORC_ID = null;
   updateCartBar();
-
   ['cli-nome','cli-tel','cli-bairro','cli-tiny','cli-cpf','cli-email','cli-end','cli-contato'].forEach(id=>{
     const el = $(id); if(el) el.value = '';
   });
   syncCliente();
-
   resetCalc();
+}
 
+function cancelarNovo(){ switchTab('hist'); }
+
+function mascaraTel(el){
+  const d = el.value.replace(/\D/g,'').slice(0,11);
+  let t = d;
+  if(d.length > 2) t = '(' + d.slice(0,2) + ') ' + d.slice(2);
+  if(d.length > 7) t = '(' + d.slice(0,2) + ') ' + d.slice(2, d.length-4) + '-' + d.slice(-4);
+  el.value = t;
+}
+
+function escolherComeco(btn){
+  document.querySelectorAll('#tab-novo .novo-opcao').forEach(b => { const on = b===btn; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+}
+function escolherOrigem(btn){
+  const jaEra = btn.classList.contains('on');
+  document.querySelectorAll('#tab-novo [data-origem]').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-checked','false'); });
+  if(!jaEra){ btn.classList.add('on'); btn.setAttribute('aria-checked','true'); }
+}
+
+async function criarOrcamento(){
+  const erro = $('novo-erro'); erro.textContent = '';
+  const nome = $('novo-nome').value.trim();
+  const tel = $('novo-tel').value.trim();
+  const bairro = $('novo-bairro').value.trim();
+  const comecoBtn = document.querySelector('#tab-novo .novo-opcao.on');
+  const origemBtn = document.querySelector('#tab-novo [data-origem].on');
+  const faltas = [];
+  if(!nome) faltas.push('o nome do cliente');
+  if(tel.replace(/\D/g,'').length < 10) faltas.push('o WhatsApp com DDD');
+  if(!comecoBtn) faltas.push('como começa o atendimento');
+  if(faltas.length){
+    erro.textContent = 'Falta preencher ' + faltas.join(', ').replace(/, ([^,]*)$/, ' e $1') + '.';
+    const alvo = !nome ? $('novo-nome') : (tel.replace(/\D/g,'').length < 10 ? $('novo-tel') : null);
+    if(alvo) alvo.focus();
+    return;
+  }
+  const comeco = comecoBtn.dataset.comeco;
+  const btn = $('novo-criar');
+  btn.disabled = true; const rotulo = btn.innerHTML; btn.innerHTML = 'Criando…';
+  let linha;
+  try{
+    const res = await fetch(SB_URL + '/rest/v1/orcamentos', {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        ref: '', client: nome, date: new Date().toLocaleDateString('pt-BR'), items: [],
+        total_tabela: 0, total_cartao: 0, total_avista: 0,
+        telefone: tel, bairro: bairro || null,
+        origem: origemBtn ? origemBtn.dataset.origem : null,
+        como_comecou: comeco,
+        etapa: comeco === 'pre_orcamento' ? 'pre_orcamento' : 'visita',
+        criado_por: getUsuarioLogado()
+      })
+    });
+    if(!res.ok) throw new Error(res.status + ' ' + await res.text());
+    const j = await res.json(); linha = Array.isArray(j) ? j[0] : j;
+    if(!linha || !linha.id) throw new Error('sem id');
+  } catch(err){
+    erro.textContent = 'Não foi possível criar o orçamento. Verifique a conexão e tente de novo.';
+    btn.disabled = false; btn.innerHTML = rotulo;
+    return;
+  }
+  btn.disabled = false; btn.innerHTML = rotulo;
+
+  // Abre o orçamento recém-criado para adicionar itens (salvar depois ATUALIZA este mesmo)
+  limparOrcamentoEmAndamento();
+  EDITING_ORC_ID = linha.id;
+  HISTORY_CACHE = HISTORY_CACHE.filter(e => e.id !== linha.id);
+  HISTORY_CACHE.unshift({ id: linha.id, ref: '', client: nome, date: linha.date, items: [],
+    totalTabela: 0, totalCartao: 0, totalAvista: 0, criadoPor: linha.criado_por || null,
+    numero: linha.numero, etapa: linha.etapa, telefone: tel, bairro: bairro });
+  $('cli-nome').value = nome; $('cli-tel').value = tel; $('cli-bairro').value = bairro;
+  $('cli-end').value = $('novo-end').value.trim(); $('cli-cpf').value = $('novo-cpf').value.trim(); $('cli-email').value = $('novo-email').value.trim();
+  syncCliente();
+  updateCartBar();
   irParaTab('calc');
+  window.scrollTo({top:0});
+  avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado para ' + escHtml(nome) + '. Agora adicione os itens.');
+}
 
-  window.scrollTo({top:0, behavior:'smooth'});
+// Aviso discreto no topo que some sozinho
+function avisoTopo(html){
+  let el = $('aviso-topo');
+  if(!el){ el = document.createElement('div'); el.id = 'aviso-topo'; el.setAttribute('role','status'); document.body.appendChild(el); }
+  el.innerHTML = '<span class="aviso-txt">' + html + '</span>'; el.classList.add('on');
+  clearTimeout(avisoTopo._t); avisoTopo._t = setTimeout(() => el.classList.remove('on'), 4500);
 }
 
 async function saveOrcamento(){
@@ -1958,6 +2061,7 @@ async function saveOrcamento(){
 
   const count = entry.items.length;
   const isUpdate = !!EDITING_ORC_ID;
+  const primeiroSalvar = isUpdate && orcRecemCriado();
   let nome = isUpdate ? nomeOrcEditando() : '';
   try{
     const resp = isUpdate ? await sbUpdateOrcamento(EDITING_ORC_ID, entry) : await sbInsertOrcamento(entry);
@@ -1975,7 +2079,7 @@ async function saveOrcamento(){
   CART = [];
   EDITING_ORC_ID = null;
   updateCartBar();
-  alert(isUpdate
+  alert(isUpdate && !primeiroSalvar
     ? '✅ Orçamento ' + (nome || '#' + ref) + ' atualizado com ' + count + (count>1?' itens':' item') + '!\n\nA versão antiga foi substituída — já está disponível para toda a equipe.'
     : '✅ Orçamento ' + (nome ? nome + ' ' : '') + 'salvo com ' + count + (count>1?' itens':' item') + '!\n\nJá está disponível para toda a equipe.');
 }
@@ -1990,7 +2094,7 @@ function irParaTab(t){
   $('tab-'+t).classList.add('active');
   const sticky = $('sticky-actions');
   if(sticky) sticky.style.display = (t==='calc') ? 'flex' : 'none';
-  document.body.classList.toggle('na-lista', t==='hist');
+  document.body.dataset.tela = t;
 }
 
 function switchTab(t){
