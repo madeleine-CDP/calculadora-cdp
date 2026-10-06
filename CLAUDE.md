@@ -16,7 +16,7 @@ Leia este arquivo inteiro antes de qualquer alteração.
 Calculadora de orçamentos de persianas e cortinas, que está virando o **CDP Sistema**: o sistema operacional da loja (orçamentos, retornos, agenda, pedidos, OS e validação financeira). Site estático, **sem build**: os arquivos são publicados como estão.
 
 - **Plano do projeto (fases, jornada, decisões):** doc "CDP Sistema — Plano do projeto" no claude.ai — https://claude.ai/code/artifact/e1ec3be8-5b99-4263-abe4-fefec201edda. Leia antes de começar uma fase nova.
-- **Hospedagem:** Netlify (`calculadora-cdp.netlify.app`; subdomínio planejado `sistemacdp.` + domínio da loja no Wix), publicado automaticamente a partir da branch `main`. `netlify.toml` manda o navegador sempre buscar a versão nova (sem cache de tabela antiga).
+- **Hospedagem:** Netlify, na conta da loja (equipe CDP, madeleine@centraldaspersianas.com): `sistemacdp.netlify.app`, com subdomínio `sistemacdp.` + domínio da loja (DNS no Wix). Publicado automaticamente a partir da branch `main`. O antigo `calculadora-cdp.netlify.app` está na conta pessoal da Bru e será desativado depois da troca de link. `netlify.toml` manda o navegador sempre buscar a versão nova (sem cache de tabela antiga).
 - **Dados:** Supabase (projeto `cdp-calculadora`, região sa-east-1). Tabela `orcamentos` guarda os orçamentos salvos, compartilhados entre os usuários.
 - **Login:** senhas com hash bcrypt numa tabela própria no Supabase, verificadas por função no servidor. A senha nunca trafega em texto puro nem aparece no código.
 - **Fonte da verdade:** este repositório. O antigo Artifact no claude.ai virou histórico e não deve mais ser editado.
