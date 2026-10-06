@@ -1678,6 +1678,7 @@ function addToCart(){
     totalGeral: r.totalGeral,
     detail: fullDetail,
     foraDoPadrao: !!r.foraDoPadrao,
+    tabelaVer: (typeof TABELAS_INFO !== 'undefined' && TABELAS_INFO[r.fab]) ? TABELAS_INFO[r.fab].tabela : null, // com qual tabela foi calculado
     full: r
   });
 

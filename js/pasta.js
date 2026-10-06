@@ -121,6 +121,13 @@ function linhasDescritivo(item){
   return L.filter(([, v]) => v);
 }
 
+// Item calculado com uma tabela que não é mais a vigente → avisa para recalcular
+function avisoTabelaItem(item){
+  const atual = (typeof TABELAS_INFO !== 'undefined' && TABELAS_INFO[item.fab]) ? TABELAS_INFO[item.fab].tabela : null;
+  if(!item.tabelaVer || !atual || item.tabelaVer === atual) return '';
+  return `<div class="pasta-alerta">${ic('alerta',14)} Calculado com a tabela de ${escHtml(item.tabelaVer)}; a vigente agora é ${escHtml(atual)}. Toque em editar ${ic('editar',13)} e adicione de novo para recalcular.</div>`;
+}
+
 function cardItemPasta(item, n){
   const f = item.full || {};
   const pend = (item.detail||'').toUpperCase().includes('A DEFINIR');
@@ -137,6 +144,7 @@ function cardItemPasta(item, n){
     <dl class="pasta-desc">
       ${linhasDescritivo(item).map(([k,v]) => `<div><dt>${k}</dt><dd>${escHtml(v)}</dd></div>`).join('')}
     </dl>
+    ${avisoTabelaItem(item)}
     ${fora ? `<div class="pasta-alerta">${ic('alerta',14)} Medida fora do padrão de fabricação${f.minFab ? ' (mín. ' + numBR(f.minFab,2) + ' m)' : ''}: cobrado pelo mínimo.</div>` : ''}
     <label class="pasta-detalhe${pend ? ' pendente' : ''}">
       <span>${pend ? ic('alerta',14) + ' Detalhamento — troque os "A DEFINIR"' : ic('nota',14) + ' Detalhamento'}</span>
@@ -232,9 +240,12 @@ function renderEvolucao(){
       <button type="button" class="btn-outline" onclick="abrirOutroOrc(${filho.id})">Abrir ${numCDP(filho.numero)}</button></div>`;
     return;
   }
-  if(e.etapa === 'fechado' || e.etapa === 'perdido'){ box.innerHTML = ''; return; }
+  const pai = e.anteriorId ? HISTORY_CACHE.find(x => x.id === e.anteriorId) : null;
+  const semRegistro = CART.some(i => !i.tabelaVer);
+  const avisoCopia = (e.anteriorId && semRegistro) ? `<div class="pasta-evol-aviso aviso-preco">${ic('alerta',16)}<span>Itens copiados ${pai ? 'do <strong>' + numCDP(pai.numero) + '</strong> ' : ''}com os preços da época${pai && pai.date ? ' (' + escHtml(pai.date) + ')' : ''}. Se a tabela de alguma fábrica mudou desde então, edite o item e adicione de novo para recalcular.</span></div>` : '';
+  if(e.etapa === 'fechado' || e.etapa === 'perdido'){ box.innerHTML = avisoCopia; return; }
   const destino = e.etapa === 'pre_orcamento' ? 'visita / orçamento final' : 'nova versão do orçamento';
-  box.innerHTML = `<button type="button" class="pasta-evoluir" onclick="evoluirOrcamento()">
+  box.innerHTML = avisoCopia + `<button type="button" class="pasta-evoluir" onclick="evoluirOrcamento()">
       ${ic('raio',18)}<span><strong>Evoluir para ${destino}</strong><em>Cria um novo orçamento com cópia dos itens; este fica guardado.</em></span></button>`;
 }
 
@@ -243,7 +254,7 @@ async function evoluirOrcamento(){
   if(!e) return;
   if(ORC_SUJO){ alert('Este orçamento tem alterações não salvas.\n\nToque em "Salvar e fechar" primeiro e depois abra de novo para evoluir.'); return; }
   const novaEtapa = e.etapa === 'pre_orcamento' ? 'visita' : 'orcamento';
-  if(!confirm('Criar um novo orçamento a partir do ' + numCDP(e.numero) + '?\n\n• Os itens são copiados para você ajustar (ex.: medidas da visita).\n• O ' + numCDP(e.numero) + ' fica guardado como "Evoluído", com os valores que o cliente recebeu.\n• O novo começa na etapa "' + ETAPA_NOME[novaEtapa] + '".')) return;
+  if(!confirm('Criar um novo orçamento a partir do ' + numCDP(e.numero) + '?\n\n• Os itens são copiados para você ajustar (ex.: medidas da visita), com os preços de quando foram calculados — se a tabela da fábrica mudou, edite o item para recalcular.\n• O ' + numCDP(e.numero) + ' fica guardado como "Evoluído", com os valores que o cliente recebeu.\n• O novo começa na etapa "' + ETAPA_NOME[novaEtapa] + '".')) return;
   const itens = (e.items || []).map((it, i) => ({ ...it, id: Date.now() + i }));
   let linha;
   try{

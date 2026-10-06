@@ -453,3 +453,4 @@ label.pasta-detalhe textarea{overflow:hidden;resize:none}
 .repetido-item .btn-outline{padding:8px 16px!important}
 .repetido-dica{font-size:13px;color:var(--tinta-suave);margin:8px 0 12px;line-height:1.45}
 .repetido-criar{width:100%;min-height:46px}
+.pasta-evol-aviso.aviso-preco{background:var(--areia);color:var(--dourado-texto)}
