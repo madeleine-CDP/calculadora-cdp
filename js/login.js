@@ -9,7 +9,7 @@ function checkLoginSession(){
       if(obj && obj.nome){
         document.getElementById('login-screen').style.display = 'none';
         const badge = document.getElementById('usuario-logado');
-        if(badge) badge.textContent = '👤 ' + obj.nome;
+        if(badge) badge.textContent = obj.nome;
         return true;
       }
     } catch(e){}
@@ -37,7 +37,7 @@ async function doLogin(){
       localStorage.setItem('cdp_sessao', JSON.stringify({nome: r.nome, login: login}));
       document.getElementById('login-screen').style.display = 'none';
       const badge = document.getElementById('usuario-logado');
-      if(badge) badge.textContent = '👤 ' + r.nome;
+      if(badge) badge.textContent = r.nome;
     } else {
       erro.textContent = 'Usuário ou senha incorretos.'; erro.style.display = 'block';
     }

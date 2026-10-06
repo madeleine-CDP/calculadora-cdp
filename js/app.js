@@ -151,7 +151,7 @@ function fillColSel(data){
         const incomp = fw < w;
         const o = document.createElement('option');
         o.value = sub+'||'+c;
-        o.textContent = c + (incomp ? ' ⚠️ (tecido '+fw+'m)' : '');
+        o.textContent = c + (incomp ? ' · não cabe (tecido '+fw+'m)' : '');
         if(incomp) o.style.color='#FF5068';
         g.appendChild(o);
       });
@@ -164,7 +164,7 @@ function fillColSel(data){
       const incomp = fw < w;
       const o = document.createElement('option');
       o.value = c;
-      o.textContent = c + (incomp ? ' ⚠️ (tecido '+fw+'m)' : '');
+      o.textContent = c + (incomp ? ' · não cabe (tecido '+fw+'m)' : '');
       if(incomp) o.style.color='#FF5068';
       sel.appendChild(o);
     });
@@ -260,7 +260,7 @@ function calcSobra(){
   $('i-h').value = h;
   onMedidas();
 
-  $('jan-sugestao').innerHTML = `✅ Sugestão: <b>${w.toFixed(2)}L × ${h.toFixed(2)}A</b> (janela ${jw.toFixed(2)}×${jh.toFixed(2)}m) — ${obs.join(' · ')}`;
+  $('jan-sugestao').innerHTML = `${ic('ok',15)} Sugestão: <b>${w.toFixed(2)}L × ${h.toFixed(2)}A</b> (janela ${jw.toFixed(2)}×${jh.toFixed(2)}m) — ${obs.join(' · ')}`;
 }
 
 function updateDetalhamentoPreview(){
@@ -329,7 +329,7 @@ function validateMedidas(){
   if(data.minLarg && w < data.minLarg)
     msgs.push('Largura mínima: ' + data.minLarg + 'm');
   if(data.minFab && (w < data.minFab || h < data.minFab))
-    msgs.push('⚠️ Medida abaixo do padrão de fabricação (mín. ' + data.minFab + 'm) — orçamento será gerado pela cobrança mínima e provavelmente ficará fora da garantia de fábrica');
+    msgs.push('Medida abaixo do padrão de fabricação (mín. ' + data.minFab + 'm) — orçamento será gerado pela cobrança mínima e provavelmente ficará fora da garantia de fábrica');
 
   // Verifica largura do tecido da coleção selecionada
   if(STATE.col){
@@ -341,7 +341,7 @@ function validateMedidas(){
       const compat = getSuggestCols(data, w);
       if(compat.length){
         $('compat-sugest').style.display='block';
-        $('compat-sugest').innerHTML = '<div class="chip chip-gold">💡 Coleções compatíveis com '+w+'m: ' + compat.join(', ') + '</div>';
+        $('compat-sugest').innerHTML = '<div class="chip chip-gold">'+ic('info',15)+' Coleções compatíveis com '+w+'m: ' + compat.join(', ') + '</div>';
       } else {
         $('compat-sugest').style.display='none';
       }
@@ -357,7 +357,7 @@ function validateMedidas(){
   }
 
   const el = $('alert-med');
-  if(msgs.length){ el.innerHTML = msgs.map(m=>'⚠️ '+m).join('<br>'); el.classList.add('on'); }
+  if(msgs.length){ el.innerHTML = msgs.map(m=>ic('alerta',15)+' '+m).join('<br>'); el.classList.add('on'); }
   else el.classList.remove('on');
 }
 
@@ -482,7 +482,7 @@ function buildAcc(){
         <div class="acc-item-body">
           <label class="ai-label" for="chk_${item.id}">${item.l}</label>
           ${item.note?'<div class="ai-note">'+item.note+'</div>':''}
-          ${incompatMsg?'<div class="ai-incomp">⚠️ '+incompatMsg+'</div>':''}
+          ${incompatMsg?'<div class="ai-incomp">'+ic('alerta',13)+' '+incompatMsg+'</div>':''}
           <div class="ai-controls" id="ctrl_${item.id}" style="display:none">${ctrl}</div>
         </div>
         <span class="ai-price">${priceStr}</span>
@@ -743,9 +743,9 @@ function renderResult(r){
 
   // Build breakdown rows
   let rows = '';
-  if(r.tubo) rows += `<div class="brow cmd-row"><span class="k">⚙️ Tubo automático</span><span class="v">${r.tubo.label}</span></div>`;
-  if(r.reducao) rows += `<div class="brow red-row"><span class="k">⚡ Redução de Peso (auto)</span><span class="v">+R$75/peça</span></div>`;
-  if(r.foraDoPadrao) rows += `<div class="alert" style="display:block"><strong>⚠️ Medida fora do padrão de fabricação</strong> (mín. ${r.minFab}m) — orçamento gerado pela cobrança mínima. Provavelmente <strong>fora da garantia de fábrica</strong>. Avise o cliente.</div>`;
+  if(r.tubo) rows += `<div class="brow cmd-row"><span class="k">${ic('engrenagem',14)} Tubo automático</span><span class="v">${r.tubo.label}</span></div>`;
+  if(r.reducao) rows += `<div class="brow red-row"><span class="k">${ic('raio',14)} Redução de peso (auto)</span><span class="v">+R$75/peça</span></div>`;
+  if(r.foraDoPadrao) rows += `<div class="alert" style="display:block"><strong>${ic('alerta',15)} Medida fora do padrão de fabricação</strong> (mín. ${r.minFab}m) — orçamento gerado pela cobrança mínima. Provavelmente <strong>fora da garantia de fábrica</strong>. Avise o cliente.</div>`;
   rows += `<div class="brow"><span class="k">Dimensões</span><span class="v">${r.w.toFixed(2)}m × ${r.h.toFixed(2)}m</span></div>`;
   rows += `<div class="brow"><span class="k">Área calculada</span><span class="v">${r.usedArea.toFixed(2)} m²${r.usedArea>r.area?' (mínimo)':''}</span></div>`;
   rows += `<div class="brow"><span class="k">Preço tabela/m²</span><span class="v">${fmtDec(r.priceM2)}</span></div>`;
@@ -786,7 +786,7 @@ function renderResult(r){
   }
 
   if(r.extras && r.extras.length){
-    r.extras.forEach(e => { rows += `<div class="brow disc-row"><span class="k">🔧 ${e.desc} <span style="color:var(--tx3);font-size:10.5px">(valor final, sem markup)</span></span><span class="v">+${fmtDec(e.valor)}</span></div>`; });
+    r.extras.forEach(e => { rows += `<div class="brow disc-row"><span class="k">${ic('ferramenta',14)} ${e.desc} <span style="color:var(--tx3);font-size:10.5px">(valor final, sem markup)</span></span><span class="v">+${fmtDec(e.valor)}</span></div>`; });
   }
 
   const body = `
@@ -906,7 +906,7 @@ async function renderHistory(){
   try{
     HISTORY_CACHE = await sbFetchHistory();
   } catch(err){
-    list.innerHTML = '<div class="hist-empty" style="color:var(--red)">⚠️ Não foi possível carregar os orçamentos.<br><span style="font-size:11px;color:var(--tx3)">Verifique sua conexão e tente de novo.</span></div>';
+    list.innerHTML = '<div class="hist-empty" style="color:var(--red)">'+ic('alerta',16)+' Não foi possível carregar os orçamentos.<br><span style="font-size:11px;color:var(--tx3)">Verifique sua conexão e tente de novo.</span></div>';
     return;
   }
   const h = HISTORY_CACHE;
@@ -930,10 +930,10 @@ async function renderHistory(){
       </div>
       <div style="text-align:right">
         <div class="hist-cost ${fabClass}">${fmt(totalAv)} <span style="font-size:10px;font-weight:400;color:var(--tx3)">à vista</span></div>
-        <div class="hist-date">${e.date}${e.criadoPor ? ' · 👤 '+e.criadoPor : ''}</div>
+        <div class="hist-date">${e.date}${e.criadoPor ? ' · '+ic('usuario',13)+' '+e.criadoPor : ''}</div>
       </div>
-      <button class="btn-outline" style="font-size:11px;padding:5px 10px;white-space:nowrap" onclick="event.stopPropagation();reopenOrc(${e.id})">✏️ Editar</button>
-      <button class="hist-del" onclick="event.stopPropagation();delOrc(${e.id})" title="Excluir">🗑</button>
+      <button class="btn-outline" style="padding:9px 16px!important;white-space:nowrap" onclick="event.stopPropagation();reopenOrc(${e.id})">${ic('editar',15)} Abrir</button>
+      <button class="hist-del" onclick="event.stopPropagation();delOrc(${e.id})" title="Excluir" aria-label="Excluir orçamento">${ic('lixeira',16)}</button>
     </div>`;
   }).join('');
 }
@@ -1009,7 +1009,7 @@ function toggleCompare(){
   </div>`;
 
   if(!otherData){
-    html += `<div class="chip chip-warn">⚠️ ${r.prod} ${r.fam} não está disponível na ${otherFab}.</div>`;
+    html += `<div class="chip chip-warn">${ic('alerta',15)} ${r.prod} ${r.fam} não está disponível na ${otherFab}.</div>`;
     $('cmp-config').innerHTML = html;
     return;
   }
@@ -1093,7 +1093,7 @@ function toggleCompare(){
 
   // Fair warning
   if(r.acc && r.acc.total > 0){
-    $('fair-warn').innerHTML = '⚖️ Atenção: o cálculo original inclui <b>R$'+fmtDec(r.acc.total)+'</b> em acessórios. Selecione os equivalentes acima para uma comparação justa.';
+    $('fair-warn').innerHTML = ic('comparar',15)+' Atenção: o cálculo original inclui <b>R$'+fmtDec(r.acc.total)+'</b> em acessórios. Selecione os equivalentes acima para uma comparação justa.';
     $('fair-warn').classList.add('on');
   } else {
     $('fair-warn').classList.remove('on');
@@ -1469,7 +1469,7 @@ function calcularCdpTrad(){
 
 function renderResultCdp(r){
   let rows = '';
-  if(r.alturaAcima27) rows += `<div class="brow" style="color:var(--warn)"><span class="k">⚠️ Altura acima de 2,70m</span><span class="v">cálculo personalizado — confirmar com o ateliê</span></div>`;
+  if(r.alturaAcima27) rows += `<div class="brow" style="color:var(--warn)"><span class="k">${ic('alerta',14)} Altura acima de 2,70m</span><span class="v">cálculo personalizado — confirmar com o ateliê</span></div>`;
   rows += `<div class="brow"><span class="k">Tipo</span><span class="v">${r.fam}</span></div>`;
   rows += `<div class="brow"><span class="k">Camada 1</span><span class="v">${r.cam1.nome} — ${fmtDec(r.precoM1)}/ml</span></div>`;
   if(r.cam2) rows += `<div class="brow"><span class="k">Camada 2</span><span class="v">${r.cam2.nome} — ${fmtDec(r.precoM2)}/ml</span></div>`;
@@ -1478,8 +1478,8 @@ function renderResultCdp(r){
   rows += `<div class="brow"><span class="k">Valor/ml (camadas somadas)</span><span class="v">${fmtDec(r.precoMl)}</span></div>`;
   rows += `<div class="brow"><span class="k">Subtotal (largura × valor/ml)</span><span class="v">${fmtDec(r.subtotalSemIlhos)}</span></div>`;
   if(r.ilhosAplicado) rows += `<div class="brow disc-row"><span class="k">Ilhós (+20%)</span><span class="v">+${fmtDec(r.subtotalUnit - r.subtotalSemIlhos)}</span></div>`;
-  if(r.curvoAplicado) rows += `<div class="brow disc-row"><span class="k">🌀 Trilho Curvo (fornecedor externo)</span><span class="v">+${fmtDec(r.curvoValor)}</span></div>`;
-  if(r.extras && r.extras.length) r.extras.forEach(e => { rows += `<div class="brow disc-row"><span class="k">🔧 ${e.desc}</span><span class="v">+${fmtDec(e.valor)}</span></div>`; });
+  if(r.curvoAplicado) rows += `<div class="brow disc-row"><span class="k">${ic('ferramenta',14)} Trilho curvo (fornecedor externo)</span><span class="v">+${fmtDec(r.curvoValor)}</span></div>`;
+  if(r.extras && r.extras.length) r.extras.forEach(e => { rows += `<div class="brow disc-row"><span class="k">${ic('ferramenta',14)} ${e.desc}</span><span class="v">+${fmtDec(e.valor)}</span></div>`; });
   if(r.qty > 1){
     rows += `<div class="brow"><span class="k">Custo unitário</span><span class="v">${fmtDec(r.subtotalUnit)}</span></div>`;
     rows += `<div class="brow total-row"><span class="k">TOTAL (${r.qty} peças)</span><span class="v">${fmtDec(r.totalGeral)}</span></div>`;
@@ -1605,7 +1605,7 @@ function addToCart(){
   // Visual feedback
   const btn = event.target;
   const orig = btn.textContent;
-  btn.textContent = '✅ Adicionado!';
+  btn.innerHTML = ic('ok',17)+' Adicionado!';
   btn.style.background = 'linear-gradient(135deg,var(--grn),#1a8a5a)';
   setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
 }
@@ -1718,7 +1718,7 @@ function renderResumoOrc(){
   const totalTabela = CART.reduce((s,i)=>s+i.tabela,0);
   const totalCartao = CART.reduce((s,i)=>s+i.cartao,0);
   const totalAvista = CART.reduce((s,i)=>s+i.avista,0);
-  $('orc-resumo-contador').textContent = (EDITING_ORC_ID ? '✏️ Editando #' + ($('cli-tiny').value || EDITING_ORC_ID) + ' · ' : '🛒 ') + CART.length + (CART.length>1?' itens':' item');
+  $('orc-resumo-contador').innerHTML = (EDITING_ORC_ID ? ic('editar',15)+' Editando #' + ($('cli-tiny').value || EDITING_ORC_ID) + ' · ' : ic('orcamentos',15)+' ') + CART.length + (CART.length>1?' itens':' item');
   $('orc-resumo-valores').textContent = 'Tabela ' + fmt(totalTabela) + ' · Cartão ' + fmt(totalCartao) + ' · À vista ' + fmt(totalAvista);
 
   // agrupar por ambiente
@@ -1733,7 +1733,7 @@ function renderResumoOrc(){
     const subAvista = itens.reduce((s,i)=>s+i.avista,0);
     return `
     <div style="margin-bottom:14px">
-      <div style="font-weight:700;font-size:12.5px;color:var(--gold);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--gold2)">📍 ${amb} (${itens.length} ${itens.length>1?'itens':'item'} · ${fmt(subAvista)})</div>
+      <div style="font-weight:700;font-size:12.5px;color:var(--gold);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--gold2);display:flex;align-items:center;gap:6px">${ic('local',14)} ${amb} (${itens.length} ${itens.length>1?'itens':'item'} · ${fmt(subAvista)})</div>
       ${itens.map(item => {
         const fc = fabColor(item.fab), fbg = fabBg(item.fab), fbd = fabBd(item.fab);
         const medidas = (item.w && item.h) ? (item.w+'×'+item.h+'m' + (item.qty>1?' ×'+item.qty:'')) : '';
@@ -1746,16 +1746,16 @@ function renderResumoOrc(){
                 <span style="font-size:9.5px;font-weight:700;letter-spacing:.4px;color:${fc};background:${fbg};border:1px solid ${fbd};border-radius:3px;padding:1.5px 6px;white-space:nowrap">${fabName(item.fab).toUpperCase()}</span>
                 <span style="font-weight:600;font-size:12px;color:var(--tx)">${item.label}</span>
               </div>
-              <div style="font-size:11px;color:var(--tx2);margin-top:3px;line-height:1.4">${modeloColecao}${medidas ? ' · 📐 '+medidas : ''}</div>
+              <div style="font-size:11px;color:var(--tx2);margin-top:3px;line-height:1.4">${modeloColecao}${medidas ? ' · '+medidas : ''}</div>
             </div>
             <div style="text-align:right;white-space:nowrap">
               <div style="font-weight:700;font-size:12.5px;color:var(--gold)">${fmt(item.avista)}</div>
               <div style="font-size:9.5px;color:var(--tx3)">tab. ${fmt(item.tabela)} · cart. ${fmt(item.cartao)}</div>
             </div>
             <div style="display:flex;flex-direction:column;gap:2px">
-              <button onclick="duplicarItemCarrinho(${item.id})" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:11px" title="Duplicar">📋</button>
-              <button onclick="editarItemCarrinho(${item.id})" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:11px" title="Editar">✏️</button>
-              <button onclick="removeFromCart(${item.id})" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:12px" title="Remover">✕</button>
+              <button onclick="duplicarItemCarrinho(${item.id})" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:11px" title="Duplicar" aria-label="Duplicar item">${ic('copiar',15)}</button>
+              <button onclick="editarItemCarrinho(${item.id})" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:11px" title="Editar" aria-label="Editar item">${ic('editar',15)}</button>
+              <button onclick="removeFromCart(${item.id})" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:12px" title="Remover" aria-label="Remover item">${ic('fechar',15)}</button>
             </div>
           </div>
         </div>`;
@@ -1789,11 +1789,11 @@ function updateCartBar(){
   count.textContent = CART.length + ' item' + (CART.length>1?'s':'') + ' adicionado' + (CART.length>1?'s':'');
   if(EDITING_ORC_ID){
     banner.style.display = 'block';
-    banner.textContent = '✏️ Editando o orçamento #' + (STATE.cliente && STATE.cliente.tiny || $('cli-tiny').value || EDITING_ORC_ID) + ' já salvo — ao clicar em Atualizar, a versão antiga é substituída (não cria um novo).';
-    saveBtn.textContent = '💾 Atualizar Orçamento';
+    banner.textContent = 'Editando o orçamento #' + (STATE.cliente && STATE.cliente.tiny || $('cli-tiny').value || EDITING_ORC_ID) + ' já salvo — ao clicar em Atualizar, a versão antiga é substituída (não cria um novo).';
+    saveBtn.innerHTML = ic('salvar',16)+' Atualizar orçamento';
   } else {
     banner.style.display = 'none';
-    saveBtn.textContent = '💾 Salvar Orçamento';
+    saveBtn.innerHTML = ic('salvar',16)+' Salvar orçamento';
   }
   renderCartItems();
 }
@@ -1818,18 +1818,18 @@ function renderCartItems(){
           <div style="font-weight:700;color:var(--gold)">${fmt(item.avista)} <span style="font-size:10px;font-weight:400;color:var(--tx3)">à vista</span></div>
           <div style="font-size:11px;color:var(--tx3);text-decoration:line-through">${fmt(item.tabela)} tabela</div>
         </div>
-        <button onclick="duplicarItemCarrinho(${item.id})" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:12px;padding:2px 6px;white-space:nowrap" title="Duplicar">📋</button>
-        <button onclick="editarItemCarrinho(${item.id})" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:2px 6px;white-space:nowrap">✏️ Editar</button>
-        <button onclick="removeFromCart(${item.id})" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;padding:2px 6px;transition:color .2s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--tx3)'">✕</button>
+        <button onclick="duplicarItemCarrinho(${item.id})" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:12px;padding:2px 6px;white-space:nowrap" title="Duplicar" aria-label="Duplicar item">${ic('copiar',15)}</button>
+        <button onclick="editarItemCarrinho(${item.id})" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:2px 6px;white-space:nowrap">${ic('editar',15)} Editar</button>
+        <button onclick="removeFromCart(${item.id})" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;padding:2px 6px;transition:color .2s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--tx3)'">${ic('fechar',15)}</button>
       </div>
       <div style="margin-top:6px;padding-left:30px">
-        <label style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px">📝 Detalhamento (editável — troque os "A DEFINIR")</label>
+        <label style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px">Detalhamento (editável — troque os "A DEFINIR")</label>
         <textarea oninput="updateItemDetail(${item.id}, this.value)" rows="2" style="width:100%;margin-top:3px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:11.5px;color:var(--tx);resize:vertical;background:var(--s2)">${item.detail||''}</textarea>
       </div>
     </div>
   `).join('') + `
     <div style="display:flex;justify-content:flex-end;padding-top:8px;gap:4px">
-      <button class="btn-outline" style="font-size:11.5px;padding:5px 12px;color:var(--red);border-color:var(--red)" onclick="clearCart()">🗑 Limpar tudo</button>
+      <button class="btn-outline" style="font-size:11.5px;padding:5px 12px;color:var(--red);border-color:var(--red)" onclick="clearCart()">${ic('lixeira',15)} Limpar tudo</button>
     </div>`;
 }
 
@@ -1934,19 +1934,19 @@ function syncPropostaFromCalc(){
 function syncPropostaFromCart(){
   const info = $('p-from-calc');
   if(CART.length){
-    info.innerHTML = '✅ <b>' + CART.length + ' item' + (CART.length>1?'s':'') + '</b> no orçamento: ' +
+    info.innerHTML = ic('ok',16)+' <b>' + CART.length + ' item' + (CART.length>1?'s':'') + '</b> no orçamento: ' +
       CART.map((i,n) => '<b>'+(n+1)+'.</b> '+i.label).join(' | ');
     info.style.background = 'rgba(46,125,82,.08)';
     info.style.borderColor = 'rgba(46,125,82,.25)';
     info.style.color = 'var(--grn)';
   } else if(STATE.lastResult){
     const r = STATE.lastResult;
-    info.innerHTML = '⚠️ Nenhum item adicionado ao orçamento. Último cálculo: <b>'+r.prod+' '+r.fam+'</b> | Use ➕ Adicionar ao Orçamento na calculadora.';
+    info.innerHTML = ic('alerta',16)+' Nenhum item adicionado ao orçamento. Último cálculo: <b>'+r.prod+' '+r.fam+'</b> | Use "Adicionar ao orçamento" na calculadora.';
     info.style.background = '';
     info.style.borderColor = '';
     info.style.color = 'var(--gold)';
   } else {
-    info.innerHTML = '💡 Calcule produtos na aba <b>Calculadora</b> e clique em ➕ Adicionar ao Orçamento.';
+    info.innerHTML = ic('info',16)+' Calcule produtos na aba <b>Calculadora</b> e clique em "Adicionar ao orçamento".';
     info.style.background = '';
     info.style.borderColor = '';
     info.style.color = 'var(--gold)';
@@ -1958,7 +1958,7 @@ function renderPropostaDetalhes(){
   const wrap = $('p-detalhes-itens');
   if(!wrap) return;
   if(!CART.length){ wrap.innerHTML = ''; return; }
-  wrap.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📝 Detalhamento por item (editável — troque os "A DEFINIR")</div>' +
+  wrap.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Detalhamento por item (editável — troque os "A DEFINIR")</div>' +
     CART.map((item,i) => `
     <div style="margin-bottom:10px">
       <div style="font-size:11.5px;font-weight:600;color:var(--tx);margin-bottom:3px">${i+1}. ${item.label}</div>
@@ -1994,7 +1994,7 @@ function renderExtras(){
     <div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--s3);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:5px;font-size:12.5px">
       <span style="flex:1">${e.desc}</span>
       <span style="font-weight:700;color:var(--gold)">${fmtDec(e.valor)}</span>
-      <button onclick="removeExtra(${e.id})" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;padding:0 4px">✕</button>
+      <button onclick="removeExtra(${e.id})" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;padding:0 4px">${ic('fechar',15)}</button>
     </div>`).join('');
 }
 

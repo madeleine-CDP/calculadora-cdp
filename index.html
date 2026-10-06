@@ -10,8 +10,9 @@
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Figtree:wght@400;500;600;700&family=EB+Garamond:wght@400;600&display=swap">
 <link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/tema.css">
 </head>
 <body>
 <!-- ═══════════ TELA DE LOGIN ═══════════ -->
@@ -19,7 +20,7 @@
   <div style="background:#FFF;border-radius:8px;padding:36px 32px;width:90%;max-width:360px;box-shadow:0 10px 40px rgba(0,0,0,.3)">
     <div style="text-align:center;margin-bottom:24px">
       <img src="assets/logo-11663b57.png" alt="Central das Persianas" style="height:46px;width:auto;display:block;margin:0 auto">
-      <div style="font-size:11px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-top:2px">CDP Cálculos · Acesso</div>
+      <div style="font-size:11px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-top:2px">CDP Sistema · Acesso</div>
     </div>
     <div style="margin-bottom:12px">
       <label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px">Usuário</label>
@@ -35,43 +36,39 @@
 </div>
 <script src="js/login.js"></script>
 
-<header style="background:#2B221C;border-bottom:3px solid #5A1524;padding:0;position:sticky;top:0;z-index:200">
-  <div style="max-width:1160px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:16px">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div>
-        <img src="assets/logo-707781e4.png" alt="Central das Persianas" style="height:34px;width:auto;display:block">
-        <div style="font-size:10px;color:#888;letter-spacing:2px;text-transform:uppercase;margin-top:3px">CDP Cálculos · v2.2</div>
-      </div>
-    </div>
-    <div style="margin-left:auto;font-size:11px;color:#CCC;display:flex;align-items:center;gap:10px">
-      <span id="usuario-logado"></span>
-      <button onclick="logout()" style="background:none;border:1px solid #666;color:#CCC;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer">Sair</button>
+<header class="site-header">
+  <div class="site-header-in">
+    <img src="assets/logo-11663b57.png" alt="Central das Persianas">
+    <div class="usuario">
+      <span class="usuario-nome"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span id="usuario-logado"></span></span>
+      <button class="btn-sair" onclick="logout()"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button>
     </div>
   </div>
 </header>
 
-<nav class="tabs-nav" style="background:#FFFFFF;border-bottom:1px solid #DDD8CC">
-  <button class="btn-novo-orc" onclick="novoOrcamento()" title="Limpa o item/orçamento em andamento e os dados do cliente pra começar do zero">🆕 Novo Orçamento</button>
+<nav class="tabs-nav">
+  <button class="btn-novo-orc" onclick="novoOrcamento()" title="Limpa o item/orçamento em andamento e os dados do cliente pra começar do zero"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Novo orçamento</button>
   <div class="tabs-nav-divider"></div>
-  <button class="tab-btn active" onclick="switchTab('calc')">🧮 Calculadora</button>
-  <button class="tab-btn" onclick="switchTab('hist')">📂 Abrir Orçamentos</button>
-  <button class="tab-btn" onclick="switchTab('proposta')">📄 Gerar Proposta</button>
+  <button class="tab-btn active" onclick="switchTab('calc')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg><span class="lbl-full">Calculadora</span><span class="lbl-curto">Calcular</span></button>
+  <button class="tab-btn" onclick="switchTab('hist')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span class="lbl-full">Orçamentos salvos</span><span class="lbl-curto">Salvos</span></button>
+  <button class="tab-btn" onclick="switchTab('proposta')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg><span class="lbl-full">Proposta</span><span class="lbl-curto">Proposta</span></button>
 </nav>
 
-<!-- ═══════════ BARRA FIXA: CLIENTE ═══════════ -->
-<div style="background:#F0EEE9;border-bottom:1px solid #DDD8CC;padding:12px 24px">
-  <div class="wrap" style="max-width:1160px;margin:0 auto">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px">
-      <input type="text" id="cli-nome" placeholder="⭐ Nome" oninput="syncCliente()" style="padding:8px 10px;border:2px solid var(--gold);border-radius:var(--r2);font-size:13px;font-family:inherit;font-weight:600;background:#fff">
-      <input type="text" id="cli-tel" placeholder="☎️ Telefone" oninput="syncCliente()" style="padding:8px 10px;border:2px solid var(--gold);border-radius:var(--r2);font-size:13px;font-family:inherit;font-weight:600;background:#fff">
-      <input type="text" id="cli-bairro" placeholder="📍 Bairro" oninput="syncCliente()" style="padding:8px 10px;border:2px solid var(--gold);border-radius:var(--r2);font-size:13px;font-family:inherit;font-weight:600;background:#fff">
-      <input type="text" id="cli-tiny" placeholder="🔢 Nº Proposta (Tiny)" oninput="syncCliente()" style="padding:8px 10px;border:2px solid var(--gold);border-radius:var(--r2);font-size:13px;font-family:inherit;font-weight:600;background:#fff">
+<!-- ═══════════ CLIENTE ═══════════ -->
+<div class="cli-bar">
+  <div class="cli-bar-in">
+    <div class="cli-bar-titulo"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Cliente</div>
+    <div class="cli-grid">
+      <input type="text" id="cli-nome" class="cli-in principal" placeholder="Nome do cliente" aria-label="Nome do cliente" oninput="syncCliente()">
+      <input type="text" id="cli-tel" class="cli-in principal" placeholder="Telefone / WhatsApp" aria-label="Telefone / WhatsApp" oninput="syncCliente()">
+      <input type="text" id="cli-bairro" class="cli-in principal" placeholder="Bairro" aria-label="Bairro" oninput="syncCliente()">
+      <input type="text" id="cli-tiny" class="cli-in principal" placeholder="Nº proposta (Tiny)" aria-label="Número da proposta no Tiny" oninput="syncCliente()">
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-      <input type="text" id="cli-cpf" placeholder="CPF/CNPJ" oninput="syncCliente()" style="padding:6px 9px;border:1px solid var(--border);border-radius:var(--r2);font-size:11.5px;font-family:inherit;background:#fff;color:var(--tx2)">
-      <input type="text" id="cli-email" placeholder="E-mail" oninput="syncCliente()" style="padding:6px 9px;border:1px solid var(--border);border-radius:var(--r2);font-size:11.5px;font-family:inherit;background:#fff;color:var(--tx2)">
-      <input type="text" id="cli-end" placeholder="Endereço completo" oninput="syncCliente()" style="padding:6px 9px;border:1px solid var(--border);border-radius:var(--r2);font-size:11.5px;font-family:inherit;background:#fff;color:var(--tx2)">
-      <input type="text" id="cli-contato" placeholder="Contato (se diferente)" oninput="syncCliente()" style="padding:6px 9px;border:1px solid var(--border);border-radius:var(--r2);font-size:11.5px;font-family:inherit;background:#fff;color:var(--tx2)">
+    <div class="cli-grid">
+      <input type="text" id="cli-cpf" class="cli-in cli-in-sec" placeholder="CPF/CNPJ" aria-label="CPF/CNPJ" oninput="syncCliente()">
+      <input type="text" id="cli-email" class="cli-in cli-in-sec" placeholder="E-mail" aria-label="E-mail" oninput="syncCliente()">
+      <input type="text" id="cli-end" class="cli-in cli-in-sec" placeholder="Endereço completo" aria-label="Endereço completo" oninput="syncCliente()">
+      <input type="text" id="cli-contato" class="cli-in cli-in-sec" placeholder="Contato (se diferente)" aria-label="Contato (se diferente)" oninput="syncCliente()">
     </div>
   </div>
 </div>
@@ -82,7 +79,7 @@
 
 <!-- AMBIENTE -->
 <div class="card" id="ambiente-card" style="border-color:var(--gold)">
-  <div class="card-title">📍 Ambiente deste item</div>
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Ambiente deste item</div>
   <div class="card-sub">Todo cálculo pertence a um ambiente — preencha antes de calcular (ex: Quarto Casal, Sala)</div>
   <input type="text" id="item-ambiente" list="ambientes-datalist" placeholder="Ex: Quarto Casal" oninput="STATE.ambiente=this.value" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);font-size:13.5px;font-family:inherit;margin-top:6px">
   <datalist id="ambientes-datalist"></datalist>
@@ -90,7 +87,7 @@
 
 <!-- FÁBRICA -->
 <div class="card">
-  <div class="card-title">Fábrica</div>
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>Fábrica</div>
   <div class="card-sub">Selecione o fornecedor para este cálculo</div>
   <div class="fab-row">
     <div class="fab-btn" id="fb-real" onclick="selectFab('real')">
@@ -106,7 +103,7 @@
       <div class="fab-btn-sub">Produção própria · tecido por metro linear</div>
     </div>
     <div class="fab-btn" id="fb-servico" onclick="selectFab('servico')" style="opacity:.7">
-      <div class="fab-btn-name">🔧 Serviços</div>
+      <div class="fab-btn-name"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>Serviços</div>
       <div class="fab-btn-sub">Em construção — aguardando tabela de preços</div>
     </div>
   </div>
@@ -138,7 +135,7 @@
 
 <!-- PRODUTO -->
 <div class="card" id="prod-card-wrap">
-  <div class="card-title">Produto</div>
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg></span>Produto</div>
   <div class="card-sub">Categoria → Produto → Família → Coleção</div>
   <div class="fg">
     <div class="fl"><label>Categoria</label>
@@ -150,14 +147,14 @@
     <div class="fl"><label>Coleção</label>
       <select id="s-col" onchange="onCol()" disabled><option value="">— Selecione —</option></select></div>
   </div>
-  <div id="comando-chip" class="chip chip-blue" style="display:none">⚙️ <span id="comando-txt"></span></div>
-  <div id="reducao-chip" class="chip chip-orange" style="display:none">⚡ <span id="reducao-txt"></span></div>
-  <div class="obs-box" id="obs-box"><h4>ℹ️ Informações Importantes</h4><ul id="obs-list"></ul></div>
+  <div id="comando-chip" class="chip chip-blue" style="display:none"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span id="comando-txt"></span></div>
+  <div id="reducao-chip" class="chip chip-orange" style="display:none"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span id="reducao-txt"></span></div>
+  <div class="obs-box" id="obs-box"><h4><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Informações importantes</h4><ul id="obs-list"></ul></div>
 </div>
 
 <!-- CORTINA TRADICIONAL CDP -->
 <div class="card" id="cdp-trad-card" style="display:none">
-  <div class="card-title">Cortina Tradicional — Produção CDP</div>
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg></span>Cortina tradicional · produção CDP</div>
   <div class="card-sub">Tecido por metro linear, a partir da largura (única ou dupla camada)</div>
   <div class="fg">
     <div class="fl"><label>Tipo</label>
@@ -184,19 +181,19 @@
     </div>
   </div>
   <div class="obs-box on">
-    <h4>ℹ️ Informações Importantes</h4>
+    <h4><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Informações importantes</h4>
     <ul>
       <li class="obs-li">Cálculo: largura (m) × valor do metro linear de cada camada. Produção própria — sem desconto de fábrica.</li>
       <li class="obs-li">Altura padrão de fabricação: até 2,70m. Acima disso, é cálculo personalizado com o ateliê — confirme com a Bru antes de fechar.</li>
       <li class="obs-li">Casos que exigem cálculo à parte, fora desta calculadora: prega wave com fita, trilho curvo.</li>
-      <li class="obs-li">⚠️ Preços de tecido nesta versão vêm da planilha de referência da CDP e ainda precisam ser confirmados — trate como estimativa até a Bru validar.</li>
+      <li class="obs-li">Atenção: preços de tecido nesta versão vêm da planilha de referência da CDP e ainda precisam ser confirmados — trate como estimativa até a Bru validar.</li>
     </ul>
   </div>
 </div>
 
 <!-- JANELA vs CORTINA PRONTA -->
 <div class="card" style="border-color:var(--gold)">
-  <div class="card-title">📐 O que você tem em mãos?</div>
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l4 4L21 7l-4-4z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/></svg></span>O que você tem em mãos?</div>
   <div class="card-sub">Se o cliente mandou medida de janela/vão, o sistema já soma a sobra certa (Guia de Processos)</div>
   <div class="fg">
     <div class="fl"><label>Tipo de medida</label>
@@ -218,7 +215,7 @@
       </div>
     </div>
     <div id="jan-bk-nota" style="display:none;font-size:11px;color:var(--tx2);background:var(--s3);border-radius:var(--r2);padding:8px 10px;margin-top:4px">
-      ℹ️ Cortina Rolô: marque Bandô / Guia Inferior / Guias Laterais lá embaixo em <b>Acessórios & Opcionais</b> — a sobra usa a medida real da guia (6cm, 8cm etc.) no lugar da sobra genérica, sem precisar responder de novo.
+      <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> Cortina Rolô: marque Bandô / Guia Inferior / Guias Laterais lá embaixo em <b>Acessórios & Opcionais</b> — a sobra usa a medida real da guia (6cm, 8cm etc.) no lugar da sobra genérica, sem precisar responder de novo.
     </div>
     <div id="jan-sugestao" style="font-size:12.5px;color:var(--grn);font-weight:700;margin-top:8px"></div>
   </div>
@@ -226,7 +223,7 @@
 
 <!-- MEDIDAS -->
 <div class="card">
-  <div class="card-title">Medidas</div>
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l4 4L21 7l-4-4z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/></svg></span>Medidas</div>
   <div class="card-sub" id="medidas-sub">Medida final da cortina/persiana (já com sobra, se aplicável)</div>
   <div class="fg">
     <div class="fl"><label>Largura (m)</label>
@@ -242,21 +239,21 @@
 
 <!-- DETALHAMENTO (preenchido automaticamente) -->
 <div class="card">
-  <div class="card-title">📝 Detalhamento do Item</div>
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>Detalhamento do item</div>
   <div class="card-sub">Preenchido sozinho conforme o modelo e a medida — edite os "A DEFINIR" antes de adicionar ao orçamento</div>
   <textarea id="item-detalhamento" rows="3" oninput="this.dataset.editedManually='1'" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);color:var(--tx);padding:8px 10px;font-family:'Gill Sans','Gill Sans MT',Poppins,sans-serif;font-size:12.5px;outline:none;resize:vertical"></textarea>
 </div>
 
 <!-- ACESSÓRIOS -->
 <div class="card acc-wrap" id="acc-wrap">
-  <div class="card-title">Acessórios & Opcionais</div>
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Acessórios e opcionais</div>
   <div class="card-sub">Itens específicos para este produto — preço atualizado conforme cor selecionada</div>
   <div id="acc-content"></div>
 </div>
 
 <!-- SERVIÇOS / PEÇAS ADICIONAIS -->
 <div class="card">
-  <div class="card-title">🔧 Serviços / Peças Adicionais</div>
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span>Serviços e peças adicionais</div>
   <div class="card-sub">Para itens fora de tabela — ex: troca de peça específica, serviço extra, taxa de deslocamento</div>
   <div id="extras-list" style="margin-top:8px"></div>
   <div class="fg" style="margin-top:8px">
@@ -270,7 +267,6 @@
 </div>
 
 <!-- BOTÕES AÇÃO (também fixos no rodapé, ver sticky-actions) -->
-<div class="btn-row" style="opacity:.6;font-size:11px;text-align:center;justify-content:center">↓ ou use a barra fixa embaixo ↓</div>
 
 <!-- RESULTADO -->
 <div class="result-wrap" id="result-wrap">
@@ -289,12 +285,12 @@
       <div id="cart-editing-banner" style="display:none;font-size:11px;color:var(--warn);background:rgba(182,130,53,.1);border:1px solid rgba(182,130,53,.3);border-radius:var(--r2);padding:5px 9px;margin-bottom:8px"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div>
-          <span style="font-size:12px;font-weight:700;color:var(--gold)">🛒 Orçamento em andamento</span>
+          <span style="font-size:14px;font-weight:700;color:var(--tx);display:inline-flex;align-items:center;gap:8px"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Orçamento em andamento</span>
           <span id="cart-count" style="font-size:12px;color:var(--tx2);margin-left:8px"></span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn-outline" style="font-size:12px;padding:6px 14px" onclick="viewCart()">👁 Ver itens</button>
-          <button class="btn btn-sm" id="btn-save-orc" onclick="saveOrcamento()">💾 Salvar Orçamento</button>
+          <button class="btn-outline" style="font-size:12px;padding:6px 14px" onclick="viewCart()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Ver itens</button>
+          <button class="btn btn-sm" id="btn-save-orc" onclick="saveOrcamento()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h11l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 1-2z"/><path d="M8 3v5h7M8 21v-7h8v7"/></svg>Salvar orçamento</button>
         </div>
       </div>
       <!-- ITENS DO CARRINHO -->
@@ -302,14 +298,14 @@
     </div>
 
     <div class="btn-row">
-      <button class="btn" onclick="addToCart()">➕ Adicionar ao Orçamento</button>
-      <button class="btn-compare" id="btn-compare" onclick="toggleCompare()">⚖️ Comparar com outra fábrica</button>
+      <button class="btn" onclick="addToCart()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Adicionar ao orçamento</button>
+      <button class="btn-compare" id="btn-compare" onclick="toggleCompare()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M4 12h16M4 17h7"/><circle cx="18" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg>Comparar com outra fábrica</button>
     </div>
   </div>
 
   <!-- COMPARAÇÃO -->
   <div class="cmp-section" id="cmp-section">
-    <div class="cmp-divider"><div class="cmp-divider-line"></div><div class="cmp-divider-txt">⚖️ COMPARAÇÃO COM OUTRA FÁBRICA</div><div class="cmp-divider-line"></div></div>
+    <div class="cmp-divider"><div class="cmp-divider-line"></div><div class="cmp-divider-txt"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M4 12h16M4 17h7"/><circle cx="18" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg>Comparação com outra fábrica</div><div class="cmp-divider-line"></div></div>
     <div class="fair-warn" id="fair-warn"></div>
     <div id="cmp-config"></div>
     <div class="btn-row">
@@ -335,10 +331,10 @@
 <div class="wrap">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
     <div>
-      <div style="font-family:'EB Garamond',Garamond,serif;font-size:16px;color:var(--tx)">Orçamentos Salvos</div>
-      <div style="font-size:11px;color:var(--tx3);margin-top:2px">Clique em um orçamento para reabrir</div>
+      <div class="hist-titulo">Orçamentos salvos</div>
+      <div style="font-size:13px;color:var(--tx2);margin-top:6px">Toque em um orçamento para abrir e continuar</div>
     </div>
-    <button class="btn-outline" onclick="clearAllHistory()" style="font-size:11.5px">🗑 Limpar tudo</button>
+    <button class="btn-outline" onclick="clearAllHistory()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Limpar tudo</button>
   </div>
   <div id="hist-list"></div>
 </div>
@@ -349,7 +345,7 @@
 <div id="tab-proposta" class="tab-panel">
 <div class="wrap">
   <div class="card" style="margin-bottom:16px">
-    <div class="card-title">Gerar Proposta Comercial</div>
+    <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg></span>Gerar proposta comercial</div>
     <div class="card-sub">Cliente já vem da barra do topo. Só falta a validade e o tipo de proposta.</div>
     <div class="fg" style="margin-bottom:12px">
       <div class="fl"><label>Validade da Proposta</label>
@@ -360,12 +356,12 @@
     </div>
     <input type="hidden" id="p-detail" value="">
     <div id="p-from-calc" style="background:rgba(200,150,14,.08);border:1px solid rgba(200,150,14,.25);border-radius:var(--r2);padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--gold)">
-      💡 Calcule um produto na aba <b>Calculadora</b> e os valores serão preenchidos automaticamente aqui.
+      <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Calcule um produto na aba <b>Calculadora</b> e os valores serão preenchidos automaticamente aqui.</span>
     </div>
     <div id="p-detalhes-itens" style="margin-bottom:16px"></div>
     <div class="btn-row">
-      <button class="btn" onclick="gerarProposta()">📄 Gerar Proposta</button>
-      <button class="btn-outline" onclick="imprimirProposta()">🖨️ Imprimir / Salvar PDF</button>
+      <button class="btn" onclick="gerarProposta()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg>Gerar proposta</button>
+      <button class="btn-outline" onclick="imprimirProposta()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Imprimir / salvar PDF</button>
     </div>
   </div>
 
@@ -373,20 +369,21 @@
   <div id="proposta-preview" style="display:none">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div style="font-size:13px;font-weight:600;color:var(--tx2)">Pré-visualização da Proposta</div>
-      <button class="btn-outline btn-sm" onclick="imprimirProposta()">🖨️ Imprimir / PDF</button>
+      <button class="btn-outline btn-sm" onclick="imprimirProposta()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Imprimir / PDF</button>
     </div>
     <div id="proposta-doc"></div>
   </div>
 </div>
 </div>
 
+<script src="js/icones.js"></script>
 <script src="js/precos.js"></script>
 <script src="js/app.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
 <div id="orc-resumo-bar" style="position:fixed;bottom:60px;left:0;right:0;background:#2B221C;color:#FFF;z-index:499;display:none">
   <div onclick="toggleResumoOrc()" style="padding:8px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:12.5px">
-    <span id="orc-resumo-contador">🛒 0 itens</span>
+    <span id="orc-resumo-contador">0 itens</span>
     <span id="orc-resumo-valores" style="font-weight:700"></span>
     <span style="display:flex;align-items:center;gap:6px">
       <span style="font-size:10.5px;color:#BBB">toque para ver/editar por ambiente</span>
@@ -398,8 +395,8 @@
 
 <!-- BARRA FIXA DE AÇÃO (Calcular/Limpar sempre visíveis) -->
 <div id="sticky-actions" style="position:fixed;bottom:0;left:0;right:0;background:#FFF;border-top:2px solid var(--gold);padding:10px 20px;display:flex;gap:10px;justify-content:center;z-index:500;box-shadow:0 -4px 16px rgba(0,0,0,.08)">
-  <button class="btn" onclick="calcular()" style="flex:1;max-width:260px">⚡ Calcular</button>
-  <button class="btn-outline" onclick="onLimparClick()" style="flex:0 0 auto">↺ Limpar</button>
+  <button class="btn" onclick="calcular()"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg>Calcular</button>
+  <button class="btn-outline" onclick="onLimparClick()" style="flex:0 0 auto"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Limpar</button>
 </div>
 <div style="height:150px"></div>
 <script src="js/pwa.js"></script>

@@ -1,0 +1,230 @@
+/* ═══════════════════════════════════════════════════════════════
+   TEMA CDP SISTEMA — visual novo (Etapa A)
+   Carregado DEPOIS de app.css: só muda a aparência, nunca o cálculo.
+   Base: brandbook da Central das Persianas + clima "soft" aprovado
+   no protótipo (cantos redondos, botões em pílula, blocos suaves).
+   Para voltar ao visual antigo, basta tirar a linha deste arquivo
+   do index.html.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root{
+  /* cores do brandbook */
+  --vinho:#5A1524; --vinho-suave:#F2EAEC; --vinho-escuro:#3E0E18;
+  --linho:#EEDFCB; --areia:#F6EBD9; --escuro:#2B221C;
+  --fundo:#F7F4F1; --superficie:#FFFFFF; --linha:#DED8D3; --linha-suave:#EDE8E4;
+  --tinta:#201F1D; --tinta-suave:#5E574F; --tinta-fraca:#8A8178;
+  --dourado-texto:#7D5411; --verde:#3F6B4F; --verde-suave:#E3ECE6;
+
+  /* variáveis antigas do app, reapontadas para as novas */
+  --bg:var(--fundo); --s1:var(--superficie); --s2:var(--superficie); --s3:#FBFAF8; --s4:var(--linha-suave);
+  --border:var(--linha); --border2:#CFC7C0;
+  --gold:var(--vinho); --gold2:var(--vinho-suave);
+  --tx:var(--tinta); --tx2:var(--tinta-suave); --tx3:var(--tinta-fraca);
+  --grn:var(--verde); --red:#B3261E; --warn:var(--dourado-texto);
+  --real:#5A4A3A; --real-bg:#F4F0EC; --real-bd:#D9CFC5;
+  --dec:var(--dourado-texto); --dec-bg:var(--areia); --dec-bd:#E5D2B0;
+
+  --r:22px; --r2:12px;
+  --sans:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sombra:0 12px 32px rgba(45,43,43,.10);
+}
+
+/* ─── Base ─── */
+body{font-family:var(--sans)!important;background:var(--fundo)!important;color:var(--tinta);font-size:15px;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:var(--sans)!important}
+.ic{display:inline-block;vertical-align:-3px;flex-shrink:0}
+::selection{background:var(--vinho-suave)}
+
+/* ─── Login ─── */
+#login-screen{background:var(--fundo)!important;font-family:var(--sans)!important}
+#login-screen > div{border-radius:24px!important;padding:36px 28px!important;box-shadow:var(--sombra)!important;border:1px solid var(--linha)}
+#login-screen label{font-size:13px!important;text-transform:none!important;letter-spacing:0!important;color:var(--tinta-suave)!important;font-weight:600!important}
+#login-screen input{border-radius:12px!important;border:1px solid var(--linha)!important;padding:13px 14px!important;font-size:16px!important}
+#login-screen input:focus{outline:none;border-color:var(--vinho)!important;box-shadow:0 0 0 3px rgba(90,21,36,.12)}
+#login-btn{border-radius:999px!important;padding:14px!important;font-size:15px!important;font-weight:600!important;box-shadow:0 6px 18px rgba(90,21,36,.22)}
+
+/* ─── Cabeçalho ─── */
+.site-header{background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--linha);position:sticky;top:0;z-index:200}
+.site-header-in{max-width:1160px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px}
+.site-header img{height:30px;width:auto;display:block}
+.site-header .usuario{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--tinta-suave)}
+.site-header .usuario-nome{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--fundo);color:var(--tinta);font-weight:600}
+.btn-sair{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--linha);background:#fff;color:var(--tinta-suave);font-size:13px;font-weight:500;cursor:pointer}
+.btn-sair:hover{border-color:var(--vinho);color:var(--vinho)}
+
+/* ─── Abas ─── */
+.tabs-nav{background:transparent!important;border-bottom:none!important;padding:12px 16px 4px!important;gap:6px!important;max-width:1160px;margin:0 auto;scrollbar-width:none}
+.tabs-nav::-webkit-scrollbar{display:none}
+.tab-btn{height:42px;padding:0 16px!important;border-radius:999px!important;border:1px solid transparent!important;color:var(--tinta-suave)!important;font-size:14px!important;font-weight:500!important;display:inline-flex!important;gap:8px!important;flex-shrink:0}
+.tab-btn:hover:not(.active){background:#fff;border-color:var(--linha)!important;color:var(--tinta)!important}
+.tab-btn.active{background:var(--tinta)!important;color:#fff!important;font-weight:600!important}
+.btn-novo-orc{height:42px;margin:0 4px 0 0!important;padding:0 18px!important;border-radius:999px!important;border:none!important;background:var(--vinho)!important;color:#fff!important;font-size:14px!important;font-weight:600!important;display:inline-flex!important;align-items:center;gap:8px;flex-shrink:0;box-shadow:0 6px 18px rgba(90,21,36,.22)}
+.btn-novo-orc:hover{background:var(--vinho-escuro)!important}
+.tabs-nav-divider{display:none}
+
+/* ─── Barra do cliente ─── */
+.cli-bar{background:transparent;padding:8px 16px 4px}
+.cli-bar-in{max-width:1160px;margin:0 auto;background:#fff;border:1px solid var(--linha);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.cli-bar-titulo{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--tinta)}
+.cli-bar-titulo .ic{color:var(--vinho)}
+.cli-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.cli-in{height:48px;padding:0 14px;border:1px solid var(--linha);border-radius:12px;font-size:15px;font-weight:500;background:#fff;color:var(--tinta);min-width:0}
+.cli-in.principal{border-color:#CFC7C0;font-weight:600}
+.cli-in-sec{height:42px;font-size:14px;font-weight:400;color:var(--tinta-suave);background:var(--s3)}
+.cli-in::placeholder{color:var(--tinta-fraca);font-weight:400}
+.cli-in:focus{outline:none;border-color:var(--vinho);box-shadow:0 0 0 3px rgba(90,21,36,.12)}
+
+/* ─── Estrutura e cartões ─── */
+.wrap{padding:12px 16px 20px!important}
+.card{border-radius:var(--r)!important;padding:22px!important;margin-bottom:14px!important;border:1px solid var(--linha)!important;background:#fff}
+.card-title{font-family:var(--sans)!important;font-size:16px!important;font-weight:700!important;color:var(--tinta)!important;gap:10px!important;margin-bottom:4px!important}
+.card-title::before{display:none!important}
+.card-title .ic-tile{width:34px;height:34px;border-radius:11px;background:var(--vinho-suave);color:var(--vinho);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-sub{font-size:13px!important;color:var(--tinta-suave)!important;padding-left:0!important;margin-bottom:16px!important;line-height:1.45}
+#ambiente-card{background:var(--linho)!important;border-color:transparent!important}
+#ambiente-card .card-title .ic-tile{background:#fff}
+#ambiente-card input{background:#fff!important}
+.card-medida{background:#fff}
+
+/* ─── Campos ─── */
+label{font-size:13px!important;font-weight:600!important;color:var(--tinta-suave)!important;text-transform:none!important;letter-spacing:0!important}
+select,input[type=number],input[type=text],input[type=date],textarea{background:#fff!important;border:1px solid var(--linha)!important;border-radius:12px!important;color:var(--tinta)!important;padding:12px 14px!important;font-size:16px!important;min-height:48px}
+textarea{min-height:90px;line-height:1.5}
+select{appearance:none;-webkit-appearance:none;padding-right:38px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235E574F' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 14px center!important}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--vinho)!important;box-shadow:0 0 0 3px rgba(90,21,36,.12)}
+select:disabled,input:disabled{opacity:.45;background-color:var(--s3)!important}
+.fg{gap:12px!important}
+.fl{gap:6px!important}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--vinho)}
+
+/* ─── Botões de fábrica ─── */
+.fab-row{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px!important}
+.fab-btn{border-radius:16px!important;border:1px solid var(--linha)!important;background:#fff!important;padding:14px 16px!important;text-align:left!important;min-height:76px}
+.fab-btn:hover{border-color:#CFC7C0!important}
+.fab-btn-name{font-size:15px!important;font-weight:700!important;color:var(--tinta)!important;display:flex;align-items:center;gap:8px}
+.fab-btn-sub{font-size:12.5px!important;color:var(--tinta-suave)!important;line-height:1.35;margin-top:2px}
+.fab-btn.sel-real,.fab-btn.sel-dec,.fab-btn.sel-cdp{border:1.5px solid var(--vinho)!important;background:var(--vinho-suave)!important}
+.fab-btn.sel-real .fab-btn-name,.fab-btn.sel-dec .fab-btn-name,.fab-btn.sel-cdp .fab-btn-name{color:var(--vinho)!important}
+#fb-servico{opacity:1!important;border-style:dashed!important;background:var(--s3)!important}
+#fb-servico .fab-btn-name{color:var(--tinta-suave)!important}
+
+/* ─── Chips, avisos e observações ─── */
+.chip{border-radius:999px!important;padding:7px 13px!important;font-size:13px!important;gap:6px!important;border:none!important}
+.chip-blue,.chip-gold{background:var(--vinho-suave)!important;color:var(--vinho)!important}
+.chip-orange,.chip-warn{background:var(--areia)!important;color:var(--dourado-texto)!important}
+.chip-red{background:#FBE9E7!important;color:var(--red)!important}
+.alert{border-radius:14px!important;padding:12px 14px!important;font-size:13.5px!important;background:#FBE9E7!important;border:1px solid #F2C4BE!important;color:#8C1D18!important}
+.obs-box{border-radius:16px!important;background:var(--s3)!important;border:1px solid var(--linha-suave)!important;padding:14px 16px!important}
+.obs-box h4{font-size:13px!important;text-transform:none!important;letter-spacing:0!important;color:var(--tinta)!important;font-weight:700!important;display:flex;align-items:center;gap:6px}
+.obs-li{font-size:13px!important;line-height:1.5!important;margin-bottom:5px!important}
+.obs-li::before{color:var(--vinho)!important}
+.disc-field{border-radius:999px!important;background:var(--vinho-suave)!important;border:none!important;padding:6px 12px!important}
+.disc-field span{color:var(--vinho)!important;font-size:13px!important}
+.disc-field input{background:#fff!important;border:1px solid var(--linha)!important;color:var(--tinta)!important;min-height:32px;padding:4px 8px!important;font-size:14px!important;width:60px!important}
+.disc-label{font-size:13px!important}
+
+/* ─── Acessórios ─── */
+.acc-sec-hd{font-size:13px!important;text-transform:none!important;letter-spacing:0!important;color:var(--tinta)!important;font-weight:700!important}
+.acc-item{border-radius:14px!important;background:#fff!important;padding:12px!important}
+.acc-item.checked{border-color:var(--vinho)!important;background:var(--vinho-suave)!important}
+.ai-label{font-size:14px!important}
+.ai-note{font-size:12px!important}
+.ai-price{color:var(--vinho)!important;font-size:13px!important}
+.ai-controls select{min-height:38px;padding:6px 32px 6px 10px!important;font-size:14px!important;width:auto!important}
+.ai-controls input[type=number]{min-height:38px;padding:6px 8px!important;font-size:14px!important;width:70px!important}
+
+/* ─── Botões ─── */
+.btn{background:var(--vinho)!important;border-radius:999px!important;padding:13px 24px!important;font-size:15px!important;font-weight:600!important;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 18px rgba(90,21,36,.22)}
+.btn:hover{background:var(--vinho-escuro)!important;opacity:1!important}
+.btn-sm{padding:10px 18px!important;font-size:14px!important}
+.btn-outline,.btn-compare{border-radius:999px!important;border:1px solid var(--linha)!important;background:#fff!important;color:var(--tinta)!important;padding:12px 20px!important;font-size:14px!important;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-outline:hover,.btn-compare:hover{border-color:var(--vinho)!important;color:var(--vinho)!important}
+.btn-row{gap:10px!important}
+
+/* ─── Resultado ─── */
+.rcard{border-radius:18px!important;padding:18px!important;border:1px solid var(--linha)!important;background:#fff!important}
+.rc-fab{font-size:12px!important;letter-spacing:.12em!important;color:var(--dourado-texto)!important}
+.rc-prod{font-size:14px!important;color:var(--tinta-suave)!important}
+.rc-lbl{font-size:12px!important;text-transform:none!important;letter-spacing:0!important}
+.rc-cost{font-family:var(--serif);font-size:38px!important;font-weight:600!important;color:var(--vinho)!important;line-height:1}
+.bdown{background:var(--s3)!important;border:1px solid var(--linha-suave);border-radius:14px!important;padding:12px!important}
+.brow{border-bottom:1px solid var(--linha-suave)!important;font-size:13.5px!important;padding:5px 0!important}
+.brow:last-child{border-top:1px solid var(--linha)!important}
+.brow.cmd-row,.brow.red-row{background:var(--areia)!important;border-radius:10px!important;padding:6px 10px!important}
+.brow.cmd-row .k,.brow.cmd-row .v,.brow.red-row .k,.brow.red-row .v{color:var(--dourado-texto)!important}
+.brow.total-row .v{font-size:16px!important}
+.brow .k{display:inline-flex;align-items:center;gap:6px}
+.sell-grid{gap:10px!important}
+.sell-item{border-radius:16px!important;background:var(--s3)!important;border:1px solid var(--linha-suave)!important;padding:14px!important;text-align:left!important}
+.sell-item.avista{background:var(--vinho-suave)!important;border-color:transparent!important}
+.sell-lbl{font-size:12.5px!important;text-transform:none!important;letter-spacing:0!important;color:var(--tinta-suave)!important}
+.sell-price{font-size:22px!important;font-weight:700!important;color:var(--tinta)!important}
+.sell-item.avista .sell-price{font-family:var(--serif);font-size:32px!important;font-weight:600!important;color:var(--vinho)!important}
+.sell-note{font-size:12px!important}
+
+/* carrinho do orçamento dentro do resultado */
+#cart-bar{background:#fff!important;border:1px solid var(--linha)!important;border-radius:18px!important;padding:14px 16px!important}
+#cart-editing-banner{border-radius:12px!important;background:var(--areia)!important;border:none!important;color:var(--dourado-texto)!important;font-size:13px!important;padding:8px 12px!important}
+
+/* ─── Comparação ─── */
+.cmp-divider-txt{font-size:12px!important;font-weight:600;color:var(--tinta-suave)!important;display:inline-flex;align-items:center;gap:6px}
+.fair-warn{border-radius:14px!important;background:var(--areia)!important;border:none!important;color:var(--dourado-texto)!important;font-size:13px!important}
+.cbar-wrap{border-radius:18px!important}
+.cbar-track{height:8px!important;border-radius:999px!important}
+.cbar-fill{border-radius:999px!important}
+.cbar-fill.r{background:var(--real)!important}.cbar-fill.d{background:var(--vinho)!important}
+.cdiff{border-radius:14px!important}
+
+/* ─── Orçamentos salvos ─── */
+.hist-item{border-radius:18px!important;padding:16px 18px!important;gap:14px!important;flex-wrap:wrap}
+.hist-item:hover{border-color:#CFC7C0!important;box-shadow:0 6px 18px rgba(45,43,43,.06)}
+.hist-ref{font-size:12.5px!important;color:var(--tinta-fraca)!important;font-weight:600!important;min-width:0!important}
+.hist-client{font-size:16px!important}
+.hist-detail{font-size:13px!important}
+.hist-cost{font-size:16px!important;color:var(--tinta)!important}
+.hist-date{font-size:12px!important;display:inline-flex;align-items:center;gap:4px}
+.hist-del{width:38px;height:38px;border-radius:999px!important;border:1px solid var(--linha)!important;display:inline-flex;align-items:center;justify-content:center}
+.hist-del:hover{border-color:var(--red)!important}
+.hist-titulo{font-family:var(--serif);font-size:32px;font-weight:600;color:var(--tinta);line-height:1}
+
+/* ─── Barras fixas (resumo do orçamento e Calcular) ─── */
+#orc-resumo-bar{bottom:78px!important;left:12px!important;right:12px!important;border-radius:18px!important;background:var(--escuro)!important;box-shadow:0 10px 28px rgba(43,34,28,.28);overflow:hidden}
+#orc-resumo-bar > div:first-child{padding:12px 18px!important;font-size:14px!important;gap:10px}
+#orc-resumo-contador{display:inline-flex;align-items:center;gap:6px}
+#orc-resumo-painel{border-top:none!important;border-radius:0 0 18px 18px}
+#sticky-actions{background:rgba(255,255,255,.94)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--linha)!important;box-shadow:0 -8px 24px rgba(45,43,43,.06)!important;padding:12px 16px calc(12px + env(safe-area-inset-bottom))!important}
+#sticky-actions .btn{flex:1;max-width:320px}
+
+/* ─── Proposta (só a tela de configuração; o documento em si não muda nesta etapa) ─── */
+#p-from-calc{border-radius:14px!important;background:var(--vinho-suave)!important;border:none!important;color:var(--vinho)!important;font-size:13.5px!important;display:flex;gap:8px;align-items:flex-start}
+
+/* ─── Celular ─── */
+@media (max-width:560px){
+  .site-header-in{padding:10px 16px}
+  .site-header img{height:26px}
+  .site-header .usuario-nome{display:none}
+  .card{padding:18px!important}
+  .tab-btn{padding:0 14px!important}
+  .cli-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cli-grid .cli-in.principal:first-child{grid-column:span 2}
+  .sell-grid{grid-template-columns:1fr 1fr!important}
+  .sell-item.avista{grid-column:span 2}
+}
+.sell-item.avista{order:-1}
+
+/* ─── Ajustes da revisão visual ─── */
+header.site-header{display:block!important;padding:0!important;gap:0!important}
+.site-header-in{width:100%;box-sizing:border-box}
+.cli-bar-in{max-width:1128px}
+.lbl-curto{display:none}
+#tab-hist .wrap > div:first-child{flex-wrap:wrap;gap:12px}
+@media (max-width:560px){
+  .tabs-nav{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible!important;padding:10px 16px 4px!important}
+  .btn-novo-orc{grid-column:1 / -1;justify-content:center;margin:0 0 2px!important}
+  .tab-btn{justify-content:center;padding:0 8px!important;font-size:13.5px!important;gap:6px!important}
+  .lbl-full{display:none}.lbl-curto{display:inline}
+  .cli-grid .cli-in.principal:nth-child(4){grid-column:span 2}
+  .cli-grid .cli-in-sec:nth-child(3){grid-column:span 2}
+  .hist-titulo{font-size:28px}
+}
