@@ -23,6 +23,7 @@ function voltarParaLista(){
 }
 
 function abrirPasta(){
+  pararEdicaoItem();               // voltou sem substituir → o item original fica como estava
   irParaTab('orc');
   renderPasta();
   window.scrollTo({top:0});
@@ -74,6 +75,13 @@ function renderPasta(){
   document.querySelectorAll('#pasta-lista textarea').forEach(autoAltura);
   renderEvolucao();
   renderJornada();
+  renderStatus();
+  renderEncerrar();
+  const trav = orcTravado();
+  document.body.classList.toggle('orc-travado', trav);
+  document.querySelectorAll('#pasta-lista textarea').forEach(t => { t.readOnly = trav; });
+  if(trav) $('pasta-etapa').disabled = true;
+  $('pasta-salvar').innerHTML = ic('ok',17) + (trav && !ORC_SUJO ? ' Fechar' : ' Salvar e fechar');
 
   const tAv = CART.reduce((s,i)=>s+(i.avista||0),0);
   const tCa = CART.reduce((s,i)=>s+(i.cartao||0),0);
@@ -194,6 +202,8 @@ function toggleDadosCliente(){
 }
 
 function adicionarItemPasta(){
+  if(orcTravado()){ alert('Este orçamento está ' + (ETAPA_NOME[orcEmEdicao().etapa]||'').toLowerCase() + '. Reabra para adicionar itens.'); return; }
+  pararEdicaoItem();
   resetCalc();
   document.body.classList.remove('cli-aberto');
   irParaTab('calc');
@@ -204,6 +214,7 @@ function adicionarItemPasta(){
 function abrirPropostaPasta(){ switchTab('proposta'); window.scrollTo({top:0}); }
 
 function salvarEFechar(){
+  if(orcTravado() && !ORC_SUJO){ voltarParaLista(); return; }
   if(!CART.length){
     if(EDITING_ORC_ID && !ORC_SUJO){ voltarParaLista(); return; }
     alert('Adicione pelo menos um item antes de salvar.');
@@ -324,4 +335,149 @@ function abrirOutroOrc(id){
   if(!confirmarSairOrc()) return;
   ORC_SUJO = false;
   reopenOrc(id);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// FECHAR · PERDIDO · REABRIR (Etapa C4)
+// Fechado/perdido = travado (o banco também recusa mudar itens/valores de um fechado).
+// ═══════════════════════════════════════════════════════
+const MOTIVOS_PERDA = ['Preço', 'Sem retorno', 'Escolheu concorrente', 'Desistiu', 'Outro'];
+
+function orcTravado(){ const e = orcEmEdicao(); return !!e && (e.etapa === 'fechado' || e.etapa === 'perdido'); }
+function dataBR(iso){ if(!iso) return ''; const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('pt-BR'); }
+
+function renderStatus(){
+  const box = $('pasta-status');
+  const e = orcEmEdicao();
+  if(!e || !orcTravado()){ box.innerHTML = ''; return; }
+  if(e.etapa === 'fechado'){
+    box.innerHTML = `<div class="pasta-fechado">
+      <div class="pasta-fechado-tit">${ic('ok',18)} Fechado${e.fechadoEm ? ' em ' + dataBR(e.fechadoEm) : ''}</div>
+      <div class="pasta-fechado-sub">${e.pedidoTiny ? 'Pedido de venda Tiny <strong>#' + escHtml(e.pedidoTiny) + '</strong>' : 'Nº do pedido de venda no Tiny ainda não informado.'} Itens e valores travados.</div>
+      <div class="pasta-fechado-acoes">
+        <button type="button" class="btn-outline" onclick="informarPedidoTiny()">${ic('editar',15)} ${e.pedidoTiny ? 'Alterar nº do pedido' : 'Informar nº do pedido'}</button>
+        <button type="button" class="btn-outline" onclick="reabrirOrcamento()">${ic('limpar',15)} Reabrir</button>
+      </div></div>`;
+  } else {
+    box.innerHTML = `<div class="pasta-fechado perdido">
+      <div class="pasta-fechado-tit">${ic('fechar',18)} Perdido${e.motivoPerda ? ' · ' + escHtml(e.motivoPerda) : ''}</div>
+      <div class="pasta-fechado-sub">Fora do funil, mas guardado. Itens e valores travados.</div>
+      <div class="pasta-fechado-acoes"><button type="button" class="btn-outline" onclick="reabrirOrcamento()">${ic('limpar',15)} Reabrir</button></div></div>`;
+  }
+}
+
+function renderEncerrar(){
+  const box = $('pasta-encerrar');
+  if(!EDITING_ORC_ID || orcTravado()){ box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="pasta-encerrar">
+    <button type="button" class="btn-fechar-orc" onclick="fecharOrcamento()">${ic('ok',17)} Marcar como fechado</button>
+    <button type="button" class="btn-outline btn-perdido" onclick="perdidoOrcamento()">${ic('fechar',16)} Marcar como perdido</button>
+  </div>`;
+}
+
+// ── janela de confirmação ──
+let MODAL_OK = null;
+function abrirModal(titulo, corpoHtml, rotuloOk, aoConfirmar){
+  $('modal-titulo').textContent = titulo;
+  $('modal-corpo').innerHTML = corpoHtml;
+  $('modal-erro').textContent = '';
+  const ok = $('modal-ok'); ok.innerHTML = rotuloOk; ok.disabled = false;
+  MODAL_OK = aoConfirmar;
+  ok.onclick = async () => { ok.disabled = true; try{ await MODAL_OK(); } finally { ok.disabled = false; } };
+  $('modal').hidden = false;
+  setTimeout(() => { const i = document.querySelector('#modal-corpo input:not([type=radio])'); if(i) i.focus(); }, 50);
+}
+function fecharModal(){ $('modal').hidden = true; MODAL_OK = null; }
+
+// grava o orçamento aberto (itens + cliente) junto com campos extras, sem fechar a pasta
+async function gravarOrcamentoAtual(extra){
+  syncCliente();
+  const c = STATE.cliente || {};
+  const corpo = Object.assign({
+    ref: c.tiny || '', client: c.nome, items: CART.map(i => ({...i})),
+    total_tabela: CART.reduce((s,i)=>s+(i.tabela||0),0),
+    total_cartao: CART.reduce((s,i)=>s+(i.cartao||0),0),
+    total_avista: CART.reduce((s,i)=>s+(i.avista||0),0),
+    telefone: c.tel || null, bairro: c.bairro || null
+  }, extra || {});
+  return patchOrcamento(corpo);
+}
+async function patchOrcamento(corpo){
+  const res = await fetch(SB_URL + '/rest/v1/orcamentos?id=eq.' + EDITING_ORC_ID, {
+    method: 'PATCH', headers: { ...SB_HEADERS, 'Prefer': 'return=representation' }, body: JSON.stringify(corpo)
+  });
+  if(!res.ok){ const t = await res.text(); throw new Error(t.includes('está fechado') ? 'fechado' : res.status + ' ' + t); }
+  const j = await res.json(); const linha = Array.isArray(j) ? j[0] : j;
+  const e = orcEmEdicao();
+  if(e && linha){
+    Object.assign(e, { etapa: linha.etapa, pedidoTiny: linha.pedido_tiny || '', fechadoEm: linha.fechado_em || null,
+      motivoPerda: linha.motivo_perda || '', client: linha.client, telefone: linha.telefone || '', bairro: linha.bairro || '',
+      ref: linha.ref || '', items: linha.items, totalTabela: Number(linha.total_tabela), totalCartao: Number(linha.total_cartao), totalAvista: Number(linha.total_avista) });
+  }
+  return linha;
+}
+
+function fecharOrcamento(){
+  const e = orcEmEdicao(); if(!e) return;
+  if(!CART.length){ alert('Adicione pelo menos um item antes de fechar.'); return; }
+  if(!confirmarPendencias(CART, 'Fechar o orçamento')) return;
+  syncCliente();
+  abrirModal('Marcar ' + numCDP(e.numero) + ' como fechado',
+    `<p>O cliente aprovou? O orçamento fica <strong>travado</strong>: itens e valores não mudam mais (dá para reabrir se precisar).${ORC_SUJO ? '<br><br>As alterações que você fez agora também serão salvas.' : ''}</p>
+     <label class="novo-campo"><span>Nº do pedido de venda no Tiny <em>(opcional — dá para informar depois)</em></span>
+       <input type="text" id="modal-pedido" inputmode="numeric" autocomplete="off" value="${escHtml(e.pedidoTiny || '')}"></label>`,
+    ic('ok',17) + ' Confirmar fechamento',
+    async () => {
+      try{
+        await gravarOrcamentoAtual({ etapa: 'fechado', pedido_tiny: $('modal-pedido').value.trim() || null, motivo_perda: null });
+      } catch(err){ $('modal-erro').textContent = 'Não foi possível fechar. Verifique a conexão e tente de novo.'; return; }
+      ORC_SUJO = false; fecharModal(); renderPasta(); window.scrollTo({top:0, behavior:'smooth'});
+      avisoTopo(ic('ok',16) + ' <strong>' + numCDP(e.numero) + '</strong> fechado. Itens e valores travados.');
+    });
+}
+
+function perdidoOrcamento(){
+  const e = orcEmEdicao(); if(!e) return;
+  abrirModal('Marcar ' + numCDP(e.numero) + ' como perdido',
+    `<p>Sai do funil, mas fica guardado (dá para reabrir). Por que perdemos?</p>
+     <div class="modal-motivos" role="radiogroup">${MOTIVOS_PERDA.map(m => `<label class="motivo"><input type="radio" name="motivo" value="${m}"><span>${m}</span></label>`).join('')}</div>
+     <label class="novo-campo" id="modal-outro-wrap" hidden><span>Qual motivo?</span><input type="text" id="modal-outro" autocomplete="off" placeholder="Ex.: mudou de casa"></label>`,
+    ic('fechar',16) + ' Marcar como perdido',
+    async () => {
+      const sel = document.querySelector('#modal-corpo input[name=motivo]:checked');
+      if(!sel){ $('modal-erro').textContent = 'Escolha um motivo.'; return; }
+      let motivo = sel.value;
+      if(motivo === 'Outro'){ const t = $('modal-outro').value.trim(); if(!t){ $('modal-erro').textContent = 'Escreva o motivo.'; return; } motivo = 'Outro: ' + t; }
+      try{
+        await gravarOrcamentoAtual({ etapa: 'perdido', motivo_perda: motivo });
+      } catch(err){ $('modal-erro').textContent = 'Não foi possível salvar. Verifique a conexão e tente de novo.'; return; }
+      ORC_SUJO = false; fecharModal(); renderPasta(); window.scrollTo({top:0, behavior:'smooth'});
+      avisoTopo('<strong>' + numCDP(e.numero) + '</strong> marcado como perdido (' + escHtml(motivo) + ').');
+    });
+  document.querySelectorAll('#modal-corpo input[name=motivo]').forEach(r => r.addEventListener('change', () => {
+    $('modal-outro-wrap').hidden = r.value !== 'Outro' || !r.checked;
+  }));
+}
+
+function informarPedidoTiny(){
+  const e = orcEmEdicao(); if(!e) return;
+  abrirModal('Pedido de venda no Tiny',
+    `<label class="novo-campo"><span>Nº do pedido de venda (${numCDP(e.numero)})</span>
+       <input type="text" id="modal-pedido" inputmode="numeric" autocomplete="off" value="${escHtml(e.pedidoTiny || '')}"></label>`,
+    ic('salvar',16) + ' Salvar',
+    async () => {
+      try{ await patchOrcamento({ pedido_tiny: $('modal-pedido').value.trim() || null }); }
+      catch(err){ $('modal-erro').textContent = 'Não foi possível salvar. Verifique a conexão e tente de novo.'; return; }
+      fecharModal(); renderPasta(); avisoTopo('Nº do pedido salvo.');
+    });
+}
+
+async function reabrirOrcamento(){
+  const e = orcEmEdicao(); if(!e) return;
+  if(!confirm('Reabrir o ' + numCDP(e.numero) + '?\n\nEle volta para a etapa "Orçamento" e os itens e valores podem ser alterados de novo.' + (e.pedidoTiny ? '\n\nO nº do pedido do Tiny (#' + e.pedidoTiny + ') fica guardado.' : ''))) return;
+  try{ await patchOrcamento({ etapa: 'orcamento', motivo_perda: null }); }
+  catch(err){ alert('⚠️ Não foi possível reabrir. Verifique a conexão e tente de novo.'); return; }
+  renderPasta();
+  avisoTopo('<strong>' + numCDP(e.numero) + '</strong> reaberto. Pode editar.');
 }

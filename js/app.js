@@ -900,6 +900,10 @@ async function sbFetchHistory(){
     origem: r.origem || null,
     comoComecou: r.como_comecou || null,
     anteriorId: r.anterior_id || null,
+    pedidoTiny: r.pedido_tiny || '',
+    fechadoEm: r.fechado_em || null,
+    motivoPerda: r.motivo_perda || '',
+    updatedAt: r.updated_at || null,
     createdAt: r.created_at || null
   }));
 }
@@ -1031,6 +1035,8 @@ function filtrarHistorico(){
           ${evoluidoPara(e.id) ? '<span class="hist-evol">'+ic('raio',13)+' Evoluído → '+numCDP(evoluidoPara(e.id).numero)+'</span>' : ''}
           ${e.anteriorId && HISTORY_CACHE.find(x=>x.id===e.anteriorId) ? '<span class="hist-tiny">veio do '+numCDP(HISTORY_CACHE.find(x=>x.id===e.anteriorId).numero)+'</span>' : ''}
           ${e.ref ? '<span class="hist-tiny">Tiny #'+escHtml(e.ref)+'</span>' : ''}
+          ${e.pedidoTiny ? '<span class="hist-tiny">Pedido #'+escHtml(e.pedidoTiny)+'</span>' : ''}
+          ${e.etapa==='perdido' && e.motivoPerda ? '<span class="hist-tiny">'+escHtml(e.motivoPerda)+'</span>' : ''}
         </div>
       </div>
       <div class="hist-valor">
@@ -1613,7 +1619,8 @@ let CART = [];
 // Quando não-nulo, "Salvar Orçamento" ATUALIZA esse id (Supabase) em vez de criar um novo —
 // setado por reopenOrc() ao reabrir um orçamento salvo, limpo por novoOrcamento()/clearCart()
 let EDITING_ORC_ID = null;
-let ORC_SUJO = false; // true = orçamento aberto tem alteração que ainda não foi salva
+let ORC_SUJO = false;
+let EDITANDO_ITEM_ID = null; // item da pasta sendo editado na calculadora (Adicionar = substituir) // true = orçamento aberto tem alteração que ainda não foi salva
 
 function baseDetalhamento(prod, w, h, jw, jh){
   const wf = w.toFixed(2).replace('.',',');
@@ -1652,8 +1659,9 @@ function confirmarPendencias(items, acaoLabel){
 function addToCart(){
   if(!STATE.lastResult){ alert('Calcule um produto primeiro.'); return; }
   const r = STATE.lastResult;
-  const mesmoAmbiente = CART.filter(i => i.ambiente === r.ambiente).length;
-  const sugestao = r.ambiente + (mesmoAmbiente > 0 ? ' - Item ' + (mesmoAmbiente+1) : '');
+  const itemEditado = EDITANDO_ITEM_ID ? CART.find(x => x.id === EDITANDO_ITEM_ID) : null;
+  const mesmoAmbiente = CART.filter(i => i.ambiente === r.ambiente && i !== itemEditado).length;
+  const sugestao = (itemEditado && itemEditado.ambiente === r.ambiente) ? itemEditado.label : r.ambiente + (mesmoAmbiente > 0 ? ' - Item ' + (mesmoAmbiente+1) : '');
   const label = prompt('Nome deste item (ajuste se for outro vão/janela ou outra opção do mesmo ambiente):', sugestao) || sugestao;
   const detBox = $('item-detalhamento');
   const baseDetail = (detBox && detBox.value.trim()) ? detBox.value.trim() : baseDetalhamento(r.prod, r.w, r.h);
@@ -1663,7 +1671,7 @@ function addToCart(){
 
   if(!confirmarPendencias([{label, detail: fullDetail}], 'Adicionar ao orçamento')) return;
 
-  CART.push({
+  const novoItem = ({
     id: Date.now(),
     label,
     ambiente: r.ambiente || '',
@@ -1681,6 +1689,9 @@ function addToCart(){
     tabelaVer: (typeof TABELAS_INFO !== 'undefined' && TABELAS_INFO[r.fab]) ? TABELAS_INFO[r.fab].tabela : null, // com qual tabela foi calculado
     full: r
   });
+  const idxEd = itemEditado ? CART.indexOf(itemEditado) : -1;
+  if(idxEd >= 0) CART[idxEd] = novoItem; else CART.push(novoItem);
+  pararEdicaoItem();
 
   updateCartBar();
   EXTRAS = []; renderExtras();
@@ -1689,7 +1700,7 @@ function addToCart(){
 
   // C3b: depois de adicionar, volta para a pasta do orçamento
   abrirPasta();
-  avisoTopo('Item adicionado em <strong>' + escHtml(r.ambiente || label) + '</strong>.');
+  avisoTopo((idxEd >= 0 ? 'Item substituído: <strong>' : 'Item adicionado em <strong>') + escHtml(idxEd >= 0 ? label : (r.ambiente || label)) + '</strong>.');
   return;
 
   // Visual feedback (antigo, não usado desde a C3b)
@@ -1718,7 +1729,7 @@ function duplicarItemCarrinho(id){
 function editarItemCarrinho(id){
   const item = CART.find(x => x.id === id);
   if(!item) return;
-  if(!confirm('Isso remove o item do orçamento e traz os dados pra Calculadora — fábrica, produto, coleção, medidas, acessórios e peças adicionais são restaurados automaticamente. Continuar?')) return;
+  if(!confirm('Abrir "' + item.label + '" na calculadora para editar?\n\nO item continua no orçamento. Quando você tocar em "Substituir item", ele é trocado pela versão nova; se desistir, nada muda.')) return;
 
   const full = item.full || {};
 
@@ -1785,10 +1796,12 @@ function editarItemCarrinho(id){
   $('item-detalhamento').value = item.detail || '';
   $('item-detalhamento').dataset.editedManually = '1';
 
-  CART = CART.filter(x => x.id !== id);
-  updateCartBar();
+  // C4: o item NÃO sai mais do orçamento; "Substituir item" troca no mesmo lugar
+  EDITANDO_ITEM_ID = id;
+  const btnAdd = document.querySelector('button.btn[onclick="addToCart()"]');
+  if(btnAdd) btnAdd.innerHTML = ic('ok',17) + ' Substituir item';
   window.scrollTo({top:0, behavior:'smooth'});
-  alert('📝 Item carregado na Calculadora com fábrica, produto, coleção, medidas' + (item.fab!=='cdp' ? ', acessórios' : '') + ' e peças adicionais restaurados. Confira e clique em Adicionar ao Orçamento.' + avisoDesconto);
+  alert('📝 Item carregado na Calculadora com fábrica, produto, coleção, medidas' + (item.fab!=='cdp' ? ', acessórios' : '') + ' e peças adicionais restaurados. Confira, recalcule se precisar e toque em Substituir item.' + avisoDesconto);
 }
 
 function toggleResumoOrc(){
@@ -1966,7 +1979,14 @@ function novoOrcamento(){
 }
 
 // Zera carrinho, cliente e calculadora (sem perguntar)
+function pararEdicaoItem(){
+  EDITANDO_ITEM_ID = null;
+  const btnAdd = document.querySelector('button.btn[onclick="addToCart()"]');
+  if(btnAdd) btnAdd.innerHTML = ic('mais',17) + ' Adicionar ao orçamento';
+}
+
 function limparOrcamentoEmAndamento(){
+  pararEdicaoItem();
   CART = [];
   EDITING_ORC_ID = null;
   ORC_SUJO = false;

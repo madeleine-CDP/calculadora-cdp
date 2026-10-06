@@ -81,7 +81,7 @@ Dentro do código:
 - `FABRIC_W_DECORE`, `TUBOS_REAL`: larguras de tecido e tubos.
 - `STATE`: estado da tela. `calcular()` é o cálculo principal.
 - Carrinho e orçamentos: `editarItemCarrinho()` (restaura cascata, acessórios via `accSelections`, extras) e `reopenOrc()` (usa `EDITING_ORC_ID` para ATUALIZAR em vez de duplicar).
-- Fluxo de telas: `irParaTab()` troca a tela (`hist`, `novo`, `orc`, `calc`, `proposta`) e marca `body[data-tela]`. Lista = `renderHistory()`/`filtrarHistorico()`; novo orçamento = `criarOrcamento()` (já grava no banco e ganha número CDP); pasta = `abrirPasta()`/`renderPasta()`; salvar = `saveOrcamento()` (sempre fecha e volta à lista). `ORC_SUJO` = há alteração não salva.
+- Fluxo de telas: `irParaTab()` troca a tela (`hist`, `novo`, `orc`, `calc`, `proposta`) e marca `body[data-tela]`. Lista = `renderHistory()`/`filtrarHistorico()`; novo orçamento = `criarOrcamento()` (já grava no banco e ganha número CDP); pasta = `abrirPasta()`/`renderPasta()`; salvar = `saveOrcamento()` (sempre fecha e volta à lista). `ORC_SUJO` = há alteração não salva. Fechar/perdido/reabrir = `fecharOrcamento()`, `perdidoOrcamento()`, `reabrirOrcamento()` em `js/pasta.js`; fechado e perdido ficam travados (o banco recusa mudar itens/valores de fechado). Evoluir = `evoluirOrcamento()` (novo orçamento com `anterior_id`). Cada item guarda `tabelaVer` (tabela usada no cálculo).
 
 ## Zonas proibidas sem aprovação explícita
 
