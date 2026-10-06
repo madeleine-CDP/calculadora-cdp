@@ -866,6 +866,14 @@ function getUsuarioLogado(){
 
 let HISTORY_CACHE = [];
 
+// Número automático do orçamento (gerado pelo banco): 6 → "CDP-0006"
+function numCDP(n){ return n ? 'CDP-' + String(n).padStart(4,'0') : ''; }
+// Nome curto do orçamento em edição: número CDP, senão nº do Tiny
+function nomeOrcEditando(){
+  const e = HISTORY_CACHE.find(x => x.id === EDITING_ORC_ID);
+  return (e && numCDP(e.numero)) || ($('cli-tiny').value ? '#' + $('cli-tiny').value : 'salvo');
+}
+
 async function sbFetchHistory(){
   const res = await fetch(SB_URL + '/rest/v1/orcamentos?select=*&order=created_at.desc', { headers: SB_HEADERS });
   if(!res.ok) throw new Error('Falha ao carregar: ' + res.status);
@@ -879,7 +887,11 @@ async function sbFetchHistory(){
     totalTabela: Number(r.total_tabela),
     totalCartao: Number(r.total_cartao),
     totalAvista: Number(r.total_avista),
-    criadoPor: r.criado_por || null
+    criadoPor: r.criado_por || null,
+    numero: r.numero || null,
+    etapa: r.etapa || 'orcamento',
+    telefone: r.telefone || '',
+    bairro: r.bairro || ''
   }));
 }
 
@@ -888,8 +900,9 @@ async function sbInsertOrcamento(entry){
     method: 'POST',
     headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
     body: JSON.stringify({
-      ref: entry.ref, client: entry.client, date: entry.date, items: entry.items,
+      ref: entry.ref || '', client: entry.client, date: entry.date, items: entry.items,
       total_tabela: entry.totalTabela, total_cartao: entry.totalCartao, total_avista: entry.totalAvista,
+      telefone: entry.telefone || null, bairro: entry.bairro || null,
       criado_por: getUsuarioLogado()
     })
   });
@@ -904,8 +917,9 @@ async function sbUpdateOrcamento(id, entry){
     method: 'PATCH',
     headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
     body: JSON.stringify({
-      ref: entry.ref, client: entry.client, date: entry.date, items: entry.items,
+      ref: entry.ref || '', client: entry.client, date: entry.date, items: entry.items,
       total_tabela: entry.totalTabela, total_cartao: entry.totalCartao, total_avista: entry.totalAvista,
+      telefone: entry.telefone || null, bairro: entry.bairro || null,
       criado_por: getUsuarioLogado()
     })
   });
@@ -942,7 +956,7 @@ async function renderHistory(){
     const fabClass = fabRaw==='real' ? 'real' : (fabRaw==='cdp' ? 'cdp' : 'decore');
     return `
     <div class="hist-item" onclick="reopenOrc(${e.id})">
-      <div class="hist-ref">#${e.ref}</div>
+      <div class="hist-ref">${e.numero ? '<span class="hist-num">'+numCDP(e.numero)+'</span>' : ''}${e.ref ? '<span class="hist-tiny">Tiny #'+e.ref+'</span>' : ''}</div>
       <div style="flex:1">
         <div class="hist-client">${e.client}</div>
         <div class="hist-detail">${detail}</div>
@@ -967,7 +981,9 @@ function reopenOrc(id){
     CART = e.items.map(i=>({...i}));
     EDITING_ORC_ID = e.id;
     $('cli-nome').value = e.client;
-    if(e.ref) $('cli-tiny').value = e.ref;
+    $('cli-tiny').value = e.ref || '';
+    if(e.telefone) $('cli-tel').value = e.telefone;
+    if(e.bairro) $('cli-bairro').value = e.bairro;
     syncCliente();
     updateCartBar();
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -1724,7 +1740,7 @@ function renderResumoOrc(){
   const totalTabela = CART.reduce((s,i)=>s+i.tabela,0);
   const totalCartao = CART.reduce((s,i)=>s+i.cartao,0);
   const totalAvista = CART.reduce((s,i)=>s+i.avista,0);
-  $('orc-resumo-contador').innerHTML = (EDITING_ORC_ID ? ic('editar',15)+' Editando #' + ($('cli-tiny').value || EDITING_ORC_ID) + ' · ' : ic('orcamentos',15)+' ') + CART.length + (CART.length>1?' itens':' item');
+  $('orc-resumo-contador').innerHTML = (EDITING_ORC_ID ? ic('editar',15)+' Editando <span style="white-space:nowrap">' + nomeOrcEditando() + '</span> · ' : ic('orcamentos',15)+' ') + CART.length + (CART.length>1?' itens':' item');
   $('orc-resumo-valores').innerHTML = '<span class="rv">'+ic('etiqueta',13)+' Tabela '+fmt(totalTabela)+'</span><span class="rv">'+ic('cartao',13)+' Cartão '+fmt(totalCartao)+'</span><span class="rv rv-av">'+ic('dinheiro',13)+' À vista '+fmt(totalAvista)+'</span>';
 
   // agrupar por ambiente
@@ -1795,7 +1811,7 @@ function updateCartBar(){
   count.textContent = CART.length + ' item' + (CART.length>1?'s':'') + ' adicionado' + (CART.length>1?'s':'');
   if(EDITING_ORC_ID){
     banner.style.display = 'block';
-    banner.textContent = 'Editando o orçamento #' + (STATE.cliente && STATE.cliente.tiny || $('cli-tiny').value || EDITING_ORC_ID) + ' já salvo — ao clicar em Atualizar, a versão antiga é substituída (não cria um novo).';
+    banner.textContent = 'Editando o orçamento ' + nomeOrcEditando() + ', já salvo — ao clicar em Atualizar, a versão antiga é substituída (não cria um novo).';
     saveBtn.innerHTML = ic('salvar',16)+' Atualizar orçamento';
   } else {
     banner.style.display = 'none';
@@ -1890,10 +1906,11 @@ async function saveOrcamento(){
   syncCliente();
   const ref    = STATE.cliente.tiny;
   const client = STATE.cliente.nome;
-  if(!ref||!client){ alert('Preencha o nome do cliente e o Nº da Proposta (Tiny) no cabeçalho do topo.'); return; }
+  if(!client){ alert('Preencha o nome do cliente no topo da tela.'); return; }
 
   const entry = {
     ref, client,
+    telefone: STATE.cliente.tel, bairro: STATE.cliente.bairro,
     date: new Date().toLocaleDateString('pt-BR'),
     items: CART.map(item => ({...item})),
     totalTabela: CART.reduce((s,i)=>s+i.tabela,0),
@@ -1903,10 +1920,16 @@ async function saveOrcamento(){
 
   const count = entry.items.length;
   const isUpdate = !!EDITING_ORC_ID;
+  let nome = isUpdate ? nomeOrcEditando() : '';
   try{
-    if(isUpdate) await sbUpdateOrcamento(EDITING_ORC_ID, entry);
-    else await sbInsertOrcamento(entry);
+    const resp = isUpdate ? await sbUpdateOrcamento(EDITING_ORC_ID, entry) : await sbInsertOrcamento(entry);
+    const linha = Array.isArray(resp) ? resp[0] : resp;
+    if(linha && linha.numero) nome = numCDP(linha.numero);
   } catch(err){
+    if(String(err && err.message).includes('está fechado')){
+      alert('Este orçamento está FECHADO e não pode mudar itens ou valores.\n\nSe precisar alterar, reabra o orçamento antes.');
+      return;
+    }
     alert('⚠️ Não foi possível ' + (isUpdate?'atualizar':'salvar') + ' o orçamento.\n\nSeus itens continuam aqui — verifique a conexão e tente de novo.');
     return;
   }
@@ -1915,8 +1938,8 @@ async function saveOrcamento(){
   EDITING_ORC_ID = null;
   updateCartBar();
   alert(isUpdate
-    ? '✅ Orçamento #' + ref + ' atualizado com ' + count + ' item' + (count>1?'s':'') + '!\n\nA versão antiga foi substituída — já está disponível para toda a equipe.'
-    : '✅ Orçamento #' + ref + ' salvo com ' + count + ' item' + (count>1?'s':'') + '!\n\nJá está disponível para toda a equipe.');
+    ? '✅ Orçamento ' + (nome || '#' + ref) + ' atualizado com ' + count + (count>1?' itens':' item') + '!\n\nA versão antiga foi substituída — já está disponível para toda a equipe.'
+    : '✅ Orçamento ' + (nome ? nome + ' ' : '') + 'salvo com ' + count + (count>1?' itens':' item') + '!\n\nJá está disponível para toda a equipe.');
 }
 
 // ═══════════════════════════════════════════════════
