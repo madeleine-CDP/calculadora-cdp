@@ -82,7 +82,7 @@ Dentro do código:
 
 ## Zonas proibidas sem aprovação explícita
 
-- Estrutura do banco no Supabase (criar, apagar ou renomear tabelas e colunas). Se precisar, escreva o comando SQL, explique o que ele faz, e a Bru executa.
+- Estrutura do banco no Supabase (criar, apagar ou renomear tabelas e colunas). Se precisar, escreva o comando SQL, explique o que ele faz, ensaie num Postgres local e só aplique com o ok da Bru (ou ela executa). Guarde o comando em `sql/`. A ferramenta de migração do Supabase cancela comandos que contêm "drop": prefira `create or replace` / `set default`.
 - Login, usuários e senhas.
 - Qualquer fórmula da seção "Fábricas e fórmulas".
 - **Nunca** coloque no repositório a chave `service_role` do Supabase, senhas ou dados de clientes. A chave pública (anon) que já está no HTML pode ficar.

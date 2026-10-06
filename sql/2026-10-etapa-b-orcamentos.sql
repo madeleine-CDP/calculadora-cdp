@@ -1,6 +1,8 @@
 -- Etapa B — campos novos na tabela de orçamentos (CDP Sistema)
 -- Só ACRESCENTA colunas. Não apaga nada, não muda nenhum valor em reais.
 -- Pode ser rodado mais de uma vez sem estragar (usa "if not exists").
+-- APLICADO em 06/10/2026 (em 3 partes, sem a palavra "drop": a ferramenta do Supabase
+-- cancela comandos com "drop" sem mostrar a confirmação).
 
 begin;
 
@@ -22,8 +24,8 @@ alter table orcamentos alter column numero set not null;
 alter sequence orcamentos_numero_seq owned by orcamentos.numero;
 create unique index if not exists orcamentos_numero_key on orcamentos (numero);
 
--- 2) Nº da proposta do Tiny deixa de ser obrigatório
-alter table orcamentos alter column ref drop not null;
+-- 2) Nº da proposta do Tiny deixa de ser obrigatório (quando não vier, fica em branco)
+alter table orcamentos alter column ref set default '';
 
 -- 3) Dados do contato usados no acompanhamento (o cadastro completo continua no Tiny)
 alter table orcamentos add column if not exists telefone text;
@@ -76,8 +78,7 @@ begin
   return new;
 end $$;
 
-drop trigger if exists orcamentos_ao_salvar on orcamentos;
-create trigger orcamentos_ao_salvar before insert or update on orcamentos
+create or replace trigger orcamentos_ao_salvar before insert or update on orcamentos
   for each row execute function orcamentos_ao_salvar();
 
 -- O acesso pelo site (chave pública) precisa poder usar o contador do número
