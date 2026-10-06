@@ -1,0 +1,11 @@
+# Site estático: a Netlify publica a pasta raiz como está, sem etapa de build.
+[build]
+  publish = "."
+
+# Sempre buscar a versão mais nova da página, scripts e tabelas de preço.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
