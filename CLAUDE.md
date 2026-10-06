@@ -13,9 +13,10 @@ Leia este arquivo inteiro antes de qualquer alteração.
 
 ## O que é o projeto
 
-Calculadora de orçamentos de persianas e cortinas, em **um único arquivo `index.html`** (HTML + CSS + JavaScript juntos, sem build).
+Calculadora de orçamentos de persianas e cortinas, que está virando o **CDP Sistema**: o sistema operacional da loja (orçamentos, retornos, agenda, pedidos, OS e validação financeira). Site estático, **sem build**: os arquivos são publicados como estão.
 
-- **Hospedagem:** Netlify (`calculadora-cdp.netlify.app`), publicado automaticamente a partir da branch `main`.
+- **Plano do projeto (fases, jornada, decisões):** doc "CDP Sistema — Plano do projeto" no claude.ai — https://claude.ai/code/artifact/e1ec3be8-5b99-4263-abe4-fefec201edda. Leia antes de começar uma fase nova.
+- **Hospedagem:** Netlify (`calculadora-cdp.netlify.app`; subdomínio planejado `sistemacdp.` + domínio da loja no Wix), publicado automaticamente a partir da branch `main`. `netlify.toml` manda o navegador sempre buscar a versão nova (sem cache de tabela antiga).
 - **Dados:** Supabase (projeto `cdp-calculadora`, região sa-east-1). Tabela `orcamentos` guarda os orçamentos salvos, compartilhados entre os usuários.
 - **Login:** senhas com hash bcrypt numa tabela própria no Supabase, verificadas por função no servidor. A senha nunca trafega em texto puro nem aparece no código.
 - **Fonte da verdade:** este repositório. O antigo Artifact no claude.ai virou histórico e não deve mais ser editado.
@@ -60,6 +61,18 @@ Fonte: Guia de Processos de Atendimento (Google Drive). Função `calcSobra()`.
 
 ## Mapa do código (onde fica cada coisa)
 
+Arquivos (desde a fase 0 o antigo arquivo único foi separado, sem mudar nenhuma fórmula):
+
+- `index.html`: as telas (login + calculadora + proposta). Carrega os scripts nesta ordem: `js/login.js`, `js/precos.js`, `js/app.js`, `js/pwa.js`.
+- `js/precos.js`: **todas as tabelas de preço e regras das fábricas** (DB_*, ACC_*, IMPOSTOS_PE, TUBOS, FABRIC_W, CDP_TRAD). É aqui que se atualiza tabela nova.
+- `js/app.js`: lógica da tela, cálculo, carrinho, orçamentos salvos (Supabase) e proposta.
+- `js/login.js`: tela de login (função `verificar_login` no Supabase).
+- `css/app.css`: visual. `assets/`: logos e ícones do app.
+- `manifest.webmanifest`, `sw.js`, `js/pwa.js`: permitem instalar no celular. O `sw.js` **não** guarda cache de propósito.
+- `.github/workflows/despertador.yml` (consulta diária para o Supabase gratuito não pausar) e `backup.yml` (exporta os orçamentos toda segunda; fica em Actions → Artifacts por 90 dias). Usam os segredos do repositório `SUPABASE_URL` e `SUPABASE_ANON_KEY` (e `SUPABASE_BACKUP_KEY` quando o acesso público ao banco for fechado na fase 1).
+
+Dentro do código:
+
 - `DB_DECORE`, `DB_REAL`: preços por produto, família e coleção (`p` = preço/m², `fw` = largura máxima do tecido, 99 = sem limite).
 - `ACC_DECORE`, `ACC_REAL`: acessórios e opcionais.
 - `IMPOSTOS_PE`, `getTipoImposto()`: impostos da Decore.
@@ -76,7 +89,7 @@ Fonte: Guia de Processos de Atendimento (Google Drive). Função `calcSobra()`.
 
 ## Como testar (obrigatório antes de propor aprovação)
 
-1. Rode o HTML num navegador simulado (jsdom) e confirme **zero erros de JavaScript**.
+1. Rode o `index.html` num navegador simulado (jsdom, carregando os scripts locais de `js/`) e confirme **zero erros de JavaScript**.
 2. Para qualquer mudança de preço ou fórmula, compare **antes x depois** chamando `calcular()` com casos reais (pelo menos: uma Rolô, uma Romana, uma Vertical, uma Horizontal, um Double Vision, e uma Cortina Tradicional CDP). Mostre à Bru uma tabela com os valores à vista antes e depois.
 3. Teste também **reabrir um orçamento salvo antigo** e editar um item. Orçamentos anteriores podem não ter todos os campos novos (ex.: acessórios salvos só existem a partir da v40).
 4. Teste a tela em largura de celular (~360px).
@@ -90,7 +103,21 @@ Quando chegar tabela nova (Real ou Decore):
 4. Atualize a data da tabela no botão da fábrica na tela inicial.
 5. Lembre a Bru: orçamentos em aberto dos itens que subiram devem ser recalculados antes de gerar a OS.
 
+## Regras do negócio que o sistema precisa respeitar
+
+- **Jornada:** contato → pré-orçamento (ou visita direta) → visita técnica → orçamento final → fechamento → OS + pagamento validado → pedido e produção → instalação → garantia/pós-venda. Só entra no sistema quem pede orçamento.
+- **Comprovante ≠ pagamento:** nada vai para a produção sem a validação financeira registrada (Madeleine é a única com acesso ao banco). SLA de 4h úteis para validar.
+- **Alçada de desconto:** Bru e Mirelle até 3–5%, caso a caso; acima disso, aprovação da Madeleine.
+- **Olist Tiny é a fonte da verdade** de cadastro do cliente, pedido de venda, OS, parcelas e nota fiscal. O sistema não duplica isso: guarda o nº do pedido de venda do Tiny. A proposta/orçamento NÃO é lançada no Tiny. Integração pela API v3 oficial do Olist (plano da loja: Evoluir): leitura de clientes depois do login fechado (fim da fase 1); criação de cliente e pedido de venda na fase 6. Chaves do Olist só no servidor, nunca no navegador.
+- **Follow-up do pré-orçamento:** até 3 lembretes, a cada 3 dias; depois sugere "Perdido · sem retorno".
+- **Orçamento pós-visita:** enviar em 1 dia útil (limite 2).
+- **Garantia:** 1 ano para produtos novos, 3 meses para serviços; primeiro retorno no mesmo dia útil; visita que não é defeito (ou fora da garantia) cobra taxa.
+- **Agenda:** a Agenda CLIENTES CDP (Google) continua sendo a dos técnicos; o sistema lê e sincroniza.
+- Custos dos itens são calculados no sistema (tabelas em `js/precos.js`); os portais Decore e Real ficam só para fazer os pedidos.
+
 ## Pendências (ordem combinada)
+
+0. Seguir as fases do plano do projeto (link no topo). Fase 0 = este repositório organizado, app instalável, despertador e backup, subdomínio.
 
 1. Atualizar a tabela de Tecido Ateliê com os preços novos e o custo da Vidal.
 2. Módulo de Serviços (manutenção, lavagem, instalação). Depende da planilha de preços que a Bru vai preencher com a Madeleine.
