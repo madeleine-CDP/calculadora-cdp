@@ -74,11 +74,24 @@
 </div>
 
 <!-- ═══════════ TAB: CALCULADORA ═══════════ -->
-<div id="tab-calc" class="tab-panel">
+<div id="tab-calc" class="tab-panel" data-passo-atual="1">
 <div class="wrap">
 
+<!-- D1 · CABEÇALHO DOS PASSOS -->
+<div class="passos-topo">
+  <div class="passos-contexto" id="passos-contexto"></div>
+  <ol class="passos" id="passos">
+    <li data-p="1"><button type="button" onclick="irPasso(1)"><span>1</span>Ambiente</button></li>
+    <li data-p="2"><button type="button" onclick="irPasso(2)"><span>2</span>Produto</button></li>
+    <li data-p="3"><button type="button" onclick="irPasso(3)"><span>3</span>Medidas</button></li>
+    <li data-p="4"><button type="button" onclick="irPasso(4)"><span>4</span>Resultado</button></li>
+  </ol>
+  <div class="passo-amb" id="passo-amb"></div>
+</div>
+
+
 <!-- AMBIENTE -->
-<div class="card" id="ambiente-card" style="border-color:var(--gold)">
+<div class="card" id="ambiente-card" data-passo="1" style="border-color:var(--gold)">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Ambiente deste item</div>
   <div class="card-sub">Todo cálculo pertence a um ambiente — preencha antes de calcular (ex: Quarto Casal, Sala)</div>
   <input type="text" id="item-ambiente" list="ambientes-datalist" placeholder="Ex: Quarto Casal" oninput="STATE.ambiente=this.value" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);font-size:13.5px;font-family:inherit;margin-top:6px">
@@ -86,7 +99,7 @@
 </div>
 
 <!-- FÁBRICA -->
-<div class="card">
+<div class="card" data-passo="2">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>Fábrica</div>
   <div class="card-sub">Selecione o fornecedor para este cálculo</div>
   <div class="fab-row">
@@ -134,7 +147,7 @@
 </div>
 
 <!-- PRODUTO -->
-<div class="card" id="prod-card-wrap">
+<div class="card" id="prod-card-wrap" data-passo="2">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg></span>Produto</div>
   <div class="card-sub">Categoria → Produto → Família → Coleção</div>
   <div class="fg">
@@ -153,7 +166,7 @@
 </div>
 
 <!-- CORTINA TRADICIONAL CDP -->
-<div class="card" id="cdp-trad-card" style="display:none">
+<div class="card" id="cdp-trad-card" data-passo="2" style="display:none">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg></span>Cortina tradicional · produção CDP</div>
   <div class="card-sub">Tecido por metro linear, a partir da largura (única ou dupla camada)</div>
   <div class="fg">
@@ -192,7 +205,7 @@
 </div>
 
 <!-- JANELA vs CORTINA PRONTA -->
-<div class="card" style="border-color:var(--gold)">
+<div class="card" data-passo="3" style="border-color:var(--gold)">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l4 4L21 7l-4-4z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/></svg></span>O que você tem em mãos?</div>
   <div class="card-sub">Se o cliente mandou medida de janela/vão, o sistema já soma a sobra certa (Guia de Processos)</div>
   <div class="fg">
@@ -222,7 +235,7 @@
 </div>
 
 <!-- MEDIDAS -->
-<div class="card">
+<div class="card" data-passo="3">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l4 4L21 7l-4-4z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/></svg></span>Medidas</div>
   <div class="card-sub" id="medidas-sub">Medida final da cortina/persiana (já com sobra, se aplicável)</div>
   <div class="fg">
@@ -238,21 +251,21 @@
 </div>
 
 <!-- DETALHAMENTO (preenchido automaticamente) -->
-<div class="card">
+<div class="card" data-passo="3">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>Detalhamento do item</div>
   <div class="card-sub">Preenchido sozinho conforme o modelo e a medida — edite os "A DEFINIR" antes de adicionar ao orçamento</div>
   <textarea id="item-detalhamento" rows="3" oninput="this.dataset.editedManually='1'" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);color:var(--tx);padding:8px 10px;font-family:'Gill Sans','Gill Sans MT',Poppins,sans-serif;font-size:12.5px;outline:none;resize:vertical"></textarea>
 </div>
 
 <!-- ACESSÓRIOS -->
-<div class="card acc-wrap" id="acc-wrap">
+<div class="card acc-wrap" id="acc-wrap" data-passo="3">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Acessórios e opcionais</div>
   <div class="card-sub">Itens específicos para este produto — preço atualizado conforme cor selecionada</div>
   <div id="acc-content"></div>
 </div>
 
 <!-- SERVIÇOS / PEÇAS ADICIONAIS -->
-<div class="card">
+<div class="card" data-passo="3">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span>Serviços e peças adicionais</div>
   <div class="card-sub">Para itens fora de tabela — ex: troca de peça específica, serviço extra, taxa de deslocamento</div>
   <div id="extras-list" style="margin-top:8px"></div>
@@ -269,16 +282,20 @@
 <!-- BOTÕES AÇÃO (também fixos no rodapé, ver sticky-actions) -->
 
 <!-- RESULTADO -->
-<div class="result-wrap" id="result-wrap">
+<div class="result-wrap" id="result-wrap" data-passo="4">
   <div class="card" id="rcard-wrap">
     <div class="card-title" id="rcard-title">Resultado</div>
-    <div id="rcard-body"></div>
-
     <!-- PREÇOS DE VENDA -->
     <div style="margin-top:16px">
       <div style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Preços de Venda</div>
       <div class="sell-grid" id="sell-grid"></div>
     </div>
+
+    <!-- CUSTO (recolhido: informação interna) -->
+    <details class="custo-det">
+      <summary>Ver custo de fabricação e detalhes do cálculo</summary>
+      <div id="rcard-body"></div>
+    </details>
 
     <!-- CARRINHO DO ORÇAMENTO -->
     <div id="cart-bar" style="display:none;background:rgba(200,150,14,.08);border:1px solid rgba(200,150,14,.25);border-radius:var(--r2);padding:10px 14px;margin-top:12px">
@@ -323,7 +340,15 @@
   </div>
 </div>
 
+<div class="passo-erro" id="passo-erro" role="alert"></div>
+<div class="passo-outro" data-passo="4" id="passo-orc-resumo"></div>
 </div><!-- wrap -->
+
+<!-- D1 · BARRA DOS PASSOS (rodapé fixo) -->
+<div class="passo-barra" id="passo-barra">
+  <button type="button" class="btn-outline" id="passo-voltar" onclick="passoVoltar()"></button>
+  <button type="button" class="btn" id="passo-avancar" onclick="passoAvancar()"></button>
+</div>
 </div><!-- tab-calc -->
 
 <!-- ═══════════ TAB: HISTÓRICO ═══════════ -->
@@ -487,6 +512,7 @@
 <script src="js/precos.js"></script>
 <script src="js/app.js"></script>
 <script src="js/pasta.js"></script>
+<script src="js/passos.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
 <div id="orc-resumo-bar" style="position:fixed;bottom:60px;left:0;right:0;background:#2B221C;color:#FFF;z-index:499;display:none">

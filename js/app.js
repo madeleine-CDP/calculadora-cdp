@@ -1387,6 +1387,7 @@ function onLimparClick(){
 }
 
 function resetCalc(){
+  PASSO = 1;
   EXTRAS = []; renderExtras();
   const tm = $('tipo-medida'); if(tm){ tm.value = 'cortina'; }
   const jw = $('jan-w'); if(jw) jw.value = '';
@@ -1620,7 +1621,8 @@ let CART = [];
 // setado por reopenOrc() ao reabrir um orçamento salvo, limpo por novoOrcamento()/clearCart()
 let EDITING_ORC_ID = null;
 let ORC_SUJO = false;
-let EDITANDO_ITEM_ID = null; // item da pasta sendo editado na calculadora (Adicionar = substituir) // true = orçamento aberto tem alteração que ainda não foi salva
+let EDITANDO_ITEM_ID = null;
+let PASSO = 1; // passo da calculadora (1 Ambiente, 2 Produto, 3 Medidas, 4 Resultado) // item da pasta sendo editado na calculadora (Adicionar = substituir) // true = orçamento aberto tem alteração que ainda não foi salva
 
 function baseDetalhamento(prod, w, h, jw, jh){
   const wf = w.toFixed(2).replace('.',',');
@@ -1694,6 +1696,18 @@ function addToCart(){
   pararEdicaoItem();
 
   updateCartBar();
+  if(CALC_OUTRO){
+    // D1: "Adicionar e calcular outro" → mesmo ambiente, já no passo Produto
+    CALC_OUTRO = false;
+    const ambOutro = r.ambiente || '';
+    ORC_SUJO = true;
+    resetCalc();
+    $('item-ambiente').value = ambOutro; STATE.ambiente = ambOutro;
+    irParaTab('calc');
+    irPasso(ambOutro ? 2 : 1, true);
+    avisoTopo('Item adicionado em <strong>' + escHtml(ambOutro || label) + '</strong>. Agora o próximo.');
+    return;
+  }
   EXTRAS = []; renderExtras();
   if(detBox){ detBox.value=''; delete detBox.dataset.editedManually; }
   ORC_SUJO = true;
@@ -1798,9 +1812,9 @@ function editarItemCarrinho(id){
 
   // C4: o item NÃO sai mais do orçamento; "Substituir item" troca no mesmo lugar
   EDITANDO_ITEM_ID = id;
-  const btnAdd = document.querySelector('button.btn[onclick="addToCart()"]');
-  if(btnAdd) btnAdd.innerHTML = ic('ok',17) + ' Substituir item';
+  document.querySelectorAll('button.btn[onclick="addToCart()"]').forEach(b => b.innerHTML = ic('ok',17) + ' Substituir item');
   window.scrollTo({top:0, behavior:'smooth'});
+  if(typeof irPasso === 'function') irPasso(3, true);   // D1: edição abre direto em Medidas
   alert('📝 Item carregado na Calculadora com fábrica, produto, coleção, medidas' + (item.fab!=='cdp' ? ', acessórios' : '') + ' e peças adicionais restaurados. Confira, recalcule se precisar e toque em Substituir item.' + avisoDesconto);
 }
 
@@ -1815,7 +1829,7 @@ function toggleResumoOrc(){
 function renderResumoOrc(){
   const barWrap = $('orc-resumo-bar');
   // aparece na calculadora e na proposta quando há orçamento aberto; some na pasta, na lista e no "novo"
-  if((!CART.length && !EDITING_ORC_ID) || ['orc','hist','novo'].includes(document.body.dataset.tela)){ barWrap.style.display = 'none'; return; }
+  if((!CART.length && !EDITING_ORC_ID) || ['orc','hist','novo','calc'].includes(document.body.dataset.tela)){ barWrap.style.display = 'none'; return; }
   barWrap.style.display = 'block';
 
   const totalTabela = CART.reduce((s,i)=>s+i.tabela,0);
@@ -1981,8 +1995,8 @@ function novoOrcamento(){
 // Zera carrinho, cliente e calculadora (sem perguntar)
 function pararEdicaoItem(){
   EDITANDO_ITEM_ID = null;
-  const btnAdd = document.querySelector('button.btn[onclick="addToCart()"]');
-  if(btnAdd) btnAdd.innerHTML = ic('mais',17) + ' Adicionar ao orçamento';
+  document.querySelectorAll('button.btn[onclick="addToCart()"]').forEach(b => b.innerHTML = ic('mais',17) + ' Adicionar ao orçamento');
+  if(document.body.dataset.tela === 'calc' && typeof renderPassos === 'function') renderPassos();
 }
 
 function limparOrcamentoEmAndamento(){
@@ -2168,6 +2182,7 @@ function irParaTab(t){
   document.body.dataset.tela = t;
   if(t !== 'orc') document.body.classList.remove('cli-aberto');
   renderResumoOrc();
+  if(t === 'calc' && typeof renderPassos === 'function') renderPassos();
 }
 
 function switchTab(t){

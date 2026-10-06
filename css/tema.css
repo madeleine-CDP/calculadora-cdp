@@ -487,3 +487,50 @@ body.orc-travado label.pasta-detalhe textarea{background:#F3F0ED;border-color:tr
 .modal-botoes .btn,.modal-botoes .btn-outline{min-height:50px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .modal-botoes{grid-template-columns:auto 1fr}
 .modal-botoes .btn,.modal-botoes .btn-outline{white-space:nowrap;padding:0 18px!important;font-size:15px!important}
+
+/* ═══ D1 · Calculadora em passos ═══ */
+#tab-calc[data-passo-atual="1"] [data-passo]:not([data-passo="1"]),
+#tab-calc[data-passo-atual="2"] [data-passo]:not([data-passo="2"]),
+#tab-calc[data-passo-atual="3"] [data-passo]:not([data-passo="3"]),
+#tab-calc[data-passo-atual="4"] [data-passo]:not([data-passo="4"]){display:none!important}
+#tab-calc .wrap{padding-bottom:120px!important}
+body[data-tela=calc] #sticky-actions{display:none!important}
+#result-wrap .btn-row>button.btn[onclick="addToCart()"]{display:none!important}  /* o "Adicionar" fica na barra de baixo */
+.passos-topo{margin:2px 0 14px}
+.passos-contexto{font-size:14px;color:var(--tinta-suave);margin-bottom:10px}
+.passos-contexto strong{color:var(--tinta)}
+.passos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.passos li button{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:none;border:none;padding:0;cursor:pointer;font:500 12.5px inherit;font-family:inherit;color:var(--tinta-suave);text-align:left}
+.passos li button::before{content:"";display:block;width:100%;height:4px;border-radius:999px;background:var(--linha)}
+.passos li button span{display:none}
+.passos li.feito button::before{background:var(--vinho);opacity:.45}
+.passos li.atual button::before{background:var(--vinho)}
+.passos li.atual button{color:var(--vinho);font-weight:700}
+.passo-amb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px;color:var(--tinta-suave);margin-top:12px}
+.passo-amb:empty{display:none}
+.passo-amb strong{color:var(--tinta)}
+.passo-amb button{background:none;border:none;color:var(--vinho);font:600 14px inherit;font-family:inherit;text-decoration:underline;cursor:pointer;padding:0 4px}
+.passo-amb-sug{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
+.passo-amb-sug:empty{display:none}
+.passo-amb-sug>span{font-size:13px;color:var(--tinta-suave);width:100%}
+.passo-erro{display:none;margin:4px 0 12px;padding:12px 14px;border-radius:14px;background:#FBE9E7;color:var(--red);font-size:14px;font-weight:500}
+.passo-erro.on{display:block}
+.passo-ja-tem{background:#fff;border:1px solid var(--linha);border-radius:18px;padding:14px 16px;margin:14px 0 10px;font-size:14px}
+.passo-ja-tem>div:first-child{font-size:12.5px;color:var(--tinta-suave);margin-bottom:6px}
+.passo-ja-item{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--linha-suave,#EEE8E3)}
+.passo-outro-btn{width:100%;min-height:50px;margin-top:6px;border-radius:16px;border:1.5px dashed #CBBFB5;background:var(--fundo,#F7F4F1);color:var(--vinho);font:600 15px inherit;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.passo-barra{position:fixed;left:0;right:0;bottom:0;z-index:500;display:none;gap:10px;justify-content:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--linha)}
+body[data-tela=calc] .passo-barra{display:flex}
+.passo-barra .btn,.passo-barra .btn-outline{min-height:52px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:15px!important;padding:0 18px!important}
+.passo-barra .btn-outline{flex:0 1 auto}
+.passo-barra .btn{flex:1;max-width:340px}
+body[data-tela=calc] .cli-bar{display:none!important}   /* dados do cliente ficam na pasta */
+.custo-det{margin-top:14px;border-top:1px solid var(--linha);padding-top:10px}
+.custo-det summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--tinta-suave);padding:6px 0;list-style:none}
+.custo-det summary::-webkit-details-marker{display:none}
+.custo-det summary::before{content:"▸ ";color:var(--vinho)}
+.custo-det[open] summary::before{content:"▾ "}
+#rcard-title .res-item{font-size:17px;font-weight:650;color:var(--tinta);line-height:1.35}
+#rcard-title .res-sub{font-size:13.5px;font-weight:400;color:var(--tinta-suave);margin-top:4px}
+.passos-ver{background:none;border:none;padding:0 0 0 6px;color:var(--vinho);font:600 14px inherit;font-family:inherit;text-decoration:underline;cursor:pointer}
+#tab-calc #rcard-title{display:block!important}
