@@ -358,6 +358,8 @@
     </div>
   </div>
 
+  <div id="pasta-evol"></div>
+
   <div class="card pasta-card">
     <div class="pasta-sec"><span>Itens</span><span class="pasta-sec-n" id="pasta-n"></span></div>
     <div id="pasta-lista"></div>
@@ -365,6 +367,7 @@
   </div>
 
   <div class="card pasta-card pasta-totais" id="pasta-totais"></div>
+  <div class="card pasta-card pasta-jornada" id="pasta-jornada"></div>
 </div>
 <div class="pasta-barra">
   <button type="button" class="btn-outline" onclick="abrirPropostaPasta()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg>Proposta</button>
@@ -386,7 +389,7 @@
       <input type="text" id="novo-nome" autocomplete="off" placeholder="Ex.: Maria Souza"></label>
     <div class="novo-linha">
       <label class="novo-campo"><span>WhatsApp <b>*</b></span>
-        <input type="tel" id="novo-tel" inputmode="tel" autocomplete="off" placeholder="(81) 9 0000-0000" oninput="mascaraTel(this)"></label>
+        <input type="tel" id="novo-tel" inputmode="tel" autocomplete="off" placeholder="(81) 9 0000-0000" oninput="mascaraTel(this); limparAvisoRepetido()"></label>
       <label class="novo-campo"><span>Bairro</span>
         <input type="text" id="novo-bairro" autocomplete="off" placeholder="Ex.: Boa Viagem"></label>
     </div>
@@ -422,6 +425,7 @@
     </div>
   </div>
 
+  <div id="novo-repetido" role="status"></div>
   <div class="novo-erro" id="novo-erro" role="alert"></div>
   <button type="button" class="btn novo-criar" id="novo-criar" onclick="criarOrcamento()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Criar e adicionar itens</button>
 </div>

@@ -896,7 +896,11 @@ async function sbFetchHistory(){
     numero: r.numero || null,
     etapa: r.etapa || 'orcamento',
     telefone: r.telefone || '',
-    bairro: r.bairro || ''
+    bairro: r.bairro || '',
+    origem: r.origem || null,
+    comoComecou: r.como_comecou || null,
+    anteriorId: r.anterior_id || null,
+    createdAt: r.created_at || null
   }));
 }
 
@@ -971,6 +975,11 @@ function combinaBusca(e, termo){
   return false;
 }
 
+// Orçamento que nasceu deste (evolução pré-orçamento → visita/final), se houver
+function evoluidoPara(id){ return HISTORY_CACHE.find(x => x.anteriorId === id) || null; }
+// Só os dígitos finais do WhatsApp, para comparar "(81) 98877-6655" com "81988776655"
+function chaveTel(t){ const d = String(t||'').replace(/\D/g,''); return d.length >= 8 ? d.slice(-8) : ''; }
+
 function escolherEtapaFiltro(etapa){ HIST_ETAPA = etapa; filtrarHistorico(); }
 
 async function renderHistory(){
@@ -990,7 +999,7 @@ async function renderHistory(){
 function filtrarHistorico(){
   const list = $('hist-list');
   const h = HISTORY_CACHE;
-  const abertos = h.filter(e => e.etapa !== 'fechado' && e.etapa !== 'perdido').length;
+  const abertos = h.filter(e => e.etapa !== 'fechado' && e.etapa !== 'perdido' && !evoluidoPara(e.id)).length;
   $('hist-contagem').textContent = h.length ? abertos + ' em aberto · ' + h.length + ' no total' : '';
 
   // filtros: "Todos" + só as etapas que têm orçamento (ou a que está selecionada)
@@ -1019,6 +1028,8 @@ function filtrarHistorico(){
         <div class="hist-detail">${linha2}</div>
         <div class="hist-meta">
           <span class="hist-etapa etapa-${etapa}">${ETAPA_NOME[etapa]||escHtml(etapa)}</span>
+          ${evoluidoPara(e.id) ? '<span class="hist-evol">'+ic('raio',13)+' Evoluído → '+numCDP(evoluidoPara(e.id).numero)+'</span>' : ''}
+          ${e.anteriorId && HISTORY_CACHE.find(x=>x.id===e.anteriorId) ? '<span class="hist-tiny">veio do '+numCDP(HISTORY_CACHE.find(x=>x.id===e.anteriorId).numero)+'</span>' : ''}
           ${e.ref ? '<span class="hist-tiny">Tiny #'+escHtml(e.ref)+'</span>' : ''}
         </div>
       </div>
@@ -1947,6 +1958,7 @@ function novoOrcamento(){
   document.querySelectorAll('#tab-novo [data-origem]').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-checked','false'); });
   const mais = document.querySelector('#tab-novo .novo-mais'); if(mais) mais.open = false;
   $('novo-erro').textContent = '';
+  limparAvisoRepetido();
   irParaTab('novo');
   window.scrollTo({top:0});
   setTimeout(() => { const n=$('novo-nome'); if(n && window.innerWidth > 720) n.focus(); }, 50);
@@ -1966,6 +1978,24 @@ function limparOrcamentoEmAndamento(){
 }
 
 function cancelarNovo(){ switchTab('hist'); }
+
+// ── Aviso de cliente repetido (C3c) ──
+let REPETIDO_OK = false;
+function limparAvisoRepetido(){ REPETIDO_OK = false; const b = $('novo-repetido'); if(b) b.innerHTML = ''; }
+function mostrarAvisoRepetido(lista){
+  const nome = lista[0].client;
+  $('novo-repetido').innerHTML = `<div class="repetido">
+    <div class="repetido-tit">${ic('info',18)} Este WhatsApp já tem ${lista.length > 1 ? lista.length + ' orçamentos' : 'orçamento'} (${escHtml(nome)})</div>
+    <div class="repetido-lista">${lista.slice(0,5).map(x => `
+      <div class="repetido-item">
+        <div><strong>${numCDP(x.numero)}</strong> · <span class="hist-etapa etapa-${x.etapa}">${ETAPA_NOME[x.etapa] || x.etapa}</span><br><span>${escHtml(x.date||'')} · ${fmt(x.totalAvista||0)} à vista</span></div>
+        <button type="button" class="btn-outline" onclick="abrirOutroOrc(${x.id})">Abrir</button>
+      </div>`).join('')}</div>
+    <div class="repetido-dica">Se for o mesmo atendimento, abra o orçamento e use <strong>Evoluir</strong>. Se for um pedido diferente, crie um novo.</div>
+    <button type="button" class="btn-outline repetido-criar" onclick="REPETIDO_OK = true; criarOrcamento()">Criar novo mesmo assim</button>
+  </div>`;
+  $('novo-repetido').scrollIntoView({behavior:'smooth', block:'center'});
+}
 
 function mascaraTel(el){
   const d = el.value.replace(/\D/g,'').slice(0,11);
@@ -2001,6 +2031,13 @@ async function criarOrcamento(){
     if(alvo) alvo.focus();
     return;
   }
+  // C3c: cliente repetido (mesmo WhatsApp) → mostra os orçamentos dele antes de criar outro
+  if(!REPETIDO_OK){
+    if(!HIST_CARREGADO){ try{ HISTORY_CACHE = await sbFetchHistory(); HIST_CARREGADO = true; }catch(e){} }
+    const k = chaveTel(tel);
+    const iguais = k ? HISTORY_CACHE.filter(x => chaveTel(x.telefone) === k).sort((a,b)=>(b.numero||0)-(a.numero||0)) : [];
+    if(iguais.length){ mostrarAvisoRepetido(iguais); return; }
+  }
   const comeco = comecoBtn.dataset.comeco;
   const btn = $('novo-criar');
   btn.disabled = true; const rotulo = btn.innerHTML; btn.innerHTML = 'Criando…';
@@ -2028,6 +2065,7 @@ async function criarOrcamento(){
     return;
   }
   btn.disabled = false; btn.innerHTML = rotulo;
+  limparAvisoRepetido();
 
   // Abre o orçamento recém-criado para adicionar itens (salvar depois ATUALIZA este mesmo)
   limparOrcamentoEmAndamento();

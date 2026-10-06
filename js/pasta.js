@@ -72,6 +72,8 @@ function renderPasta(){
       }).join('');
 
   document.querySelectorAll('#pasta-lista textarea').forEach(autoAltura);
+  renderEvolucao();
+  renderJornada();
 
   const tAv = CART.reduce((s,i)=>s+(i.avista||0),0);
   const tCa = CART.reduce((s,i)=>s+(i.cartao||0),0);
@@ -212,3 +214,103 @@ function salvarEFechar(){
 window.addEventListener('beforeunload', ev => {
   if(ORC_SUJO){ ev.preventDefault(); ev.returnValue = ''; }
 });
+
+
+// ═══════════════════════════════════════════════════════
+// JORNADA DO CLIENTE (Etapa C3c)
+// Pré-orçamento → "Evoluir" cria um novo orçamento ligado ao anterior (anterior_id),
+// com cópia dos itens. O anterior fica guardado como "Evoluído → CDP-xxxx".
+// ═══════════════════════════════════════════════════════
+
+function renderEvolucao(){
+  const box = $('pasta-evol');
+  const e = orcEmEdicao();
+  if(!e){ box.innerHTML = ''; return; }
+  const filho = evoluidoPara(e.id);
+  if(filho){
+    box.innerHTML = `<div class="pasta-evol-aviso">${ic('raio',16)}<span>Este orçamento já evoluiu para o <strong>${numCDP(filho.numero)}</strong>. Os valores aqui são os que o cliente recebeu antes.</span>
+      <button type="button" class="btn-outline" onclick="abrirOutroOrc(${filho.id})">Abrir ${numCDP(filho.numero)}</button></div>`;
+    return;
+  }
+  if(e.etapa === 'fechado' || e.etapa === 'perdido'){ box.innerHTML = ''; return; }
+  const destino = e.etapa === 'pre_orcamento' ? 'visita / orçamento final' : 'nova versão do orçamento';
+  box.innerHTML = `<button type="button" class="pasta-evoluir" onclick="evoluirOrcamento()">
+      ${ic('raio',18)}<span><strong>Evoluir para ${destino}</strong><em>Cria um novo orçamento com cópia dos itens; este fica guardado.</em></span></button>`;
+}
+
+async function evoluirOrcamento(){
+  const e = orcEmEdicao();
+  if(!e) return;
+  if(ORC_SUJO){ alert('Este orçamento tem alterações não salvas.\n\nToque em "Salvar e fechar" primeiro e depois abra de novo para evoluir.'); return; }
+  const novaEtapa = e.etapa === 'pre_orcamento' ? 'visita' : 'orcamento';
+  if(!confirm('Criar um novo orçamento a partir do ' + numCDP(e.numero) + '?\n\n• Os itens são copiados para você ajustar (ex.: medidas da visita).\n• O ' + numCDP(e.numero) + ' fica guardado como "Evoluído", com os valores que o cliente recebeu.\n• O novo começa na etapa "' + ETAPA_NOME[novaEtapa] + '".')) return;
+  const itens = (e.items || []).map((it, i) => ({ ...it, id: Date.now() + i }));
+  let linha;
+  try{
+    const res = await fetch(SB_URL + '/rest/v1/orcamentos', {
+      method: 'POST', headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        ref: '', client: e.client, date: new Date().toLocaleDateString('pt-BR'), items: itens,
+        total_tabela: itens.reduce((s,i)=>s+(i.tabela||0),0),
+        total_cartao: itens.reduce((s,i)=>s+(i.cartao||0),0),
+        total_avista: itens.reduce((s,i)=>s+(i.avista||0),0),
+        telefone: e.telefone || null, bairro: e.bairro || null, origem: e.origem || null,
+        como_comecou: e.comoComecou || null, etapa: novaEtapa, anterior_id: e.id,
+        criado_por: getUsuarioLogado()
+      })
+    });
+    if(!res.ok) throw new Error(res.status + ' ' + await res.text());
+    const j = await res.json(); linha = Array.isArray(j) ? j[0] : j;
+    if(!linha || !linha.id) throw new Error('sem id');
+  } catch(err){
+    alert('⚠️ Não foi possível criar o novo orçamento. Verifique a conexão e tente de novo.');
+    return;
+  }
+  await renderHistory();            // atualiza a lista (o anterior passa a aparecer como "Evoluído")
+  ORC_SUJO = false;
+  reopenOrc(linha.id);
+  avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado a partir do ' + numCDP(e.numero) + '. Ajuste os itens com as medidas da visita.');
+}
+
+// Todos os orçamentos do mesmo cliente (mesmo WhatsApp) + a corrente de evolução
+function orcamentosDoCliente(e){
+  const k = chaveTel(e.telefone);
+  const ids = new Set([e.id]);
+  let mudou = true;
+  while(mudou){                     // segue a corrente anterior ↔ evoluído
+    mudou = false;
+    HISTORY_CACHE.forEach(x => {
+      if(ids.has(x.id)) return;
+      if((x.anteriorId && ids.has(x.anteriorId)) || [...ids].some(id => (HISTORY_CACHE.find(y=>y.id===id)||{}).anteriorId === x.id)){ ids.add(x.id); mudou = true; }
+    });
+  }
+  return HISTORY_CACHE.filter(x => ids.has(x.id) || (k && chaveTel(x.telefone) === k))
+    .sort((a,b) => (a.numero||0) - (b.numero||0));
+}
+
+function renderJornada(){
+  const box = $('pasta-jornada');
+  const e = orcEmEdicao();
+  const lista = e ? orcamentosDoCliente(e) : [];
+  if(lista.length < 2){ box.style.display = 'none'; box.innerHTML = ''; return; }
+  box.style.display = '';
+  box.innerHTML = `<div class="pasta-sec"><span>Jornada do cliente</span><span class="pasta-sec-n">${lista.length} orçamentos</span></div>
+    <ol class="jornada">${lista.map(x => {
+      const filho = evoluidoPara(x.id);
+      const atual = x.id === e.id;
+      return `<li class="${atual ? 'atual' : ''}">
+        <span class="jornada-ponto etapa-${x.etapa}"></span>
+        <div class="jornada-info">
+          <div><strong>${numCDP(x.numero)}</strong> · <span class="hist-etapa etapa-${x.etapa}">${ETAPA_NOME[x.etapa] || x.etapa}</span>${filho ? ' <span class="hist-evol">' + ic('raio',12) + ' evoluiu</span>' : ''}</div>
+          <div class="jornada-sub">${escHtml(x.date || '')}${x.criadoPor ? ' · ' + escHtml(x.criadoPor) : ''} · ${fmt(x.totalAvista || 0)} à vista</div>
+        </div>
+        ${atual ? '<span class="jornada-aqui">você está aqui</span>' : `<button type="button" class="btn-outline" onclick="abrirOutroOrc(${x.id})">Abrir</button>`}
+      </li>`;
+    }).join('')}</ol>`;
+}
+
+function abrirOutroOrc(id){
+  if(!confirmarSairOrc()) return;
+  ORC_SUJO = false;
+  reopenOrc(id);
+}
