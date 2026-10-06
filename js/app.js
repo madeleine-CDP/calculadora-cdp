@@ -54,6 +54,41 @@ function populate(selId, items, disabled){
 // ═══════════════════════════════════════════════════════
 // FACTORY SELECTION
 // ═══════════════════════════════════════════════════════
+// Os três valores ao cliente + aviso de qual tabela foi usada no cálculo.
+// (Só exibição: os valores já chegam calculados em r.)
+function sellGridHTML(r, fab){
+  const aviso = textoTabela(fab);
+  return `
+    <div class="sell-item tabela">
+      <div class="sell-lbl">${ic('etiqueta',15)} Tabela</div>
+      <div class="sell-price">${fmt(r.tabela)}</div>
+      <div class="sell-note">Preço cheio</div>
+    </div>
+    <div class="sell-item">
+      <div class="sell-lbl">${ic('cartao',15)} Cartão</div>
+      <div class="sell-price">${fmt(r.cartao)}</div>
+      <div class="sell-note">Tabela −5%</div>
+    </div>
+    <div class="sell-item avista">
+      <div class="sell-lbl">${ic('dinheiro',15)} À Vista</div>
+      <div class="sell-price">${fmt(r.avista)}</div>
+      <div class="sell-note">Tabela −15% (custo ×2)</div>
+    </div>
+    ${aviso ? `<div class="tabela-aviso">${ic('calendario',14)}<span>Calculado com a ${aviso}. Se chegou tabela nova da fábrica, confira antes de fechar.</span></div>` : ''}`;
+}
+
+// Preenche a data da tabela nos botões das fábricas (fonte: TABELAS_INFO em precos.js)
+function preencherDatasTabelas(){
+  [['real','fb-real'],['dec','fb-dec'],['cdp','fb-cdp']].forEach(([fab,id]) => {
+    const btn = document.getElementById(id); const t = TABELAS_INFO[fab];
+    if(!btn || !t || !t.data) return;
+    let el = btn.querySelector('.fab-btn-data');
+    if(!el){ el = document.createElement('div'); el.className = 'fab-btn-data'; btn.appendChild(el); }
+    el.innerHTML = ic('calendario',12) + ' ' + t.tabela + ' · ' + t.rotulo + ' ' + t.data;
+  });
+}
+preencherDatasTabelas();
+
 function selectFab(fab){
   if(fab === 'servico'){
     alert('🔧 Serviços (manutenção, instalação, lavagem) ainda está em construção — aguardando a tabela de preços por modelo. Assim que estiver pronta, entra aqui do mesmo jeito que Real/Decore/CDP.');
@@ -801,22 +836,7 @@ function renderResult(r){
   $('rcard-body').innerHTML = body;
 
   // Sell prices
-  $('sell-grid').innerHTML = `
-    <div class="sell-item tabela">
-      <div class="sell-lbl">Tabela</div>
-      <div class="sell-price">${fmt(r.tabela)}</div>
-      <div class="sell-note">Preço cheio</div>
-    </div>
-    <div class="sell-item">
-      <div class="sell-lbl">Cartão</div>
-      <div class="sell-price">${fmt(r.cartao)}</div>
-      <div class="sell-note">Tabela −5%</div>
-    </div>
-    <div class="sell-item avista">
-      <div class="sell-lbl">À Vista</div>
-      <div class="sell-price">${fmt(r.avista)}</div>
-      <div class="sell-note">Tabela −15% (custo ×2)</div>
-    </div>`;
+  $('sell-grid').innerHTML = sellGridHTML(r, r.fab);
 
   $('result-wrap').classList.add('on');
   $('cmp-section').classList.remove('on');
@@ -1498,22 +1518,7 @@ function renderResultCdp(r){
 
   $('rcard-body').innerHTML = body;
 
-  $('sell-grid').innerHTML = `
-    <div class="sell-item tabela">
-      <div class="sell-lbl">Tabela</div>
-      <div class="sell-price">${fmt(r.tabela)}</div>
-      <div class="sell-note">Preço cheio</div>
-    </div>
-    <div class="sell-item">
-      <div class="sell-lbl">Cartão</div>
-      <div class="sell-price">${fmt(r.cartao)}</div>
-      <div class="sell-note">Tabela −5%</div>
-    </div>
-    <div class="sell-item avista">
-      <div class="sell-lbl">À Vista</div>
-      <div class="sell-price">${fmt(r.avista)}</div>
-      <div class="sell-note">Tabela −15% (custo ×2)</div>
-    </div>`;
+  $('sell-grid').innerHTML = sellGridHTML(r, 'cdp');
 
   $('result-wrap').classList.add('on');
   $('cmp-section').classList.remove('on');
@@ -1603,11 +1608,12 @@ function addToCart(){
   if(detBox){ detBox.value=''; delete detBox.dataset.editedManually; }
   
   // Visual feedback
-  const btn = event.target;
-  const orig = btn.textContent;
+  const btn = (window.event && (event.currentTarget || event.target)) || null;
+  if(!btn || !btn.style) return;
+  const orig = btn.innerHTML;
   btn.innerHTML = ic('ok',17)+' Adicionado!';
   btn.style.background = 'linear-gradient(135deg,var(--grn),#1a8a5a)';
-  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+  setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 1500);
 }
 
 function duplicarItemCarrinho(id){
@@ -1719,7 +1725,7 @@ function renderResumoOrc(){
   const totalCartao = CART.reduce((s,i)=>s+i.cartao,0);
   const totalAvista = CART.reduce((s,i)=>s+i.avista,0);
   $('orc-resumo-contador').innerHTML = (EDITING_ORC_ID ? ic('editar',15)+' Editando #' + ($('cli-tiny').value || EDITING_ORC_ID) + ' · ' : ic('orcamentos',15)+' ') + CART.length + (CART.length>1?' itens':' item');
-  $('orc-resumo-valores').textContent = 'Tabela ' + fmt(totalTabela) + ' · Cartão ' + fmt(totalCartao) + ' · À vista ' + fmt(totalAvista);
+  $('orc-resumo-valores').innerHTML = '<span class="rv">'+ic('etiqueta',13)+' Tabela '+fmt(totalTabela)+'</span><span class="rv">'+ic('cartao',13)+' Cartão '+fmt(totalCartao)+'</span><span class="rv rv-av">'+ic('dinheiro',13)+' À vista '+fmt(totalAvista)+'</span>';
 
   // agrupar por ambiente
   const grupos = {};

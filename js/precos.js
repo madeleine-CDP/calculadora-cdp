@@ -2,6 +2,20 @@
 // Ver CLAUDE.md → "Fábricas e fórmulas" antes de alterar qualquer valor.
 
 // ═══════════════════════════════════════════════════════
+// VERSÃO DAS TABELAS — aparece no botão da fábrica e no aviso abaixo dos valores.
+// Ao trocar de tabela, atualize SÓ AQUI (não mexe em nenhum preço).
+const TABELAS_INFO = {
+  real: { nome: 'Real Persianas',  tabela: 'Agosto/2026',  data: '16/09/2026', rotulo: 'conferida em' },
+  dec:  { nome: 'Decore',          tabela: 'Outubro/2026', data: '01/10/2026', rotulo: 'vigente desde' },
+  cdp:  { nome: 'CDP',             tabela: 'tabela própria', data: '',         rotulo: '' }
+};
+function textoTabela(fab){
+  const t = TABELAS_INFO[fab]; if(!t) return '';
+  if(!t.data) return 'tabela ' + t.nome + ' (' + t.tabela + ', data da última atualização ainda não registrada)';
+  return 'tabela ' + t.nome + ' de ' + t.tabela + ' (' + t.rotulo + ' ' + t.data + ')';
+}
+
+// ═══════════════════════════════════════════════════════
 // DADOS BASE — PRODUTOS COM LIMITES E COLEÇÕES
 // ═══════════════════════════════════════════════════════
 

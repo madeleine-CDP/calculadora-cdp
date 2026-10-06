@@ -100,7 +100,7 @@ Quando chegar tabela nova (Real ou Decore):
 1. Use a aba oficial da planilha (na Decore, a aba "Tabela", não a "Tabela Base").
 2. Gere um relatório: itens com custo alterado (com %), itens novos, itens removidos, regras que mudaram (medidas mínimas e máximas, prazos, acessórios).
 3. Aponte inconsistências antes de aplicar.
-4. Atualize a data da tabela no botão da fábrica na tela inicial.
+4. Atualize a versão e a data da tabela em `TABELAS_INFO` (`js/precos.js`). Ela aparece sozinha no botão da fábrica e no aviso abaixo dos valores. A CDP ainda não tem data registrada: peça à Bru.
 5. Lembre a Bru: orçamentos em aberto dos itens que subiram devem ser recalculados antes de gerar a OS.
 
 ## Regras do negócio que o sistema precisa respeitar
