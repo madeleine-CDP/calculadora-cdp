@@ -1,0 +1,31 @@
+# Backup semanal: o plano gratuito do Supabase não tem backup automático.
+# Toda segunda-feira exporta os orçamentos para um arquivo guardado no próprio GitHub por 90 dias
+# (aba Actions → "Backup semanal" → execução → Artifacts). Os dados NÃO vão para o código do repositório.
+name: Backup semanal
+
+on:
+  schedule:
+    - cron: "43 9 * * 1"    # segundas às 06:43 (horário de Brasília)
+  workflow_dispatch: {}
+
+jobs:
+  exportar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exportar orçamentos
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_BACKUP_KEY: ${{ secrets.SUPABASE_BACKUP_KEY || secrets.SUPABASE_ANON_KEY }}
+        run: |
+          mkdir backup
+          data=$(date +%Y-%m-%d)
+          curl -sf "$SUPABASE_URL/rest/v1/orcamentos?select=*&order=id" \
+            -H "apikey: $SUPABASE_BACKUP_KEY" -H "Authorization: Bearer $SUPABASE_BACKUP_KEY" \
+            -o "backup/orcamentos-$data.json"
+          echo "Orçamentos exportados: $(jq length backup/orcamentos-$data.json)"
+      - name: Guardar o arquivo
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-orcamentos
+          path: backup/
+          retention-days: 90

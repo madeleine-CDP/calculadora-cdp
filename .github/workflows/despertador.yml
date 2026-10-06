@@ -1,0 +1,23 @@
+# Despertador do banco: o plano gratuito do Supabase pausa o projeto depois de 1 semana sem uso.
+# Esta rotina faz uma consulta leve todo dia para mantê-lo ativo. Se falhar, o GitHub avisa por e-mail.
+name: Despertador do banco
+
+on:
+  schedule:
+    - cron: "17 11 * * *"   # todo dia às 08:17 (horário de Brasília)
+  workflow_dispatch: {}      # permite rodar à mão pela aba Actions
+
+jobs:
+  acordar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consulta leve no Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/orcamentos?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "Resposta do banco: $status"
+          test "$status" = "200"
