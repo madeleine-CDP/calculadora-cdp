@@ -934,40 +934,101 @@ async function sbDeleteOrcamento(id){
 
 function getHistory(){ return HISTORY_CACHE; }
 
+// ── Lista de orçamentos (C1): busca + filtro por etapa ──
+const ETAPAS = [
+  ['pre_orcamento','Pré-orçamento'], ['visita','Visita'], ['orcamento','Orçamento'],
+  ['enviado','Enviado'], ['fechado','Fechado'], ['perdido','Perdido']
+];
+const ETAPA_NOME = Object.fromEntries(ETAPAS);
+let HIST_ETAPA = 'todos';
+let HIST_CARREGADO = false;
+
+function semAcento(t){ return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+function iniciais(nome){
+  const p = String(nome||'').trim().split(/\s+/).filter(Boolean);
+  if(!p.length) return '?';
+  return ((p[0][0]||'') + (p.length>1 ? p[p.length-1][0] : '')).toUpperCase();
+}
+function escHtml(t){ return String(t==null?'':t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function ambientesDe(e){
+  if(!e.items || !e.items.length) return 0;
+  return new Set(e.items.map(i => (i.ambiente||'').trim().toLowerCase()).filter(Boolean)).size || 1;
+}
+function combinaBusca(e, termo){
+  if(!termo) return true;
+  const alvo = semAcento([e.client, e.bairro, numCDP(e.numero), e.ref ? 'tiny '+e.ref : '', (e.items||[]).map(i=>i.ambiente).join(' ')].join(' '));
+  if(alvo.includes(termo)) return true;
+  const digitos = termo.replace(/\D/g,'');
+  if(digitos){
+    if(e.numero && String(e.numero) === String(parseInt(digitos,10))) return true;
+    if(e.ref && String(e.ref).includes(digitos)) return true;
+    if(digitos.length >= 4 && e.telefone && e.telefone.replace(/\D/g,'').includes(digitos)) return true;
+  }
+  return false;
+}
+
+function escolherEtapaFiltro(etapa){ HIST_ETAPA = etapa; filtrarHistorico(); }
+
 async function renderHistory(){
   const list = $('hist-list');
-  list.innerHTML = '<div class="hist-empty">Carregando orçamentos…</div>';
+  if(!HIST_CARREGADO) list.innerHTML = '<div class="hist-empty">Carregando orçamentos…</div>';
   try{
     HISTORY_CACHE = await sbFetchHistory();
+    HIST_CARREGADO = true;
   } catch(err){
+    $('hist-contagem').textContent = '';
     list.innerHTML = '<div class="hist-empty" style="color:var(--red)">'+ic('alerta',16)+' Não foi possível carregar os orçamentos.<br><span style="font-size:11px;color:var(--tx3)">Verifique sua conexão e tente de novo.</span></div>';
     return;
   }
+  filtrarHistorico();
+}
+
+function filtrarHistorico(){
+  const list = $('hist-list');
   const h = HISTORY_CACHE;
-  if(!h.length){ list.innerHTML='<div class="hist-empty">Nenhum orçamento salvo ainda.</div>'; return; }
-  list.innerHTML = h.map(e => {
+  const abertos = h.filter(e => e.etapa !== 'fechado' && e.etapa !== 'perdido').length;
+  $('hist-contagem').textContent = h.length ? abertos + ' em aberto · ' + h.length + ' no total' : '';
+
+  // filtros: "Todos" + só as etapas que têm orçamento (ou a que está selecionada)
+  const cont = {}; h.forEach(e => { cont[e.etapa] = (cont[e.etapa]||0) + 1; });
+  const chip = (id, nome, n) => `<button type="button" role="tab" class="hist-chip${HIST_ETAPA===id?' on':''}" aria-selected="${HIST_ETAPA===id}" onclick="escolherEtapaFiltro('${id}')">${nome} <span>${n}</span></button>`;
+  $('hist-filtros').innerHTML = chip('todos','Todos',h.length) +
+    ETAPAS.filter(([id]) => cont[id] || HIST_ETAPA===id).map(([id,nome]) => chip(id, nome, cont[id]||0)).join('');
+
+  if(!h.length){ list.innerHTML = '<div class="hist-empty">Nenhum orçamento salvo ainda.<br>Toque em <strong>Novo orçamento</strong> para começar.</div>'; return; }
+
+  const termo = semAcento(($('hist-busca') && $('hist-busca').value || '').trim());
+  const vis = h.filter(e => (HIST_ETAPA==='todos' || e.etapa===HIST_ETAPA) && combinaBusca(e, termo));
+  if(!vis.length){ list.innerHTML = '<div class="hist-empty">Nenhum orçamento encontrado'+(termo?' para “'+escHtml(termo)+'”':'')+'.</div>'; return; }
+
+  list.innerHTML = vis.map(e => {
     const isMulti = !!e.items;
-    const itemCount = isMulti ? e.items.length : 1;
     const totalAv = isMulti ? e.totalAvista : (e.full ? e.full.avista : 0);
-    const detail = isMulti
-      ? e.items.map(i=>i.label).join(' · ')
-      : fabName(e.fab) + ' · ' + e.prod + ' ' + e.fam + ' — ' + e.col;
-    const fabRaw = isMulti ? (e.items[0]&&e.items[0].fab||'real') : e.fab;
-    const fabClass = fabRaw==='real' ? 'real' : (fabRaw==='cdp' ? 'cdp' : 'decore');
+    const amb = ambientesDe(e);
+    const linha2 = [numCDP(e.numero), e.bairro, amb ? amb + (amb>1?' ambientes':' ambiente') : ''].filter(Boolean).map(escHtml).join(' · ');
+    const etapa = e.etapa || 'orcamento';
     return `
-    <div class="hist-item" onclick="reopenOrc(${e.id})">
-      <div class="hist-ref">${e.numero ? '<span class="hist-num">'+numCDP(e.numero)+'</span>' : ''}${e.ref ? '<span class="hist-tiny">Tiny #'+e.ref+'</span>' : ''}</div>
-      <div style="flex:1">
-        <div class="hist-client">${e.client}</div>
-        <div class="hist-detail">${detail}</div>
-        ${itemCount>1?'<div style="font-size:11px;color:var(--gold);margin-top:2px">'+itemCount+' itens</div>':''}
+    <div class="hist-item hist-card" onclick="reopenOrc(${e.id})">
+      <div class="hist-avatar etapa-${etapa}" aria-hidden="true">${escHtml(iniciais(e.client))}</div>
+      <div class="hist-info">
+        <div class="hist-client">${escHtml(e.client)}</div>
+        <div class="hist-detail">${linha2}</div>
+        <div class="hist-meta">
+          <span class="hist-etapa etapa-${etapa}">${ETAPA_NOME[etapa]||escHtml(etapa)}</span>
+          ${e.ref ? '<span class="hist-tiny">Tiny #'+escHtml(e.ref)+'</span>' : ''}
+        </div>
       </div>
-      <div style="text-align:right">
-        <div class="hist-cost ${fabClass}">${fmt(totalAv)} <span style="font-size:10px;font-weight:400;color:var(--tx3)">à vista</span></div>
-        <div class="hist-date">${e.date}${e.criadoPor ? ' · '+ic('usuario',13)+' '+e.criadoPor : ''}</div>
+      <div class="hist-valor">
+        <div class="hist-cost">${fmt(totalAv)}</div>
+        <div class="hist-cost-lbl">à vista</div>
       </div>
-      <button class="btn-outline" style="padding:9px 16px!important;white-space:nowrap" onclick="event.stopPropagation();reopenOrc(${e.id})">${ic('editar',15)} Abrir</button>
-      <button class="hist-del" onclick="event.stopPropagation();delOrc(${e.id})" title="Excluir" aria-label="Excluir orçamento">${ic('lixeira',16)}</button>
+      <div class="hist-rodape">
+        <span class="hist-date">${escHtml(e.date)}${e.criadoPor ? ' · '+ic('usuario',13)+' '+escHtml(e.criadoPor) : ''}</span>
+        <span class="hist-acoes">
+          <button class="btn-outline hist-abrir" onclick="event.stopPropagation();reopenOrc(${e.id})">${ic('editar',15)} Abrir</button>
+          <button class="hist-del" onclick="event.stopPropagation();delOrc(${e.id})" title="Excluir" aria-label="Excluir orçamento de ${escHtml(e.client)}">${ic('lixeira',16)}</button>
+        </span>
+      </div>
     </div>`;
   }).join('');
 }
@@ -986,18 +1047,12 @@ function reopenOrc(id){
     if(e.bairro) $('cli-bairro').value = e.bairro;
     syncCliente();
     updateCartBar();
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    $('tab-proposta').classList.add('active');
-    document.querySelectorAll('.tab-btn')[2].classList.add('active');
+    irParaTab('proposta');
     syncPropostaFromCart();
   } else if(e.full){
     STATE.lastResult = e.full;
     renderResult(e.full);
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    $('tab-calc').classList.add('active');
-    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+    irParaTab('calc');
   }
 }
 
@@ -1012,16 +1067,6 @@ async function delOrc(id){
   }
 }
 
-async function clearAllHistory(){
-  if(!confirm('Excluir TODOS os orçamentos? Isso remove para TODA A EQUIPE e não pode ser desfeito.')) return;
-  if(!confirm('Tem certeza mesmo? Todos os orçamentos de todos serão apagados.')) return;
-  try{
-    for(const e of getHistory()){ await sbDeleteOrcamento(e.id); }
-    await renderHistory();
-  } catch(err){
-    alert('⚠️ Não foi possível excluir tudo. Verifique sua conexão.');
-  }
-}
 
 // ═══════════════════════════════════════════════════════
 // COMPARE
@@ -1653,10 +1698,7 @@ function editarItemCarrinho(id){
   const full = item.full || {};
 
   // muda pra aba Calculadora
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  $('tab-calc').classList.add('active');
-  document.querySelectorAll('.tab-btn')[0].classList.add('active');
+  irParaTab('calc');
 
   selectFab(item.fab);
   $('item-ambiente').value = item.ambiente || '';
@@ -1851,7 +1893,7 @@ function renderCartItems(){
     </div>
   `).join('') + `
     <div style="display:flex;justify-content:flex-end;padding-top:8px;gap:4px">
-      <button class="btn-outline" style="font-size:11.5px;padding:5px 12px;color:var(--red);border-color:var(--red)" onclick="clearCart()">${ic('lixeira',15)} Limpar tudo</button>
+      <button class="btn-outline" style="font-size:11.5px;padding:5px 12px;color:var(--red);border-color:var(--red)" onclick="clearCart()">${ic('lixeira',15)} Remover todos os itens</button>
     </div>`;
 }
 
@@ -1891,11 +1933,7 @@ function novoOrcamento(){
 
   resetCalc();
 
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  $('tab-calc').classList.add('active');
-  document.querySelectorAll('.tab-btn')[0].classList.add('active');
-  const sticky = $('sticky-actions'); if(sticky) sticky.style.display = 'flex';
+  irParaTab('calc');
 
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -1945,13 +1983,18 @@ async function saveOrcamento(){
 // ═══════════════════════════════════════════════════
 // PROPOSTA COMERCIAL
 // ═══════════════════════════════════════════════════
-function switchTab(t){
+// Mostra a aba t ('hist', 'calc' ou 'proposta') sem depender da ordem dos botões
+function irParaTab(t){
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
   $('tab-'+t).classList.add('active');
-  event.target.classList.add('active');
   const sticky = $('sticky-actions');
   if(sticky) sticky.style.display = (t==='calc') ? 'flex' : 'none';
+  document.body.classList.toggle('na-lista', t==='hist');
+}
+
+function switchTab(t){
+  irParaTab(t);
   if(t==='hist') renderHistory();
   if(t==='proposta') syncPropostaFromCalc();
 }
@@ -2470,3 +2513,17 @@ function imprimirProposta(){
   w.document.close();
   setTimeout(()=>w.print(), 800);
 }
+
+// ── Tela inicial = lista de orçamentos. Carrega assim que o login sai da frente. ──
+(function iniciarLista(){
+  const tela = document.getElementById('login-screen');
+  let feito = false;
+  const tentar = () => {
+    if(feito) return;
+    if(tela && getComputedStyle(tela).display !== 'none') return;
+    feito = true; irParaTab('hist'); renderHistory();
+  };
+  if(tela && window.MutationObserver) new MutationObserver(tentar).observe(tela, {attributes:true, attributeFilter:['style']});
+  document.addEventListener('DOMContentLoaded', () => setTimeout(tentar, 0));
+  tentar();
+})();
