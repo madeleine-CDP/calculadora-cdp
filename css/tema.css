@@ -395,3 +395,30 @@ body[data-tela=orc] .pasta-barra{display:flex}
 .pasta-detalhe textarea{min-height:84px}
 .pasta-barra .btn,.pasta-barra .btn-outline{white-space:nowrap;padding:0 18px!important;font-size:15px!important}
 .pasta-barra .btn-outline{flex:0 1 150px}
+/* Cartão do item na pasta: descritivo completo (pedido da Bru) */
+.pasta-amb-topo em{font-style:normal;font-weight:500;text-transform:none;letter-spacing:0;color:var(--tinta-suave)}
+.pasta-item{padding:14px 0 16px!important}
+.pasta-item-cab{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.pasta-item-cab .pasta-item-nome{flex:1;min-width:0;padding-top:7px}
+.pasta-desc{margin:10px 0 0;display:grid;gap:6px}
+.pasta-desc div{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;font-size:14px;line-height:1.4}
+.pasta-desc dt{color:var(--tinta-suave);font-size:12.5px;padding-top:1px}
+.pasta-desc dd{margin:0;color:var(--tinta);overflow-wrap:anywhere}
+.pasta-alerta{margin-top:10px;display:flex;gap:6px;align-items:flex-start;font-size:12.5px;line-height:1.4;color:var(--dourado-texto);background:var(--areia);border-radius:10px;padding:8px 10px}
+.pasta-alerta .ic{flex:none;margin-top:2px}
+label.pasta-detalhe{display:flex!important;flex-direction:column;gap:5px;margin-top:12px;flex:none!important;order:0!important}
+label.pasta-detalhe>span{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--tinta-suave);font-weight:600}
+label.pasta-detalhe.pendente>span{color:var(--dourado-texto)}
+label.pasta-detalhe.pendente textarea{border-color:#E2C48E;background:#FFFBF2}
+.pasta-valores{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px;margin-top:12px}
+.pasta-valores div{display:flex;flex-direction:column;gap:2px;background:var(--fundo,#F7F4F1);border-radius:12px;padding:9px 11px;min-width:0}
+.pasta-valores span{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--tinta-suave);white-space:nowrap}
+.pasta-valores strong{font-size:15px;white-space:nowrap}
+.pasta-valores .av{background:var(--vinho-suave)}
+.pasta-valores .av strong{color:var(--vinho);font-size:16.5px}
+@media (max-width:400px){
+  .pasta-desc div{grid-template-columns:84px minmax(0,1fr)}
+  .pasta-valores{grid-template-columns:1fr 1fr}
+  .pasta-valores .av{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center}
+}
+label.pasta-detalhe textarea{overflow:hidden;resize:none}

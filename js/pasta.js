@@ -66,34 +66,12 @@ function renderPasta(){
     : Object.entries(grupos).map(([amb, itens]) => {
         const sub = itens.reduce((s,i)=>s+(i.avista||0),0);
         return `<div class="pasta-amb">
-          <div class="pasta-amb-topo"><span>${ic('local',15)} ${escHtml(amb)}</span><span>${fmt(sub)}</span></div>
-          ${itens.map(item => {
-            const medidas = (item.w && item.h) ? (String(item.w).replace('.',',') + ' × ' + String(item.h).replace('.',',') + ' m' + (item.qty>1 ? ' · ' + item.qty + ' peças' : '')) : '';
-            const modelo = [item.prod, item.fam].filter(Boolean).join(' · ') + (item.col ? ' — ' + item.col : '');
-            const pend = (item.detail||'').toUpperCase().includes('A DEFINIR');
-            return `<div class="pasta-item">
-              <div class="pasta-item-linha">
-                <div class="pasta-item-info">
-                  <div class="pasta-item-nome"><span class="pasta-fab fab-${item.fab}">${escHtml(fabName(item.fab))}</span>${escHtml(item.label)}</div>
-                  <div class="pasta-item-det">${escHtml(modelo)}${medidas ? ' · ' + medidas : ''}</div>
-                </div>
-                <div class="pasta-item-valor">${fmt(item.avista)}<span>à vista</span></div>
-              </div>
-              <div class="pasta-item-acoes">
-                <details class="pasta-detalhe"${pend ? ' open' : ''}>
-                  <summary>${pend ? ic('alerta',14) + ' Detalhamento com "A DEFINIR"' : ic('nota',14) + ' Detalhamento'}</summary>
-                  <textarea rows="3" oninput="updateItemDetail(${item.id}, this.value)" aria-label="Detalhamento do item ${escHtml(item.label)}">${escHtml(item.detail||'')}</textarea>
-                </details>
-                <span class="pasta-botoes">
-                  <button type="button" onclick="editarItemCarrinho(${item.id})" title="Editar" aria-label="Editar ${escHtml(item.label)}">${ic('editar',16)}</button>
-                  <button type="button" onclick="duplicarItemCarrinho(${item.id})" title="Duplicar" aria-label="Duplicar ${escHtml(item.label)}">${ic('copiar',16)}</button>
-                  <button type="button" onclick="removerItemPasta(${item.id})" title="Remover" aria-label="Remover ${escHtml(item.label)}">${ic('lixeira',16)}</button>
-                </span>
-              </div>
-            </div>`;
-          }).join('')}
+          <div class="pasta-amb-topo"><span>${ic('local',15)} ${escHtml(amb)} <em>· ${itens.length} ${itens.length>1?'itens':'item'}</em></span><span>${fmt(sub)}</span></div>
+          ${itens.map((item, n) => cardItemPasta(item, n)).join('')}
         </div>`;
       }).join('');
+
+  document.querySelectorAll('#pasta-lista textarea').forEach(autoAltura);
 
   const tAv = CART.reduce((s,i)=>s+(i.avista||0),0);
   const tCa = CART.reduce((s,i)=>s+(i.cartao||0),0);
@@ -106,6 +84,72 @@ function renderPasta(){
       <div><span>${ic('etiqueta',15)} Tabela</span><strong>${fmt(tTa)}</strong></div>
     </div>`;
 }
+
+// ── Descritivo completo de um item (só lê o que o cálculo já guardou) ──
+function numBR(v, casas){ return (Number(v)||0).toLocaleString('pt-BR', {minimumFractionDigits: casas, maximumFractionDigits: casas}); }
+function linhasDescritivo(item){
+  const f = item.full || {};
+  const L = [];
+  const fam = item.fam || f.fam;
+  L.push(['Modelo', [item.prod || f.prod, fam].filter(Boolean).join(' · ')]);
+  if(item.fab === 'cdp'){
+    L.push(['Tecido', item.col || f.colLabel || '']);
+  } else {
+    L.push(['Coleção', item.col || f.colLabel || '']);
+  }
+  const w = item.w || f.w, h = item.h || f.h, qty = item.qty || f.qty || 1;
+  if(w){
+    let med = numBR(w,2) + (h ? ' × ' + numBR(h,2) : '') + ' m';
+    if(item.fab === 'cdp' && !h) med = numBR(w,2) + ' m de largura';
+    const area = f.usedArea || f.area;
+    if(item.fab !== 'cdp' && area) med += '  (' + numBR(area,2) + ' m²' + (qty>1 ? ' por peça' : '') + ')';
+    L.push(['Medidas', med]);
+  }
+  L.push(['Quantidade', qty + (qty>1 ? ' peças' : ' peça')]);
+  if(f.tubo && f.tubo.label) L.push(['Tubo', f.tubo.label]);
+  const acc = (f.acc && Array.isArray(f.acc.lines)) ? f.acc.lines.map(l => l.label).filter(Boolean) : [];
+  if(f.reducao && !acc.some(a => /redu/i.test(a))) acc.push('Redução de peso');
+  if(item.fab === 'cdp'){
+    if(f.ilhosAplicado) acc.push('Ilhós');
+    if(f.curvoAplicado) acc.push('Trilho curvo');
+  }
+  if(acc.length) L.push(['Acessórios', acc.join(' · ')]);
+  const extras = (f.extras || []).map(e => e.desc).filter(Boolean);
+  if(extras.length) L.push(['Adicionais', extras.join(' · ')]);
+  return L.filter(([, v]) => v);
+}
+
+function cardItemPasta(item, n){
+  const f = item.full || {};
+  const pend = (item.detail||'').toUpperCase().includes('A DEFINIR');
+  const fora = item.foraDoPadrao || f.foraDoPadrao;
+  return `<div class="pasta-item">
+    <div class="pasta-item-cab">
+      <div class="pasta-item-nome"><span class="pasta-fab fab-${item.fab}">${escHtml(fabName(item.fab))}</span>${escHtml(item.label)}</div>
+      <span class="pasta-botoes">
+        <button type="button" onclick="editarItemCarrinho(${item.id})" title="Editar" aria-label="Editar ${escHtml(item.label)}">${ic('editar',16)}</button>
+        <button type="button" onclick="duplicarItemCarrinho(${item.id})" title="Duplicar" aria-label="Duplicar ${escHtml(item.label)}">${ic('copiar',16)}</button>
+        <button type="button" onclick="removerItemPasta(${item.id})" title="Remover" aria-label="Remover ${escHtml(item.label)}">${ic('lixeira',16)}</button>
+      </span>
+    </div>
+    <dl class="pasta-desc">
+      ${linhasDescritivo(item).map(([k,v]) => `<div><dt>${k}</dt><dd>${escHtml(v)}</dd></div>`).join('')}
+    </dl>
+    ${fora ? `<div class="pasta-alerta">${ic('alerta',14)} Medida fora do padrão de fabricação${f.minFab ? ' (mín. ' + numBR(f.minFab,2) + ' m)' : ''}: cobrado pelo mínimo.</div>` : ''}
+    <label class="pasta-detalhe${pend ? ' pendente' : ''}">
+      <span>${pend ? ic('alerta',14) + ' Detalhamento — troque os "A DEFINIR"' : ic('nota',14) + ' Detalhamento'}</span>
+      <textarea rows="3" oninput="autoAltura(this); updateItemDetail(${item.id}, this.value); this.closest('.pasta-detalhe').classList.toggle('pendente', this.value.toUpperCase().includes('A DEFINIR'))">${escHtml(item.detail||'')}</textarea>
+    </label>
+    <div class="pasta-valores">
+      <div class="av"><span>${ic('dinheiro',14)} À vista</span><strong>${fmt(item.avista)}</strong></div>
+      <div><span>${ic('cartao',14)} Cartão</span><strong>${fmt(item.cartao)}</strong></div>
+      <div><span>${ic('etiqueta',14)} Tabela</span><strong>${fmt(item.tabela)}</strong></div>
+    </div>
+  </div>`;
+}
+
+// Caixa de texto cresce para mostrar o detalhamento inteiro
+function autoAltura(el){ el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; }
 
 function removerItemPasta(id){
   const item = CART.find(x => x.id === id);
