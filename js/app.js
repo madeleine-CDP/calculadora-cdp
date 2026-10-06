@@ -924,8 +924,7 @@ async function sbUpdateOrcamento(id, entry){
     body: JSON.stringify({
       ref: entry.ref || '', client: entry.client, date: entry.date, items: entry.items,
       total_tabela: entry.totalTabela, total_cartao: entry.totalCartao, total_avista: entry.totalAvista,
-      telefone: entry.telefone || null, bairro: entry.bairro || null,
-      criado_por: getUsuarioLogado()
+      telefone: entry.telefone || null, bairro: entry.bairro || null
     })
   });
   if(!res.ok) throw new Error('Falha ao atualizar: ' + res.status + ' ' + (await res.text()));
@@ -1044,6 +1043,7 @@ function reopenOrc(id){
   if(!e) return;
 
   if(e.items){
+    limparOrcamentoEmAndamento();
     CART = e.items.map(i=>({...i}));
     EDITING_ORC_ID = e.id;
     $('cli-nome').value = e.client;
@@ -1051,9 +1051,9 @@ function reopenOrc(id){
     if(e.telefone) $('cli-tel').value = e.telefone;
     if(e.bairro) $('cli-bairro').value = e.bairro;
     syncCliente();
+    ORC_SUJO = false;
     updateCartBar();
-    irParaTab('proposta');
-    syncPropostaFromCart();
+    abrirPasta();
   } else if(e.full){
     STATE.lastResult = e.full;
     renderResult(e.full);
@@ -1602,6 +1602,7 @@ let CART = [];
 // Quando não-nulo, "Salvar Orçamento" ATUALIZA esse id (Supabase) em vez de criar um novo —
 // setado por reopenOrc() ao reabrir um orçamento salvo, limpo por novoOrcamento()/clearCart()
 let EDITING_ORC_ID = null;
+let ORC_SUJO = false; // true = orçamento aberto tem alteração que ainda não foi salva
 
 function baseDetalhamento(prod, w, h, jw, jh){
   const wf = w.toFixed(2).replace('.',',');
@@ -1672,8 +1673,14 @@ function addToCart(){
   updateCartBar();
   EXTRAS = []; renderExtras();
   if(detBox){ detBox.value=''; delete detBox.dataset.editedManually; }
-  
-  // Visual feedback
+  ORC_SUJO = true;
+
+  // C3b: depois de adicionar, volta para a pasta do orçamento
+  abrirPasta();
+  avisoTopo('Item adicionado em <strong>' + escHtml(r.ambiente || label) + '</strong>.');
+  return;
+
+  // Visual feedback (antigo, não usado desde a C3b)
   const btn = (window.event && (event.currentTarget || event.target)) || null;
   if(!btn || !btn.style) return;
   const orig = btn.innerHTML;
@@ -1692,6 +1699,7 @@ function duplicarItemCarrinho(id){
     label: item.label.replace(/\s*-\s*Item\s*\d+$/i, '') + ' - Item ' + (mesmoAmbiente + 1) + ' (cópia)'
   };
   CART.push(copia);
+  ORC_SUJO = true;
   updateCartBar();
 }
 
@@ -1781,13 +1789,14 @@ function toggleResumoOrc(){
 
 function renderResumoOrc(){
   const barWrap = $('orc-resumo-bar');
-  if(!CART.length){ barWrap.style.display = 'none'; return; }
+  // aparece na calculadora e na proposta quando há orçamento aberto; some na pasta, na lista e no "novo"
+  if((!CART.length && !EDITING_ORC_ID) || ['orc','hist','novo'].includes(document.body.dataset.tela)){ barWrap.style.display = 'none'; return; }
   barWrap.style.display = 'block';
 
   const totalTabela = CART.reduce((s,i)=>s+i.tabela,0);
   const totalCartao = CART.reduce((s,i)=>s+i.cartao,0);
   const totalAvista = CART.reduce((s,i)=>s+i.avista,0);
-  $('orc-resumo-contador').innerHTML = (EDITING_ORC_ID ? ic('editar',15)+' Editando <span style="white-space:nowrap">' + nomeOrcEditando() + '</span> · ' : ic('orcamentos',15)+' ') + CART.length + (CART.length>1?' itens':' item');
+  $('orc-resumo-contador').innerHTML = (EDITING_ORC_ID ? ic('editar',15)+' Editando <span style="white-space:nowrap">' + nomeOrcEditando() + '</span> · ' : ic('orcamentos',15)+' ') + (CART.length ? CART.length + (CART.length>1?' itens':' item') : 'sem itens');
   $('orc-resumo-valores').innerHTML = '<span class="rv">'+ic('etiqueta',13)+' Tabela '+fmt(totalTabela)+'</span><span class="rv">'+ic('cartao',13)+' Cartão '+fmt(totalCartao)+'</span><span class="rv rv-av">'+ic('dinheiro',13)+' À vista '+fmt(totalAvista)+'</span>';
 
   // agrupar por ambiente
@@ -1845,6 +1854,7 @@ function updateAmbientesDatalist(){
 
 function updateCartBar(){
   renderResumoOrc();
+  if(document.body.dataset.tela === 'orc' && typeof renderPasta === 'function') renderPasta();
   updateAmbientesDatalist();
   const bar = $('cart-bar');
   const count = $('cart-count');
@@ -1907,18 +1917,19 @@ function renderCartItems(){
 
 function updateItemDetail(id, value){
   const item = CART.find(x => x.id === id);
-  if(item) item.detail = value;
+  if(item){ item.detail = value; ORC_SUJO = true; }
 }
 
 function removeFromCart(id){
   CART = CART.filter(x => x.id !== id);
+  ORC_SUJO = true;
   updateCartBar();
 }
 
 function clearCart(){
   if(!confirm('Remover todos os itens do orçamento?')) return;
   CART = [];
-  EDITING_ORC_ID = null;
+  ORC_SUJO = true;   // mantém o mesmo orçamento (não vira um novo ao salvar)
   updateCartBar();
 }
 
@@ -1929,7 +1940,7 @@ function clearCart(){
 // ── Novo orçamento (C2): começa pelo cliente ──
 // Limpa o que estiver em andamento e abre a tela "Novo orçamento".
 function novoOrcamento(){
-  if(CART.length > 0 && !confirm('Isso fecha o orçamento em andamento pra começar um novo.\n\nSe algo aqui ainda não foi salvo, vai se perder. Continuar?')) return;
+  if(!confirmarSairOrc()) return;
   limparOrcamentoEmAndamento();
   ['novo-nome','novo-tel','novo-bairro','novo-end','novo-cpf','novo-email'].forEach(id => { const el=$(id); if(el) el.value=''; });
   document.querySelectorAll('#tab-novo .novo-opcao').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-checked','false'); });
@@ -1945,6 +1956,7 @@ function novoOrcamento(){
 function limparOrcamentoEmAndamento(){
   CART = [];
   EDITING_ORC_ID = null;
+  ORC_SUJO = false;
   updateCartBar();
   ['cli-nome','cli-tel','cli-bairro','cli-tiny','cli-cpf','cli-email','cli-end','cli-contato'].forEach(id=>{
     const el = $(id); if(el) el.value = '';
@@ -2076,12 +2088,12 @@ async function saveOrcamento(){
     return;
   }
 
-  CART = [];
-  EDITING_ORC_ID = null;
-  updateCartBar();
-  alert(isUpdate && !primeiroSalvar
-    ? '✅ Orçamento ' + (nome || '#' + ref) + ' atualizado com ' + count + (count>1?' itens':' item') + '!\n\nA versão antiga foi substituída — já está disponível para toda a equipe.'
-    : '✅ Orçamento ' + (nome ? nome + ' ' : '') + 'salvo com ' + count + (count>1?' itens':' item') + '!\n\nJá está disponível para toda a equipe.');
+  // C3b: salvar fecha a edição e volta para a lista
+  limparOrcamentoEmAndamento();
+  irParaTab('hist');
+  window.scrollTo({top:0});
+  await renderHistory();
+  avisoTopo(ic('ok',16) + ' Orçamento de <strong>' + escHtml(client) + '</strong>' + (nome ? ' (' + nome + ')' : '') + ' ' + (isUpdate && !primeiroSalvar ? 'atualizado' : 'salvo') + ' com ' + count + (count>1?' itens':' item') + '. Edição encerrada.');
 }
 
 // ═══════════════════════════════════════════════════
@@ -2095,9 +2107,12 @@ function irParaTab(t){
   const sticky = $('sticky-actions');
   if(sticky) sticky.style.display = (t==='calc') ? 'flex' : 'none';
   document.body.dataset.tela = t;
+  if(t !== 'orc') document.body.classList.remove('cli-aberto');
+  renderResumoOrc();
 }
 
 function switchTab(t){
+  if(t === 'hist' && orcamentoAberto()){ voltarParaLista(); return; }
   irParaTab(t);
   if(t==='hist') renderHistory();
   if(t==='proposta') syncPropostaFromCalc();
