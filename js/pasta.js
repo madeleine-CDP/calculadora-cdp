@@ -13,12 +13,13 @@ function confirmarSairOrc(){
   return confirm('Este orçamento tem alterações que ainda não foram salvas.\n\nSair sem salvar?');
 }
 
-function voltarParaLista(){
+function voltarParaLista(destino){
   if(!confirmarSairOrc()) return;
   limparOrcamentoEmAndamento();
   document.body.classList.remove('cli-aberto');
-  irParaTab('hist');
-  renderHistory();
+  const d = destino === 'inicio' ? 'inicio' : 'hist';
+  irParaTab(d);
+  if(d === 'inicio') renderInicio(true); else renderHistory();
   window.scrollTo({top:0});
 }
 

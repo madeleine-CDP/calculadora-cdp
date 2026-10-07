@@ -1830,7 +1830,7 @@ function toggleResumoOrc(){
 function renderResumoOrc(){
   const barWrap = $('orc-resumo-bar');
   // aparece na calculadora e na proposta quando há orçamento aberto; some na pasta, na lista e no "novo"
-  if((!CART.length && !EDITING_ORC_ID) || ['orc','hist','novo','calc'].includes(document.body.dataset.tela)){ barWrap.style.display = 'none'; return; }
+  if((!CART.length && !EDITING_ORC_ID) || ['orc','hist','novo','calc','inicio'].includes(document.body.dataset.tela)){ barWrap.style.display = 'none'; return; }
   barWrap.style.display = 'block';
 
   const totalTabela = CART.reduce((s,i)=>s+i.tabela,0);
@@ -2205,9 +2205,10 @@ function irParaTab(t){
 }
 
 function switchTab(t){
-  if(t === 'hist' && orcamentoAberto()){ voltarParaLista(); return; }
+  if((t === 'hist' || t === 'inicio') && orcamentoAberto()){ voltarParaLista(t); return; }
   irParaTab(t);
   if(t==='hist') renderHistory();
+  if(t==='inicio') renderInicio(true);
   if(t==='proposta') syncPropostaFromCalc();
 }
 
@@ -2733,7 +2734,7 @@ function imprimirProposta(){
   const tentar = () => {
     if(feito) return;
     if(tela && getComputedStyle(tela).display !== 'none') return;
-    feito = true; irParaTab('hist'); renderHistory();
+    feito = true; irParaTab('inicio'); renderInicio(true);
   };
   if(tela && window.MutationObserver) new MutationObserver(tentar).observe(tela, {attributes:true, attributeFilter:['style']});
   document.addEventListener('DOMContentLoaded', () => setTimeout(tentar, 0));

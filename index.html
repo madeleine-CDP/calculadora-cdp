@@ -49,9 +49,9 @@
 <nav class="tabs-nav">
   <button class="btn-novo-orc" onclick="novoOrcamento()" title="Limpa o item/orçamento em andamento e os dados do cliente pra começar do zero"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Novo orçamento</button>
   <div class="tabs-nav-divider"></div>
-  <button class="tab-btn active" data-tab="hist" onclick="switchTab('hist')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span class="lbl-full">Orçamentos</span><span class="lbl-curto">Orçamentos</span></button>
+  <button class="tab-btn active" data-tab="inicio" onclick="switchTab('inicio')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="lbl-full">Início</span><span class="lbl-curto">Início</span></button>
+  <button class="tab-btn" data-tab="hist" onclick="switchTab('hist')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span class="lbl-full">Orçamentos</span><span class="lbl-curto">Orçamentos</span></button>
   <button class="tab-btn" data-tab="calc" onclick="switchTab('calc')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg><span class="lbl-full">Calculadora</span><span class="lbl-curto">Calcular</span></button>
-  <button class="tab-btn" data-tab="proposta" onclick="switchTab('proposta')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg><span class="lbl-full">Proposta</span><span class="lbl-curto">Proposta</span></button>
 </nav>
 
 <!-- ═══════════ CLIENTE ═══════════ -->
@@ -352,7 +352,12 @@
 </div><!-- tab-calc -->
 
 <!-- ═══════════ TAB: HISTÓRICO ═══════════ -->
-<div id="tab-hist" class="tab-panel active">
+<!-- ═══════════ INÍCIO (E1): painel do dia ═══════════ -->
+<div id="tab-inicio" class="tab-panel active">
+<div class="wrap inicio-wrap" id="inicio-conteudo"><div class="hist-empty">Carregando…</div></div>
+</div>
+
+<div id="tab-hist" class="tab-panel">
 <div class="wrap">
   <div class="hist-topo">
     <div>
@@ -513,6 +518,7 @@
 <script src="js/app.js"></script>
 <script src="js/pasta.js"></script>
 <script src="js/passos.js"></script>
+<script src="js/inicio.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
 <div id="orc-resumo-bar" style="position:fixed;bottom:60px;left:0;right:0;background:#2B221C;color:#FFF;z-index:499;display:none">
