@@ -88,11 +88,11 @@ function renderPasta(){
   const tTa = CART.reduce((s,i)=>s+(i.tabela||0),0);
   $('pasta-totais').style.display = CART.length ? '' : 'none';
   $('pasta-totais').innerHTML = `
-    <div class="pasta-total-av"><span>${ic('dinheiro',16)} Total à vista / PIX</span><strong>${fmt(tAv)}</strong></div>
     <div class="pasta-total-outros">
-      <div><span>${ic('cartao',15)} Cartão</span><strong>${fmt(tCa)}</strong></div>
       <div><span>${ic('etiqueta',15)} Tabela</span><strong>${fmt(tTa)}</strong></div>
-    </div>`;
+      <div><span>${ic('cartao',15)} Cartão</span><strong>${fmt(tCa)}</strong></div>
+    </div>
+    <div class="pasta-total-av"><span>${ic('dinheiro',16)} Total à vista / PIX</span><strong>${fmt(tAv)}</strong></div>`;
 }
 
 // ── Descritivo completo de um item (só lê o que o cálculo já guardou) ──
@@ -159,9 +159,9 @@ function cardItemPasta(item, n){
       <textarea rows="3" oninput="autoAltura(this); updateItemDetail(${item.id}, this.value); this.closest('.pasta-detalhe').classList.toggle('pendente', this.value.toUpperCase().includes('A DEFINIR'))">${escHtml(item.detail||'')}</textarea>
     </label>
     <div class="pasta-valores">
-      <div class="av"><span>${ic('dinheiro',14)} À vista</span><strong>${fmt(item.avista)}</strong></div>
-      <div><span>${ic('cartao',14)} Cartão</span><strong>${fmt(item.cartao)}</strong></div>
       <div><span>${ic('etiqueta',14)} Tabela</span><strong>${fmt(item.tabela)}</strong></div>
+      <div><span>${ic('cartao',14)} Cartão</span><strong>${fmt(item.cartao)}</strong></div>
+      <div class="av"><span>${ic('dinheiro',14)} À vista</span><strong>${fmt(item.avista)}</strong></div>
     </div>
   </div>`;
 }
