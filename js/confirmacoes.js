@@ -166,6 +166,14 @@ function painelMensagem(ev, idJs, contatos){
       </div>
     </div>`;
 }
+async function desfazerEnvio(id){
+  const ev = eventoPorId(id); if(!ev) return;
+  const r = await sbFetch('/rest/v1/agenda_confirmacoes?evento_id=eq.' + encodeURIComponent(ev.id), { method: 'DELETE' });
+  if(!r.ok){ avisoTopo('Não foi possível desfazer agora. Tente de novo.'); return; }
+  delete CONF_MAPA[ev.id];
+  avisoTopo('Desfeito: o compromisso voltou para "sem lembrete".');
+  redesenharConfirmacoes();
+}
 async function marcarConfirmacao(id, status){
   const ev = eventoPorId(id); if(!ev) return;
   try{ await gravarConfirmacao(ev, status); }catch(e){ return; }
@@ -190,11 +198,13 @@ function controleConfirmacao(ev){
   if(c.status === 'confirmado') return `<div class="conf-ctrl"><span class="conf-st ok">✅ Confirmado</span><span class="conf-nota">${escHtml(quem)}</span>
       <button type="button" class="conf-link" onclick="marcarConfirmacao(${idJs},'enviado')">desfazer</button></div>`;
   if(c.status === 'reagendar') return `<div class="conf-ctrl"><span class="conf-st reag">↺ Quer reagendar</span><span class="conf-nota">${escHtml(quem)} · ajuste no Google Agenda</span>
-      <button type="button" class="conf-link" onclick="marcarConfirmacao(${idJs},'confirmado')">confirmou</button></div>`;
+      <button type="button" class="conf-link" onclick="marcarConfirmacao(${idJs},'confirmado')">confirmou</button>
+      <button type="button" class="conf-link" onclick="marcarConfirmacao(${idJs},'enviado')">desfazer</button></div>`;
   return `<div class="conf-ctrl"><span class="conf-st env">📨 Lembrete enviado</span><span class="conf-nota">${escHtml((c.enviado_por || '') + ' · ' + horaCurta(c.enviado_em))}</span>
       <span class="conf-acoes"><button type="button" class="conf-btn ok" onclick="marcarConfirmacao(${idJs},'confirmado')">Confirmou</button>
       <button type="button" class="conf-btn" onclick="marcarConfirmacao(${idJs},'reagendar')">Quer reagendar</button>
-      <button type="button" class="conf-link" onclick="verMensagem(${idJs})">${aberto ? 'fechar mensagem' : 'ver mensagem'}</button></span></div>${painel}`;
+      <button type="button" class="conf-link" onclick="verMensagem(${idJs})">${aberto ? 'fechar mensagem' : 'ver mensagem'}</button>
+      <button type="button" class="conf-link" onclick="desfazerEnvio(${idJs})">desfazer envio</button></span></div>${painel}`;
 }
 
 // ── bloco do Início ──
