@@ -2453,7 +2453,7 @@ function gerarProposta(){
         </tr>
       </table>
 
-      <div id="pp-pag2" style="display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:24px;font-size:12px">
+      <div class="pp-links" style="display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:24px;font-size:12px">
         <div style="border:1px solid #DDD;border-right:none">
           <div style="${C_ROT};background:#EDEDED;border:none">💻 SITE:</div>
           <div style="padding:10px">${site==='—' ? '<span style="color:#999">—</span>' : `<a href="${site.startsWith('http')?site:'https://'+site}" style="color:#5A1524;text-decoration:none;font-weight:700">${site}</a>`}</div>
@@ -2465,7 +2465,7 @@ function gerarProposta(){
       </div>
 
       <!-- DATA / VALIDADE / TIPO -->
-      <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
+      <table id="pp-pag2" style="width:100%;border-collapse:collapse;margin-bottom:24px">
         <tr>
           <td style="${C_ROT_C}">📝 PROPOSTA</td>
           <td style="${C_ROT_C}">🗓️ DATA</td>
@@ -2751,7 +2751,7 @@ function imprimirProposta(){
     .pp-cab img{height:26px;display:inline-block}
     @media print{body{background:#FFF;padding:0}#proposta-print{box-shadow:none!important;border-radius:0!important}
       .pp-corpo>table,.pp-cont tr,img,.pp-bloco,.pp-caixa,.pp-sec,.pp-total,[style*="grid-template-columns:1fr 1fr"],a{break-inside:avoid;page-break-inside:avoid}
-      .pp-tit,.pp-sub,.pp-sec{break-after:avoid;page-break-after:avoid}
+      .pp-tit,.pp-sub,.pp-sec,[style*="gap:40px"]{break-after:avoid;page-break-after:avoid}
       .pp-caixa.pp-obs{break-inside:auto;page-break-inside:auto;display:block!important;position:relative;padding-left:110px}
       .pp-obs>div:first-child{position:absolute;left:0;top:0;bottom:0;width:110px;align-items:flex-start!important;padding-top:24px}
       *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>
