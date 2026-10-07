@@ -100,6 +100,7 @@ async function renderInicio(atualizar){
       <button type="button" class="btn" onclick="novoOrcamento()">${ic('mais',18)} Novo orçamento</button>
       <button type="button" class="btn-outline" onclick="switchTab('calc')">${ic('calculadora',18)} Cálculo rápido</button>
       <button type="button" class="btn-outline" onclick="novoRetorno()">${ic('chat',18)} Lançar retorno</button>
+      ${typeof novaGarantia === 'function' ? `<button type="button" class="btn-outline" onclick="novaGarantia()">${ic('escudo',18)} Garantia / problema</button>` : ''}
       ${(typeof tpEhGestora === 'function' && tpEhGestora()) ? `<button type="button" class="btn-outline inicio-tp" onclick="abrirTabelasPreco()">${ic('etiqueta',18)} Tabelas de preço</button>` : ''}
     </div>
 
@@ -115,6 +116,7 @@ async function renderInicio(atualizar){
     </section>
 
     <div id="inicio-confirmar"></div>
+    <div id="inicio-garantia"></div>
 
     ${blocoRetornosInicio()}
 
@@ -129,6 +131,8 @@ async function renderInicio(atualizar){
       : `<div class="inicio-ok">${ic('ok',18)} Tudo em dia. Nenhum orçamento parado.</div>`}
     </section>
 
+    <div id="inicio-posvenda"></div>
+
     <section class="inicio-bloco">
       <div class="inicio-bloco-tit"><span>Resumo de ${escHtml(nomeMes)}</span></div>
       <div class="inicio-mes">
@@ -137,6 +141,7 @@ async function renderInicio(atualizar){
         <div class="mes-perdido"><span>Perdidos</span><strong>${perdidos.length}</strong><em>${Object.entries(motivos).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([m,n]) => escHtml(m) + ' (' + n + ')').join(' · ') || '—'}</em></div>
       </div>
     </section>`;
+  if(typeof carregarBlocosGarantia === 'function') carregarBlocosGarantia();
   if(typeof carregarConfirmarAmanha === 'function'){
     if(typeof CONF_DIAS !== 'undefined' && CONF_DIAS.length && !atualizar) desenharBlocoConfirmar($('inicio-confirmar'));
     carregarConfirmarAmanha();

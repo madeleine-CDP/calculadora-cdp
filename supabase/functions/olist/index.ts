@@ -9,7 +9,8 @@
 //   GET  callback  → o Olist volta aqui depois da autorização      (navegador)
 //   POST buscar    → { termo } → clientes por nome, celular ou CPF (equipe)
 //   POST contato   → { id } → cadastro completo do cliente (celular, endereço) (equipe)
-//   POST pedidos   → { cpfCnpj, nome } → últimos pedidos no Tiny    (equipe)
+//   POST pedidos   → { cpfCnpj, nome } → últimos pedidos no Tiny, com a data de entrega das OS entregues (equipe)
+//   POST posvenda  → lê as OS "Entregue" de 5 a 13 meses atrás e guarda a data real da instalação na tabela posvenda (equipe)
 //   POST renovar   → renova a autorização (agendamento a cada 3h)  (aberto; não devolve dados)
 // Só leitura no Tiny: nada é criado nem alterado lá.
 // ═══════════════════════════════════════════════════════
@@ -165,13 +166,50 @@ async function buscar(termo: string) {
   return [...vistos.values()].slice(0, 10);
 }
 
+const soData = (t: unknown) => { const m = String(t ?? "").match(/^\d{4}-\d{2}-\d{2}/); return m ? m[0] : null; };
+// A lista do Olist não traz a data de entrega: ela vem do detalhe de cada OS
+async function dataEntrega(id: number) {
+  const d = await tiny(`/pedidos/${id}`);
+  return soData(d?.dataEntrega) ?? soData(d?.dataPrevista);
+}
+
 async function pedidos(cpfCnpj: string, nome: string) {
   const q = so(cpfCnpj) ? "cpfCnpj=" + encodeURIComponent(cpfCnpj) : "nomeCliente=" + encodeURIComponent(nome);
   const d = await tiny(`/pedidos?${q}&orderBy=desc&limit=5`);
-  return (d?.itens ?? []).map((p: any) => ({
-    numero: p.numeroPedido, data: p.dataCriacao ?? "", valor: Number(p.valor ?? 0),
-    situacao: SITUACAO[String(p.situacao)] ?? String(p.situacao ?? ""),
+  const lista = (d?.itens ?? []).map((p: any) => ({
+    id: p.id, numero: p.numeroPedido, data: p.dataCriacao ?? "", valor: Number(p.valor ?? 0),
+    situacao: SITUACAO[String(p.situacao)] ?? String(p.situacao ?? ""), entregue: String(p.situacao) === "6", entrega: null as string | null,
   }));
+  await Promise.all(lista.filter((p: any) => p.entregue && p.id).map(async (p: any) => { try { p.entrega = await dataEntrega(p.id); } catch { /* sem data */ } }));
+  return lista;
+}
+
+// Pós-venda: guarda a data real da instalação das OS entregues (sem repetir consulta das que já foram lidas)
+const isoDia = (d: Date) => d.toISOString().slice(0, 10);
+async function sincronizarPosvenda() {
+  const hoje = new Date();
+  const ini = new Date(hoje); ini.setMonth(ini.getMonth() - 13);
+  const fim = new Date(hoje); fim.setMonth(fim.getMonth() - 5);
+  const achados: any[] = [];
+  for (let off = 0; off < 500; off += 100) {
+    const d = await tiny(`/pedidos?situacao=6&dataInicial=${isoDia(ini)}&dataFinal=${isoDia(fim)}&limit=100&offset=${off}`);
+    const it = d?.itens ?? []; achados.push(...it);
+    if (it.length < 100) break;
+  }
+  const ids = achados.map((p) => Number(p.id)).filter(Boolean);
+  const { data: ja } = ids.length ? await admin.from("posvenda").select("pedido_id").in("pedido_id", ids) : { data: [] };
+  const conhecidos = new Set((ja ?? []).map((r: any) => Number(r.pedido_id)));
+  const novos = achados.filter((p) => p.id && !conhecidos.has(Number(p.id)));
+  const lote = novos.slice(0, 25);   // no máximo 25 consultas por vez (limite do Olist: 60 por minuto)
+  const linhas = [];
+  for (const p of lote) {
+    let entrega: string | null = null;
+    try { entrega = await dataEntrega(Number(p.id)); } catch { continue; }
+    const c = p.cliente ?? {};
+    linhas.push({ pedido_id: Number(p.id), numero: String(p.numeroPedido ?? ""), cliente: c.nome ?? "", celular: c.celular || c.telefone || "", data_entrega: entrega });
+  }
+  if (linhas.length) await admin.from("posvenda").upsert(linhas, { onConflict: "pedido_id", ignoreDuplicates: true });
+  return { lidos: linhas.length, faltam: novos.length - lote.length };
 }
 
 // ── Rotas ──
@@ -237,6 +275,7 @@ Deno.serve(async (req) => {
       return json(req, { cliente: d?.id ? cliente(d) : null });
     }
     if (rota === "pedidos") return json(req, { pedidos: await pedidos(String(corpo.cpfCnpj ?? ""), String(corpo.nome ?? "")) });
+    if (rota === "posvenda") return json(req, await sincronizarPosvenda());
 
     return json(req, { erro: "rota" }, 404);
   } catch (err) {
