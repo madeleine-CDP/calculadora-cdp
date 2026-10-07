@@ -142,10 +142,12 @@ function abrirFormRetorno(titulo){
   const clientes = (typeof HISTORY_CACHE !== 'undefined' ? HISTORY_CACHE : []).filter(e => e.client);
   const prazos = [['hoje','Hoje'],['amanha','Amanhã'],['2dias','Em 2 dias úteis'],['data','Escolher data'],['sem','Sem prazo']];
   abrirModal(titulo, `
-    <label class="novo-campo"><span>Cliente <b>*</b></span>
+    <label class="novo-campo"><span>Cliente <b>*</b> <em>(nome, ou nº CDP se tiver orçamento)</em></span>
       <input type="text" id="ret-cliente" list="ret-clientes" autocomplete="off" placeholder="Nome ou nº do orçamento" value="${escHtml(f.cliente)}" oninput="retClienteDigitou()"></label>
     <datalist id="ret-clientes">${clientes.map(e => `<option value="${escHtml(e.client)}">${escHtml([numCDP(e.numero), e.bairro && e.bairro !== '-' ? e.bairro : ''].filter(Boolean).join(' · '))}</option>`).join('')}</datalist>
     <div class="ret-ligado" id="ret-ligado">${f.orcamento_id ? retTextoLigado(f.orcamento_id) : ''}</div>
+    <label class="novo-campo"><span>WhatsApp <em>(opcional · dúvida avulsa, sem orçamento, também vale)</em></span>
+      <input type="tel" id="ret-tel" inputmode="tel" autocomplete="off" placeholder="(81) 9 0000-0000" value="${escHtml(f.telefone)}" oninput="mascaraTel(this)"></label>
     <label class="novo-campo"><span>O que precisa ser respondido? <b>*</b></span>
       <input type="text" id="ret-assunto" autocomplete="off" maxlength="200" placeholder="Ex.: confirmar prazo com a Decore" value="${escHtml(f.assunto)}"></label>
     <div class="novo-campo"><span>Quem precisa agir</span>
@@ -165,7 +167,7 @@ function retClienteDigitou(){
   const dig = v.replace(/\D/g, '');
   const e = lista.find(x => x.client && x.client.trim().toLowerCase() === v.toLowerCase()) || (dig && lista.find(x => String(x.numero) === String(parseInt(dig, 10))));
   RET_FORM.orcamento_id = e ? e.id : null;
-  RET_FORM.telefone = e ? (e.telefone || '') : RET_FORM.telefone;
+  if(e && e.telefone && !$('ret-tel').value) $('ret-tel').value = e.telefone;
   if(e && dig && $('ret-cliente').value !== e.client) $('ret-cliente').value = e.client;
   $('ret-ligado').innerHTML = e ? retTextoLigado(e.id) : '';
 }
@@ -183,7 +185,7 @@ async function confirmarRetorno(){
   else if(f.prazoTipo === 'amanha') prazo = fimDoDia(maisDiasUteis(1));
   else if(f.prazoTipo === '2dias') prazo = fimDoDia(maisDiasUteis(2));
   else if(f.prazoTipo === 'data'){ const v = $('ret-data').value; if(!v){ erro.textContent = 'Escolha a data.'; return; } prazo = fimDoDia(new Date(v + 'T12:00:00')); }
-  const corpo = { cliente, assunto, responsavel: f.responsavel, prazo: prazo ? prazo.toISOString() : null, orcamento_id: f.orcamento_id || null, telefone: f.telefone || null };
+  const corpo = { cliente, assunto, responsavel: f.responsavel, prazo: prazo ? prazo.toISOString() : null, orcamento_id: f.orcamento_id || null, telefone: ($('ret-tel').value.trim() || null) };
   try{ await salvarRetorno(corpo, f.id); }
   catch(e){ erro.textContent = 'Não foi possível salvar. Verifique a conexão e tente de novo.'; return; }
   fecharModal();
