@@ -59,7 +59,7 @@
   <div class="site-header-in">
     <img src="assets/logo-11663b57.png" alt="Central das Persianas">
     <div class="usuario">
-      <button type="button" class="usuario-nome" onclick="mostrarTrocaSenha(false)" title="Trocar minha senha"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span id="usuario-logado"></span></button>
+      <button type="button" class="usuario-nome" onclick="abrirConfig()" title="Configurações e minha conta"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span id="usuario-logado"></span></button>
       <button class="btn-sair" onclick="logout()"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button>
     </div>
   </div>
@@ -427,11 +427,23 @@
 </div>
 </div>
 
-<div id="tab-precos" class="tab-panel">
+<div id="tab-config" class="tab-panel">
 <div class="wrap">
   <div class="hist-topo">
     <div>
       <button type="button" class="novo-voltar" onclick="switchTab('inicio')"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Início</button>
+      <div class="hist-titulo">⚙️ Configurações</div>
+    </div>
+  </div>
+  <div id="cfg-conteudo"></div>
+</div>
+</div>
+
+<div id="tab-precos" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <button type="button" class="novo-voltar" onclick="abrirConfig()"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Configurações</button>
       <div class="hist-titulo">Tabelas de preço</div>
       <div class="hist-sub">Reajuste das fábricas sem mexer no código. As fórmulas continuam as mesmas.</div>
     </div>
@@ -628,6 +640,7 @@
 <script src="js/agenda.js"></script>
 <script src="js/confirmacoes.js"></script>
 <script src="js/garantia.js"></script>
+<script src="js/config.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
 <div id="orc-resumo-bar" style="position:fixed;bottom:60px;left:0;right:0;background:#2B221C;color:#FFF;z-index:499;display:none">

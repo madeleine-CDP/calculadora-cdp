@@ -345,7 +345,7 @@ function desenharPosvenda(){
   if(!PV_LISTA.length){ box.innerHTML = ''; return; }
   const mostrar = PV_LISTA.slice(0, 8);
   box.innerHTML = `<section class="inicio-bloco">
-    <div class="inicio-bloco-tit"><span>Pós-venda · 6 meses</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' para contatar' : ' para contatar') : 'tudo em dia'}</strong></div>
+    <div class="inicio-bloco-tit"><span>💜 Pós-venda · 6 meses</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' para contatar' : ' para contatar') : 'tudo em dia'}</strong></div>
     <div class="conf-lista">${mostrar.map(itemPosvenda).join('')}</div>
     ${PV_LISTA.length > 8 ? `<div class="conf-nota pv-mais">E mais ${PV_LISTA.length - 8}. Conforme forem contatados, aparecem aqui.</div>` : ''}
   </section>`;
@@ -357,7 +357,7 @@ function desenharGarantiasInicio(){
   const ab = garAbertos(); if(!ab.length){ box.innerHTML = ''; return; }
   const l = ab.slice().sort((a, b) => (garAtrasado(b) - garAtrasado(a)) || String(a.prazo_retorno || '').localeCompare(String(b.prazo_retorno || '')));
   box.innerHTML = `<section class="inicio-bloco">
-    <div class="inicio-bloco-tit"><span>Garantia</span><strong>${ab.length} ${ab.length > 1 ? 'chamados abertos' : 'chamado aberto'}</strong></div>
+    <div class="inicio-bloco-tit"><span>🛡️ Garantia</span><strong>${ab.length} ${ab.length > 1 ? 'chamados abertos' : 'chamado aberto'}</strong></div>
     <div class="inicio-pend">${l.slice(0, 5).map(g => `
       <button type="button" class="inicio-pend-item pend-${garAtrasado(g) ? 'atrasado' : 'enviar'}" onclick="abrirGarantias('abertos')">
         <span class="inicio-pend-ic">${ic('escudo', 16)}</span>

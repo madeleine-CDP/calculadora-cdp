@@ -98,12 +98,30 @@ async function renderInicio(atualizar){
     </div>
     <div class="inicio-atalhos">
       <button type="button" class="btn" onclick="novoOrcamento()">${ic('mais',18)} Novo orçamento</button>
-      <button type="button" class="btn-outline" onclick="switchTab('calc')">${ic('calculadora',18)} Cálculo rápido</button>
-      <button type="button" class="btn-outline" onclick="novoRetorno()">${ic('chat',18)} Lançar retorno</button>
-      ${typeof novaGarantia === 'function' ? `<button type="button" class="btn-outline" onclick="novaGarantia()">${ic('escudo',18)} Garantia / problema</button>` : ''}
-      ${(typeof tpEhGestora === 'function' && tpEhGestora()) ? `<button type="button" class="btn-outline inicio-tp" onclick="abrirTabelasPreco()">${ic('etiqueta',18)} Tabelas de preço</button>` : ''}
+      <button type="button" class="btn-outline" onclick="switchTab('calc')"><span class="at-em">🧮</span> Cálculo rápido</button>
+      <button type="button" class="btn-outline" onclick="novoRetorno()"><span class="at-em">💬</span> Lançar retorno</button>
+      ${typeof novaGarantia === 'function' ? `<button type="button" class="btn-outline" onclick="novaGarantia()"><span class="at-em">🛡️</span> Garantia / problema</button>` : ''}
     </div>
 
+    <div class="inicio-secao">📌 Para fazer hoje</div>
+    <div id="inicio-garantia"></div>
+    ${blocoRetornosInicio()}
+    <div id="inicio-confirmar"></div>
+    <section class="inicio-bloco">
+      <div class="inicio-bloco-tit"><span>⏳ Orçamentos parados</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' orçamentos' : ' orçamento') : ''}</strong></div>
+      ${pend.length ? `<div class="inicio-pend">${pend.map(p => `
+        <button type="button" class="inicio-pend-item pend-${p.tipo}" onclick="reopenOrc(${p.e.id})">
+          <span class="inicio-pend-ic">${ic(p.tipo === 'aguardando' ? 'info' : 'alerta', 16)}</span>
+          <span class="inicio-pend-txt"><strong>${escHtml(p.titulo)}</strong><span>${escHtml(p.e.client)} · ${numCDP(p.e.numero)} · ${fmt(p.e.totalAvista||0)}</span><em>${escHtml(p.sub)}</em></span>
+          <span class="inicio-pend-seta">›</span>
+        </button>`).join('')}</div>`
+      : `<div class="inicio-ok">${ic('ok',18)} Tudo em dia. Nenhum orçamento parado.</div>`}
+    </section>
+
+    <div id="inicio-agenda"></div>
+    <div id="inicio-posvenda"></div>
+
+    <div class="inicio-secao">📊 Números</div>
     <section class="inicio-bloco">
       <div class="inicio-bloco-tit"><span>Em aberto</span><strong>${ativos.length} · ${fmt(totalAberto)} à vista</strong></div>
       <div class="inicio-etapas">${porEtapa.map(x => `
@@ -114,25 +132,6 @@ async function renderInicio(atualizar){
         </button>`).join('')}
       </div>
     </section>
-
-    <div id="inicio-confirmar"></div>
-    <div id="inicio-garantia"></div>
-
-    ${blocoRetornosInicio()}
-
-    <section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>Precisa de atenção</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' orçamentos' : ' orçamento') : ''}</strong></div>
-      ${pend.length ? `<div class="inicio-pend">${pend.map(p => `
-        <button type="button" class="inicio-pend-item pend-${p.tipo}" onclick="reopenOrc(${p.e.id})">
-          <span class="inicio-pend-ic">${ic(p.tipo === 'aguardando' ? 'info' : 'alerta', 16)}</span>
-          <span class="inicio-pend-txt"><strong>${escHtml(p.titulo)}</strong><span>${escHtml(p.e.client)} · ${numCDP(p.e.numero)} · ${fmt(p.e.totalAvista||0)}</span><em>${escHtml(p.sub)}</em></span>
-          <span class="inicio-pend-seta">›</span>
-        </button>`).join('')}</div>`
-      : `<div class="inicio-ok">${ic('ok',18)} Tudo em dia. Nenhum orçamento parado.</div>`}
-    </section>
-
-    <div id="inicio-posvenda"></div>
-
     <section class="inicio-bloco">
       <div class="inicio-bloco-tit"><span>Resumo de ${escHtml(nomeMes)}</span></div>
       <div class="inicio-mes">
@@ -140,7 +139,11 @@ async function renderInicio(atualizar){
         <div class="mes-fechado"><span>Fechados</span><strong>${fechados.length}</strong><em>${fmt(fechados.reduce((s,e)=>s+(e.totalAvista||0),0))} à vista</em></div>
         <div class="mes-perdido"><span>Perdidos</span><strong>${perdidos.length}</strong><em>${Object.entries(motivos).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([m,n]) => escHtml(m) + ' (' + n + ')').join(' · ') || '—'}</em></div>
       </div>
-    </section>`;
+    </section>
+
+    <div id="inicio-links"></div>`;
+  if(typeof carregarAgendaHoje === 'function') carregarAgendaHoje();
+  if(typeof carregarLinksInicio === 'function') carregarLinksInicio();
   if(typeof carregarBlocosGarantia === 'function') carregarBlocosGarantia();
   if(typeof carregarConfirmarAmanha === 'function'){
     if(typeof CONF_DIAS !== 'undefined' && CONF_DIAS.length && !atualizar) desenharBlocoConfirmar($('inicio-confirmar'));
@@ -162,7 +165,7 @@ function blocoRetornosInicio(){
   if(badge){ badge.hidden = !meus; badge.textContent = meus; }
   if(!l.length) return '';
   return `<section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>Retornos para hoje</span><strong>${l.length}${meus ? ' · ' + meus + ' comigo' : ''}</strong></div>
+      <div class="inicio-bloco-tit"><span>💬 Retornos para hoje</span><strong>${l.length}${meus ? ' · ' + meus + ' comigo' : ''}</strong></div>
       <div class="inicio-pend">${l.slice(0, 6).map(r => `
         <button type="button" class="inicio-pend-item pend-${situacaoPrazo(r) === 'atrasado' ? 'atrasado' : 'enviar'}" onclick="RET_FILTRO='${r.responsavel === eu ? 'meus' : 'todos'}';switchTab('ret')">
           <span class="inicio-pend-ic">${ic('chat', 16)}</span>

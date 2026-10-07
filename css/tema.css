@@ -250,7 +250,7 @@ header.site-header{display:block!important;padding:0!important;gap:0!important}
 .hist-tiny{font-size:11.5px;color:var(--tinta-suave);font-weight:500;white-space:nowrap}
 
 /* ═══ C1 · Lista de orçamentos ═══ */
-body[data-tela=inicio] .cli-bar,body[data-tela=hist] .cli-bar,body[data-tela=ret] .cli-bar,body[data-tela=precos] .cli-bar,body[data-tela=agenda] .cli-bar,body[data-tela=gar] .cli-bar,body[data-tela=novo] .cli-bar,body[data-tela=orc]:not(.cli-aberto) .cli-bar{display:none!important}
+body[data-tela=inicio] .cli-bar,body[data-tela=hist] .cli-bar,body[data-tela=ret] .cli-bar,body[data-tela=precos] .cli-bar,body[data-tela=agenda] .cli-bar,body[data-tela=gar] .cli-bar,body[data-tela=config] .cli-bar,body[data-tela=novo] .cli-bar,body[data-tela=orc]:not(.cli-aberto) .cli-bar{display:none!important}
 .hist-topo{display:flex;justify-content:space-between;align-items:flex-end;margin:4px 0 14px}
 .hist-sub{font-size:13.5px;color:var(--tinta-suave);margin-top:8px}
 .hist-busca{position:relative;margin-bottom:12px}
@@ -854,3 +854,43 @@ select.cli-in{appearance:auto}
 .gar-modal-cli{margin:0 0 6px}
 .pv-item{border-left-color:#8C6BB1}
 .pv-mais{margin-top:6px}
+
+/* ── Início por urgência + Links úteis + Agenda de hoje + Configurações (Etapa A) ── */
+.inicio-secao{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-suave);margin:18px 2px 6px}
+.at-em{font-size:16px;line-height:1}
+.agh-lista{display:flex;flex-direction:column;gap:6px}
+.agh-item{display:flex;align-items:center;gap:10px;text-align:left;font:inherit;width:100%;background:#fff;border:1px solid var(--linha,#E7E0D8);border-radius:12px;padding:9px 12px;cursor:pointer}
+.agh-item.passou{opacity:.55}
+.agh-hora{font-weight:800;font-size:13px;min-width:44px;color:var(--vinho,#5A1524)}
+.agh-txt{display:flex;flex-direction:column;min-width:0;flex:1}
+.agh-txt strong{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agh-txt span{font-size:12px;color:var(--tinta-suave)}
+.lk-grupo{margin-top:8px}
+.lk-grupo-tit{font-size:12.5px;font-weight:700;color:var(--tinta-suave);margin-bottom:6px}
+.lk-lista{display:flex;flex-wrap:wrap;gap:6px}
+.lk-item{display:inline-flex;align-items:center;background:#fff;border:1px solid var(--linha,#E7E0D8);border-radius:999px;overflow:hidden}
+.lk-item a{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--tinta,#2A2421);text-decoration:none}
+.lk-item a:hover{background:#F7F4EF}
+.lk-em{font-size:15px;line-height:1}
+.lk-copiar{font:inherit;font-size:11.5px;font-weight:700;border:0;border-left:1px solid var(--linha,#E7E0D8);background:#F7F4EF;color:var(--tinta-suave);padding:7px 10px;cursor:pointer;align-self:stretch}
+.cfg-bloco{background:#fff;border:1px solid var(--linha,#E7E0D8);border-radius:16px;padding:14px 16px;margin-top:12px}
+.cfg-tit{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cfg-tag{font-size:11px;font-weight:700;background:var(--verde-suave);color:var(--verde);padding:2px 8px;border-radius:999px}
+.cfg-sub{font-size:13px;color:var(--tinta-suave);margin:4px 0 8px}
+.cfg-linha{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #F1ECE6}
+.cfg-linha:first-of-type{border-top:0}
+.cfg-linha div{display:flex;flex-direction:column;min-width:0}
+.cfg-linha span{font-size:12.5px;color:var(--tinta-suave)}
+.cfg-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.cfg-link-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #F1ECE6}
+.cfg-link-txt{display:flex;flex-direction:column;min-width:0;flex:1}
+.cfg-link-txt strong{font-size:13.5px}
+.cfg-link-txt span{font-size:11.5px;color:var(--tinta-suave);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cfg-link-bt{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.cfg-link-bt .conf-link:disabled{opacity:.3;cursor:default}
+.cfg-rodape{text-align:center;font-size:12px;color:var(--tinta-suave);margin:18px 0 6px}
+.lk-emoji-in{max-width:90px;font-size:20px;text-align:center}
+.lk-apagar{color:var(--red);margin-top:6px}
+.aviso-desfazer{font:inherit;font-weight:700;color:#fff;background:none;border:0;text-decoration:underline;cursor:pointer;margin-left:8px}
+/* aviso com botão (ex.: "desfazer") precisa receber o toque; o resto do aviso continua "transparente" ao toque */
+#aviso-topo .aviso-desfazer{pointer-events:auto}

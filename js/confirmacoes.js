@@ -227,7 +227,7 @@ function desenharBlocoConfirmar(box){
   if(!CONF_DIAS.length) { box.innerHTML = ''; return; }
   const nomeDias = CONF_DIAS.map(d => d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })).join(' e ');
   if(!CONF_EVENTOS.length){
-    box.innerHTML = `<section class="inicio-bloco"><div class="inicio-bloco-tit"><span>Confirmar · ${escHtml(nomeDias)}</span></div>
+    box.innerHTML = `<section class="inicio-bloco"><div class="inicio-bloco-tit"><span>📞 Confirmar · ${escHtml(nomeDias)}</span></div>
       <div class="inicio-ok">${ic('ok',18)} Nenhuma visita ou instalação marcada.</div></section>`;
     return;
   }
@@ -235,7 +235,7 @@ function desenharBlocoConfirmar(box){
   const falta = CONF_EVENTOS.filter(e => !CONF_MAPA[e.id]).length;
   const varios = CONF_DIAS.length > 1;
   box.innerHTML = `<section class="inicio-bloco">
-    <div class="inicio-bloco-tit"><span>Confirmar · ${escHtml(nomeDias)}</span><strong>${conf} de ${CONF_EVENTOS.length} confirmados${falta ? ' · ' + falta + ' sem lembrete' : ''}</strong></div>
+    <div class="inicio-bloco-tit"><span>📞 Confirmar · ${escHtml(nomeDias)}</span><strong>${conf} de ${CONF_EVENTOS.length} confirmados${falta ? ' · ' + falta + ' sem lembrete' : ''}</strong></div>
     <div class="conf-lista">${CONF_EVENTOS.map(ev => {
       const p = lerTitulo(ev.titulo);
       const quando = (varios ? new Date(ev.inicio).toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '') + ' ' : '') + (ev.diaInteiro ? 'dia todo' : horaCurta(ev.inicio));
