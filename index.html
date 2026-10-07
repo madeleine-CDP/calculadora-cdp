@@ -70,6 +70,8 @@
   <div class="tabs-nav-divider"></div>
   <button class="tab-btn active" data-tab="inicio" onclick="switchTab('inicio')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="lbl-full">Início</span><span class="lbl-curto">Início</span></button>
   <button class="tab-btn" data-tab="hist" onclick="switchTab('hist')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span class="lbl-full">Orçamentos</span><span class="lbl-curto">Orçamentos</span></button>
+  <button class="tab-btn" data-tab="ret" onclick="switchTab('ret')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.8A8 8 0 1 1 21 12z"/></svg><span class="lbl-full">Retornos</span><span class="lbl-curto">Retornos</span><span class="tab-badge" id="ret-badge" hidden></span></button>
+  <button class="tab-btn" data-tab="agenda" onclick="switchTab('agenda')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="lbl-full">Agenda</span><span class="lbl-curto">Agenda</span></button>
   <button class="tab-btn" data-tab="calc" onclick="switchTab('calc')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg><span class="lbl-full">Calculadora</span><span class="lbl-curto">Calcular</span></button>
 </nav>
 
@@ -81,6 +83,8 @@
       <input type="text" id="cli-nome" class="cli-in principal" placeholder="Nome do cliente" aria-label="Nome do cliente" oninput="syncCliente()">
       <input type="text" id="cli-tel" class="cli-in principal" placeholder="Telefone / WhatsApp" aria-label="Telefone / WhatsApp" oninput="syncCliente()">
       <input type="text" id="cli-bairro" class="cli-in principal" placeholder="Bairro" aria-label="Bairro" oninput="syncCliente()">
+      <input type="text" id="cli-cidade" class="cli-in principal" list="lista-cidades" placeholder="Cidade" aria-label="Cidade" oninput="syncCliente()">
+      <select id="cli-uf" class="cli-in principal sel-uf" aria-label="Estado (UF)" oninput="syncCliente()" onchange="syncCliente()"></select>
       <input type="text" id="cli-tiny" class="cli-in principal" placeholder="Nº proposta Tiny (opcional)" aria-label="Número da proposta no Tiny" oninput="syncCliente()">
     </div>
     <div class="cli-grid">
@@ -376,6 +380,51 @@
 <div class="wrap inicio-wrap" id="inicio-conteudo"><div class="hist-empty">Carregando…</div></div>
 </div>
 
+<div id="tab-ret" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <div class="hist-titulo">Retornos</div>
+      <div class="hist-sub" id="ret-contagem">Carregando…</div>
+    </div>
+    <button type="button" class="btn ret-btn-novo" onclick="novoRetorno()">+ Novo retorno</button>
+  </div>
+  <div class="hist-filtros" id="ret-filtros" role="tablist" aria-label="Filtrar retornos"></div>
+  <div id="ret-lista" class="ret-lista"></div>
+</div>
+</div>
+
+<div id="tab-agenda" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <div class="hist-titulo">Agenda</div>
+      <div class="hist-sub">Agenda CLIENTES CDP (Google) · <span id="ag-resumo"></span></div>
+    </div>
+  </div>
+  <div class="ag-nav">
+    <div class="hist-filtros" id="ag-modo"><button type="button" class="hist-chip on" data-m="dia" onclick="AG_MODO='dia';renderAgenda(true)">Dia</button><button type="button" class="hist-chip" data-m="semana" onclick="AG_MODO='semana';renderAgenda(true)">Semana</button></div>
+    <div class="ag-setas"><button type="button" class="ag-seta" onclick="moverAgenda(-1)" aria-label="Anterior">‹</button><button type="button" class="ag-hoje" onclick="moverAgenda(0)">Hoje</button><button type="button" class="ag-seta" onclick="moverAgenda(1)" aria-label="Próximo">›</button></div>
+  </div>
+  <div class="ag-periodo" id="ag-periodo"></div>
+  <div class="hist-filtros" id="ag-exec"></div>
+  <div id="ag-lista" class="ag-lista"></div>
+</div>
+</div>
+
+<div id="tab-precos" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <button type="button" class="novo-voltar" onclick="switchTab('inicio')"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Início</button>
+      <div class="hist-titulo">Tabelas de preço</div>
+      <div class="hist-sub">Reajuste das fábricas sem mexer no código. As fórmulas continuam as mesmas.</div>
+    </div>
+  </div>
+  <div id="tp-conteudo"></div>
+</div>
+</div>
+
 <div id="tab-hist" class="tab-panel">
 <div class="wrap">
   <div class="hist-topo">
@@ -417,6 +466,7 @@
   </div>
 
   <div class="card pasta-card pasta-totais" id="pasta-totais"></div>
+  <div id="pasta-contato"></div>
   <div id="pasta-encerrar"></div>
   <div class="card pasta-card pasta-jornada" id="pasta-jornada"></div>
 </div>
@@ -450,14 +500,29 @@
 
   <div class="card novo-card">
     <div class="novo-secao">Cliente</div>
+    <div id="olist-aviso"></div>
+    <div id="olist-busca-wrap" class="olist-busca" hidden>
+      <label class="novo-campo"><span>Buscar no Olist</span>
+        <input type="search" id="olist-busca" autocomplete="off" placeholder="Nome, celular ou CPF do cliente" oninput="olistDigitou()"></label>
+      <div id="olist-res" role="listbox" aria-label="Clientes encontrados no Olist"></div>
+    </div>
+    <div id="olist-pedidos"></div>
     <label class="novo-campo"><span>Nome <b>*</b></span>
       <input type="text" id="novo-nome" autocomplete="off" placeholder="Ex.: Maria Souza"></label>
     <div class="novo-linha">
       <label class="novo-campo"><span>WhatsApp <b>*</b></span>
         <input type="tel" id="novo-tel" inputmode="tel" autocomplete="off" placeholder="(81) 9 0000-0000" oninput="mascaraTel(this); limparAvisoRepetido()"></label>
-      <label class="novo-campo"><span>Bairro</span>
-        <input type="text" id="novo-bairro" autocomplete="off" placeholder="Ex.: Boa Viagem"></label>
     </div>
+    <div class="novo-linha novo-local">
+      <label class="novo-campo"><span>Bairro <b>*</b></span>
+        <input type="text" id="novo-bairro" autocomplete="off" placeholder="Ex.: Boa Viagem"></label>
+      <label class="novo-campo"><span>Cidade <b>*</b></span>
+        <input type="text" id="novo-cidade" list="lista-cidades" autocomplete="off" placeholder="Ex.: Recife"></label>
+      <label class="novo-campo novo-uf"><span>UF <b>*</b></span>
+        <select id="novo-uf" class="sel-uf" aria-label="Estado"></select></label>
+    </div>
+    <button type="button" class="novo-sem-local" onclick="localNaoInformado()">Cliente não informou? Preencher com "-"</button>
+    <datalist id="lista-cidades"></datalist>
     <details class="novo-mais">
       <summary>+ Endereço, CPF/CNPJ e e-mail <span>(opcional)</span></summary>
       <label class="novo-campo"><span>Endereço completo</span><input type="text" id="novo-end" autocomplete="off"></label>
@@ -541,6 +606,12 @@
 <script src="js/inicio.js"></script>
 <script src="js/proposta.js"></script>
 <script src="js/combinacoes.js"></script>
+<script src="js/cidades.js"></script>
+<script src="js/olist.js"></script>
+<script src="js/retornos.js"></script>
+<script src="js/tabelas.js"></script>
+<script src="js/agenda.js"></script>
+<script src="js/confirmacoes.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
 <div id="orc-resumo-bar" style="position:fixed;bottom:60px;left:0;right:0;background:#2B221C;color:#FFF;z-index:499;display:none">

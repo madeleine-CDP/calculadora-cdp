@@ -147,6 +147,7 @@ async function doLogin(){
 
 // Depois de entrar: recarrega a tela inicial com os dados de quem entrou
 function aoEntrar(){
+  if(typeof carregarAjustesPreco === 'function') carregarAjustesPreco();
   if(typeof HIST_CARREGADO !== 'undefined') HIST_CARREGADO = false;
   if(typeof irParaTab === 'function') irParaTab('inicio');
   if(typeof renderInicio === 'function') renderInicio(true);

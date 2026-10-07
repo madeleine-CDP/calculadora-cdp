@@ -24,27 +24,39 @@ function diasUteis(iso){
 function saudacao(){ const h = new Date().getHours(); return h < 12 ? 'Bom dia' : (h < 18 ? 'Boa tarde' : 'Boa noite'); }
 
 // O que precisa de atenção hoje (mais urgente primeiro)
+// Follow-up conta a partir do último contato registrado ("Registrei contato" na pasta); se não houver, da última alteração.
+// Próximo contato combinado no futuro → não lembra antes da data.
 function pendenciasDoDia(){
   const lista = [];
+  const hoje = (typeof hojeIso === 'function') ? hojeIso() : new Date().toISOString().slice(0,10);
   HISTORY_CACHE.forEach(e => {
     if(e.etapa === 'fechado' || e.etapa === 'perdido' || evoluidoPara(e.id)) return;
-    const ref = e.updatedAt || e.createdAt;
+    const ref = e.ultimoContato || e.updatedAt || e.createdAt;
+    const qtd = e.qtdContatos || 0;
+    if(e.proximoContato && e.proximoContato > hoje) return;            // combinado para depois
+    if(e.proximoContato && e.proximoContato <= hoje){
+      lista.push({ e, peso: e.proximoContato < hoje ? 3 : 2, tipo: e.proximoContato < hoje ? 'atrasado' : 'enviar',
+        titulo: e.proximoContato < hoje ? 'Contato combinado atrasado' : 'Contato combinado para hoje',
+        sub: (qtd ? qtd + ' contato' + (qtd > 1 ? 's' : '') + ' até agora · ' : '') + 'Depois de falar, toque em "Registrei contato" na pasta.' });
+      return;
+    }
     if(e.etapa === 'pre_orcamento'){
       const d = diasCorridos(ref);
       if(d >= 3){
-        const lembrete = Math.min(Math.floor(d / 3), 3);
-        lista.push({ e, peso: d >= 9 ? 3 : 2, tipo: d >= 9 ? 'perdido' : 'follow',
-          titulo: d >= 9 ? 'Sem retorno há ' + d + ' dias' : 'Follow-up do pré-orçamento',
-          sub: d >= 9 ? 'Já passou dos 3 lembretes: considere marcar como Perdido · sem retorno.' : 'Sem movimento há ' + d + ' dias · ' + lembrete + 'º lembrete' });
+        const lembrete = qtd ? qtd + 1 : Math.min(Math.floor(d / 3), 3);
+        const perdido = qtd >= 3 || (!qtd && d >= 9);
+        lista.push({ e, peso: perdido ? 3 : 2, tipo: perdido ? 'perdido' : 'follow',
+          titulo: perdido ? 'Sem retorno depois de ' + (qtd || 3) + ' lembretes' : 'Follow-up do pré-orçamento',
+          sub: perdido ? 'Considere marcar como Perdido · sem retorno.' : 'Sem contato há ' + d + ' dias · ' + lembrete + 'º lembrete' });
       }
     } else if(e.etapa === 'orcamento'){
-      const u = diasUteis(ref);
+      const u = diasUteis(e.updatedAt || e.createdAt);
       if(u >= 1) lista.push({ e, peso: u >= 2 ? 3 : 2, tipo: u >= 2 ? 'atrasado' : 'enviar',
         titulo: u >= 2 ? 'Orçamento atrasado' : 'Enviar orçamento hoje',
         sub: 'Parado há ' + u + (u > 1 ? ' dias úteis' : ' dia útil') + ' · o combinado é enviar em 1 dia útil (limite 2).' });
     } else if(e.etapa === 'enviado'){
       const d = diasCorridos(ref);
-      if(d >= 3) lista.push({ e, peso: 1, tipo: 'aguardando', titulo: 'Aguardando o cliente', sub: 'Enviado há ' + d + ' dias sem resposta registrada.' });
+      if(d >= 3) lista.push({ e, peso: 1, tipo: 'aguardando', titulo: 'Aguardando o cliente', sub: (e.ultimoContato ? 'Último contato' : 'Enviado') + ' há ' + d + ' dias sem resposta registrada.' });
     }
   });
   return lista.sort((a,b) => b.peso - a.peso || diasCorridos(b.e.updatedAt) - diasCorridos(a.e.updatedAt));
@@ -53,6 +65,7 @@ function pendenciasDoDia(){
 async function renderInicio(atualizar){
   const box = $('inicio-conteudo');
   if(atualizar && HIST_CARREGADO){ try{ HISTORY_CACHE = await sbFetchHistory(); }catch(err){} }
+  if(typeof carregarRetornos === 'function' && (atualizar || !RET_CARREGADO)){ try{ await carregarRetornos(); }catch(err){} }
   if(!HIST_CARREGADO){
     try{ HISTORY_CACHE = await sbFetchHistory(); HIST_CARREGADO = true; }
     catch(err){ box.innerHTML = '<div class="hist-empty" style="color:var(--red)">' + ic('alerta',16) + ' Não foi possível carregar. Verifique a conexão.</div>'; return; }
@@ -86,6 +99,8 @@ async function renderInicio(atualizar){
     <div class="inicio-atalhos">
       <button type="button" class="btn" onclick="novoOrcamento()">${ic('mais',18)} Novo orçamento</button>
       <button type="button" class="btn-outline" onclick="switchTab('calc')">${ic('calculadora',18)} Cálculo rápido</button>
+      <button type="button" class="btn-outline" onclick="novoRetorno()">${ic('chat',18)} Lançar retorno</button>
+      ${(typeof tpEhGestora === 'function' && tpEhGestora()) ? `<button type="button" class="btn-outline inicio-tp" onclick="abrirTabelasPreco()">${ic('etiqueta',18)} Tabelas de preço</button>` : ''}
     </div>
 
     <section class="inicio-bloco">
@@ -98,6 +113,10 @@ async function renderInicio(atualizar){
         </button>`).join('')}
       </div>
     </section>
+
+    <div id="inicio-confirmar"></div>
+
+    ${blocoRetornosInicio()}
 
     <section class="inicio-bloco">
       <div class="inicio-bloco-tit"><span>Precisa de atenção</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' orçamentos' : ' orçamento') : ''}</strong></div>
@@ -118,9 +137,32 @@ async function renderInicio(atualizar){
         <div class="mes-perdido"><span>Perdidos</span><strong>${perdidos.length}</strong><em>${Object.entries(motivos).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([m,n]) => escHtml(m) + ' (' + n + ')').join(' · ') || '—'}</em></div>
       </div>
     </section>`;
+  if(typeof carregarConfirmarAmanha === 'function'){
+    if(typeof CONF_DIAS !== 'undefined' && CONF_DIAS.length && !atualizar) desenharBlocoConfirmar($('inicio-confirmar'));
+    carregarConfirmarAmanha();
+  }
 }
 
 function abrirListaEtapa(etapa){
   HIST_ETAPA = etapa;
   switchTab('hist');
+}
+
+// Retornos atrasados e de hoje (os meus primeiro)
+function blocoRetornosInicio(){
+  if(typeof retornosParaHoje !== 'function') return '';
+  const l = retornosParaHoje(), eu = meuNome();
+  const badge = document.getElementById('ret-badge');
+  const meus = l.filter(r => r.responsavel === eu).length;
+  if(badge){ badge.hidden = !meus; badge.textContent = meus; }
+  if(!l.length) return '';
+  return `<section class="inicio-bloco">
+      <div class="inicio-bloco-tit"><span>Retornos para hoje</span><strong>${l.length}${meus ? ' · ' + meus + ' comigo' : ''}</strong></div>
+      <div class="inicio-pend">${l.slice(0, 6).map(r => `
+        <button type="button" class="inicio-pend-item pend-${situacaoPrazo(r) === 'atrasado' ? 'atrasado' : 'enviar'}" onclick="RET_FILTRO='${r.responsavel === eu ? 'meus' : 'todos'}';switchTab('ret')">
+          <span class="inicio-pend-ic">${ic('chat', 16)}</span>
+          <span class="inicio-pend-txt"><strong>${escHtml(r.cliente)}</strong><span>${escHtml(r.assunto)}</span><em>${escHtml(r.responsavel)} · ${escHtml(situacaoPrazo(r) === 'atrasado' ? 'atrasado (' + textoPrazo(r) + ')' : textoPrazo(r))}</em></span>
+          <span class="inicio-pend-seta">›</span>
+        </button>`).join('')}${l.length > 6 ? `<button type="button" class="ret-ver-todos" onclick="RET_FILTRO='todos';switchTab('ret')">Ver todos os ${l.length} retornos ›</button>` : ''}</div>
+    </section>`;
 }
