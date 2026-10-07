@@ -114,20 +114,57 @@ async function gravarConfirmacao(ev, status){
 
 // ── ações ──
 function eventoPorId(id){ return CONF_EVENTOS.find(e => e.id === id) || (typeof AG_EVENTOS !== 'undefined' ? AG_EVENTOS.find(e => e.id === id) : null); }
-async function enviarLembrete(id, num){
-  const ev = eventoPorId(id); if(!ev) return;
-  const msg = mensagemConfirmacao(ev);
-  // abre o WhatsApp primeiro (o celular bloqueia janelas abertas depois de uma espera)
-  window.open('https://wa.me/' + num + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
-  try{ await gravarConfirmacao(ev, 'enviado'); }catch(e){}
+// A mensagem não vai mais por link (o WhatsApp estragava os emojis e o sistema marcava "enviado" só por abrir):
+// a pessoa vê a mensagem, copia, cola no WhatsApp, envia e volta para tocar em "Já enviei".
+const CONF_ABERTO = new Set();
+function verMensagem(id){
+  if(CONF_ABERTO.has(id)) CONF_ABERTO.delete(id); else CONF_ABERTO.add(id);
   redesenharConfirmacoes();
 }
-async function copiarLembrete(id){
+async function copiarTexto(texto){
+  try{ await navigator.clipboard.writeText(texto); return true; }
+  catch(e){
+    const t = document.createElement('textarea'); t.value = texto; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select(); let ok = false; try{ ok = document.execCommand('copy'); }catch(_){}
+    t.remove(); return ok;
+  }
+}
+async function copiarLembrete(id, botao){
   const ev = eventoPorId(id); if(!ev) return;
-  try{ await navigator.clipboard.writeText(mensagemConfirmacao(ev)); avisoTopo('Mensagem copiada. Cole no WhatsApp do cliente.'); }
-  catch(e){ window.prompt('Copie a mensagem:', mensagemConfirmacao(ev)); }
-  try{ await gravarConfirmacao(ev, 'enviado'); }catch(e){}
+  const ok = await copiarTexto(mensagemConfirmacao(ev));
+  if(ok){
+    avisoTopo('Mensagem copiada. Cole no WhatsApp do cliente, envie e volte aqui para tocar em "Já enviei".');
+    if(botao){ botao.innerHTML = ic('ok',15) + ' Copiada'; botao.classList.add('ok'); }
+  } else avisoTopo('Não consegui copiar sozinho: selecione o texto da mensagem e copie.');
+}
+async function copiarNumero(num, botao){
+  const ok = await copiarTexto(num.replace(/^55/, ''));
+  if(ok && botao){ botao.textContent = 'copiado'; }
+}
+async function jaEnviei(id){
+  const ev = eventoPorId(id); if(!ev) return;
+  try{ await gravarConfirmacao(ev, 'enviado'); }catch(e){ return; }
+  CONF_ABERTO.delete(id);
   redesenharConfirmacoes();
+}
+function foneLegivel(num){
+  const n = num.replace(/^55/, '');
+  return '(' + n.slice(0, 2) + ') ' + n.slice(2, n.length - 4) + '-' + n.slice(-4);
+}
+function painelMensagem(ev, idJs, contatos){
+  const msg = mensagemConfirmacao(ev);
+  const fones = contatos.length
+    ? contatos.map(ct => `<span class="conf-fone">${escHtml(foneLegivel(ct.num))}${ct.rotulo ? ' · ' + escHtml(ct.rotulo) : ''} <button type="button" class="conf-link" onclick="copiarNumero('${ct.num}', this)">copiar nº</button></span>`).join('')
+    : '<span class="conf-nota">sem WhatsApp na agenda: procure o cliente no WhatsApp pelo nome</span>';
+  return `<div class="conf-painel">
+      <div class="conf-fones">${fones}</div>
+      <textarea class="conf-msg" readonly rows="13">${escHtml(msg)}</textarea>
+      <div class="conf-acoes">
+        <button type="button" class="conf-btn" onclick="copiarLembrete(${idJs}, this)">${ic('copiar',15)} Copiar mensagem</button>
+        <button type="button" class="conf-btn ok" onclick="jaEnviei(${idJs})">${ic('ok',15)} Já enviei</button>
+        <button type="button" class="conf-link" onclick="verMensagem(${idJs})">fechar</button>
+      </div>
+    </div>`;
 }
 async function marcarConfirmacao(id, status){
   const ev = eventoPorId(id); if(!ev) return;
@@ -145,10 +182,10 @@ function horaCurta(iso){ return new Date(iso).toLocaleTimeString('pt-BR', { hour
 function controleConfirmacao(ev){
   const c = CONF_MAPA[ev.id], contatos = contatosDoEvento(ev);
   const idJs = escHtml(JSON.stringify(ev.id));
-  const botoesEnvio = (rotuloBase) => contatos.length
-    ? contatos.map(ct => `<button type="button" class="conf-btn conf-wa" onclick="enviarLembrete(${idJs},'${ct.num}')">${ic('chat',15)} ${escHtml(rotuloBase)}${contatos.length > 1 && ct.rotulo ? ' · ' + escHtml(ct.rotulo) : (contatos.length > 1 ? ' · ' + ct.num.slice(-4) : '')}</button>`).join('')
-    : `<button type="button" class="conf-btn" onclick="copiarLembrete(${idJs})">${ic('copiar',15)} Copiar mensagem</button><span class="conf-nota">sem WhatsApp na agenda</span>`;
-  if(!c) return `<div class="conf-ctrl">${botoesEnvio('Enviar lembrete')}</div>`;
+  const aberto = CONF_ABERTO.has(ev.id);
+  const botaoVer = (rotulo) => `<button type="button" class="conf-btn conf-wa${aberto ? ' on' : ''}" onclick="verMensagem(${idJs})">${ic('chat',15)} ${escHtml(rotulo)}</button>`;
+  const painel = aberto ? painelMensagem(ev, idJs, contatos) : '';
+  if(!c) return `<div class="conf-ctrl">${botaoVer('Mensagem de confirmação')}</div>${painel}`;
   const quem = (c.atualizado_por || c.enviado_por || '') + (c.atualizado_em ? ' · ' + horaCurta(c.atualizado_em) : '');
   if(c.status === 'confirmado') return `<div class="conf-ctrl"><span class="conf-st ok">✅ Confirmado</span><span class="conf-nota">${escHtml(quem)}</span>
       <button type="button" class="conf-link" onclick="marcarConfirmacao(${idJs},'enviado')">desfazer</button></div>`;
@@ -157,7 +194,7 @@ function controleConfirmacao(ev){
   return `<div class="conf-ctrl"><span class="conf-st env">📨 Lembrete enviado</span><span class="conf-nota">${escHtml((c.enviado_por || '') + ' · ' + horaCurta(c.enviado_em))}</span>
       <span class="conf-acoes"><button type="button" class="conf-btn ok" onclick="marcarConfirmacao(${idJs},'confirmado')">Confirmou</button>
       <button type="button" class="conf-btn" onclick="marcarConfirmacao(${idJs},'reagendar')">Quer reagendar</button>
-      ${contatos.length ? `<button type="button" class="conf-link" onclick="enviarLembrete(${idJs},'${contatos[0].num}')">reenviar</button>` : ''}</span></div>`;
+      <button type="button" class="conf-link" onclick="verMensagem(${idJs})">${aberto ? 'fechar mensagem' : 'ver mensagem'}</button></span></div>${painel}`;
 }
 
 // ── bloco do Início ──
