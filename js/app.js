@@ -2259,6 +2259,7 @@ function syncPropostaFromCart(){
     info.style.color = 'var(--gold)';
   }
   renderPropostaDetalhes();
+  if(typeof renderCombosProposta === 'function') renderCombosProposta();
 }
 
 function renderPropostaDetalhes(){
@@ -2478,7 +2479,7 @@ function gerarProposta(){
         <tbody>
           ${ordenarPorAmbiente(items).map((item,idx) => `
           <tr>
-            <td style="padding:10px 8px;border:1px solid #DDD;font-weight:700;text-align:center;vertical-align:middle;font-size:10px;text-transform:uppercase">${item.label||item.ambiente||'Item'}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;font-weight:700;text-align:center;vertical-align:middle;font-size:10px;text-transform:uppercase">${rotuloItemProposta(item)}</td>
             <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle">${fabName(item.fab)} ${item.prod||''} ${item.fam||''}${item.col?' '+item.col:''}</td>
             <td style="padding:8px 8px;border:1px solid #DDD;line-height:1.45;text-align:left;vertical-align:middle;font-size:9.5px;text-transform:uppercase">${item.detail||detail||'—'}${item.foraDoPadrao?`<br><span style="color:#B54708;font-size:10.5px">⚠️ Medida fora do padrão de fabricação — provavelmente fora da garantia de fábrica.</span>`:''}</td>
             <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle">${item.qty||1}</td>
@@ -2538,19 +2539,8 @@ function gerarProposta(){
       <div style="display:grid;grid-template-columns:150px 1fr;border:1px solid #7A7268;border-radius:6px;overflow:hidden;margin-bottom:24px">
         <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-family:Garamond,'EB Garamond',serif;font-size:17px;font-weight:700">VALOR TOTAL DA PROPOSTA</div>
         <div>
-          <div style="background:#7A7268;color:#FFF;padding:8px 14px;font-size:11px;font-weight:700;text-align:center">AMBIENTES E OPÇÕES: ${ambientesLista}</div>
-          <table style="width:100%;border-collapse:collapse;font-size:12px">
-            <tr>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px">🏷️PREÇO TABELA</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#EBF2F9">💳PREÇO CARTÃO</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#E8F3E1">💵PREÇO À VISTA</td>
-            </tr>
-            <tr>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;color:#C0392B;text-decoration:line-through">${fmtCent(somaTabela)}</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-weight:700;background:#EBF2F9">${fmtCent(somaCartao)}</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-weight:700;background:#E8F3E1">${fmtCent(somaAvista)}</td>
-            </tr>
-          </table>
+          <div style="background:#7A7268;color:#FFF;padding:8px 14px;font-size:11px;font-weight:700;text-align:center">AMBIENTES E OPÇÕES: ${ambientesListaProposta(items)}</div>
+          ${quadroTotaisProposta(items, somaTabela, somaCartao, somaAvista)}
         </div>
       </div>
 

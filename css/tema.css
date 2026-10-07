@@ -622,3 +622,27 @@ body[data-tela=inicio] .btn-novo-orc{display:none!important}
   body.lado-a-lado .pasta-wrap,body.lado-a-lado #tab-calc>.wrap{flex:1 0 auto;width:100%}
   body.lado-a-lado #tab-calc>.wrap{margin:0 auto}
 }
+
+/* ═══ Opções e combinações ═══ */
+.pasta-item-cab{flex-wrap:wrap}
+.pasta-opcao{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--tinta-suave);font-weight:600}
+.pasta-opcao select{min-height:34px;border-radius:999px!important;padding:0 28px 0 12px!important;font-size:13.5px;font-weight:700}
+.pasta-opcao-selo{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:#EFE9F5;color:#5B3F7A;font-size:11.5px;font-weight:700}
+.amb-opcional{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--tinta);margin:8px 0 2px;cursor:pointer}
+.amb-opcional input{width:18px;height:18px;accent-color:var(--vinho)}
+.amb-opcional span{color:var(--tinta-suave)}
+.pasta-faixa{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding:10px 12px;border-radius:12px;background:#F6F2FA;color:#4A2F68;font-size:13px;line-height:1.45}
+.pasta-faixa .ic{flex:none;margin-top:2px}
+.combos-config{border:1px solid var(--linha);border-radius:16px;padding:14px;margin-bottom:16px;background:#fff}
+.combos-tit{font-weight:700;font-size:15px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.combos-tit span{font-weight:500;font-size:12.5px;color:var(--tinta-suave)}
+.combos-dica{font-size:12.5px;color:var(--tinta-suave);margin:4px 0 10px}
+.combos-lista{display:flex;flex-direction:column;gap:6px;max-height:360px;overflow:auto}
+.combo-linha{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"ck rot val" "ck nome nome";gap:4px 10px;align-items:center;padding:10px 12px;border:1px solid var(--linha);border-radius:12px;cursor:pointer}
+.combo-linha.on{border-color:var(--vinho);background:var(--vinho-suave)}
+.combo-linha input[type=checkbox]{grid-area:ck;width:18px;height:18px;accent-color:var(--vinho)}
+.combo-rot{grid-area:rot;font-size:13.5px;font-weight:600}
+.combo-val{grid-area:val;font-weight:700;white-space:nowrap}
+.combo-nome{grid-area:nome;min-height:34px;border-radius:10px;border:1px solid var(--linha);padding:0 10px;font-size:13.5px}
+.combos-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.combos-acoes .btn-outline{padding:8px 14px!important}
