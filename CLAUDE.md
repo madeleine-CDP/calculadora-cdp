@@ -19,7 +19,8 @@ Calculadora de orçamentos de persianas e cortinas, que está virando o **CDP Si
 - **⚠️ Créditos do Netlify (plano gratuito por créditos):** cada publicação na `main` custa 15 créditos; se os créditos acabarem o site SAI DO AR até a renovação. Por isso: **trabalhe na branch `dev`** (branch deploy grátis, endereço `dev--sistemacdp.netlify.app`, que usa o MESMO banco de verdade) e **só faça merge/push na `main` quando a Bru aprovar explicitamente uma publicação**, juntando várias etapas. Out/2026: 75 créditos até a renovação (~25/10).
 - **Hospedagem:** Netlify, na conta da loja (equipe CDP, madeleine@centraldaspersianas.com): `sistemacdp.netlify.app`, com subdomínio `sistemacdp.` + domínio da loja (DNS no UOL Host). Publicado automaticamente a partir da branch `main`. O antigo `calculadora-cdp.netlify.app` está na conta pessoal da Bru e será desativado depois da troca de link. `netlify.toml` manda o navegador sempre buscar a versão nova (sem cache de tabela antiga).
 - **Dados:** Supabase (projeto `cdp-calculadora`, região sa-east-1). Tabela `orcamentos` guarda os orçamentos salvos, compartilhados entre os usuários.
-- **Login:** senhas com hash bcrypt numa tabela própria no Supabase, verificadas por função no servidor. A senha nunca trafega em texto puro nem aparece no código.
+- **Login (Fase 1):** contas do **Supabase Auth**, uma por pessoa (Bruna, Mirelle, Madeleine). Entra por usuário (`cdaspersianas`, `operacao@cdaspersianas`, `madeleine@cdaspersianas`, ou `bru`/`mirelle`/`madeleine`); o mapa usuário → e-mail fica em `USUARIOS_EMAIL` (`js/login.js`). A Bru cria a conta no painel do Supabase com senha provisória (o Claude nunca digita senhas); no 1º acesso a pessoa cria a própria (`perfis.senha_provisoria`). Tabela `perfis` = equipe (e-mail, usuário, nome, papel: dona/admin/atendimento/vendas). **Todo acesso ao banco passa por `sbFetch()`** (manda o token de quem está logado e renova sozinho). "Criado por" é gravado pelo banco (gatilho `orcamentos_quem_criou`). Só quem está em `perfis` vê dados (`eh_da_equipe()`). O cadastro aberto ("Allow new users to sign up") fica DESLIGADO no painel. O login antigo (`usuarios` + `verificar_login`) fica desligado, guardado até tudo estabilizar.
+- **Virada da Fase 1:** `sql/2026-10-fase1-b-virada.sql` fecha o banco para quem não está logado. Só aplicar junto com a publicação na `main`, com ok da Bru, depois do backup manual e do segredo `SUPABASE_BACKUP_KEY` cadastrado no GitHub. O mesmo arquivo traz o comando para desfazer.
 - **Fonte da verdade:** este repositório. O antigo Artifact no claude.ai virou histórico e não deve mais ser editado.
 
 ## Fábricas e fórmulas (NÃO ALTERAR SEM CONFIRMAÇÃO DA BRU)
@@ -69,10 +70,10 @@ Arquivos (desde a fase 0 o antigo arquivo único foi separado, sem mudar nenhuma
 - `css/tema.css`: visual novo (carregado depois do `app.css`). `sql/`: comandos já aplicados no banco, para histórico.
 - `js/precos.js`: **todas as tabelas de preço e regras das fábricas** (DB_*, ACC_*, IMPOSTOS_PE, TUBOS, FABRIC_W, CDP_TRAD). É aqui que se atualiza tabela nova.
 - `js/app.js`: lógica da tela, cálculo, carrinho, orçamentos salvos (Supabase) e proposta.
-- `js/login.js`: tela de login (função `verificar_login` no Supabase).
+- `js/login.js`: login (Supabase Auth), sessão, `sbFetch()`, criar/trocar a própria senha (tocando no nome no topo).
 - `css/app.css`: visual antigo (base). `assets/`: logos e ícones do app.
 - `manifest.webmanifest`, `sw.js`, `js/pwa.js`: permitem instalar no celular. O `sw.js` **não** guarda cache de propósito.
-- `.github/workflows/despertador.yml` (consulta diária para o Supabase gratuito não pausar) e `backup.yml` (exporta os orçamentos toda segunda; fica em Actions → Artifacts por 90 dias). Usam os segredos do repositório `SUPABASE_URL` e `SUPABASE_ANON_KEY` (e `SUPABASE_BACKUP_KEY` quando o acesso público ao banco for fechado na fase 1).
+- `.github/workflows/despertador.yml` (consulta diária para o Supabase gratuito não pausar) e `backup.yml` (exporta os orçamentos toda segunda; fica em Actions → Artifacts por 90 dias). Usam os segredos do repositório `SUPABASE_URL` e `SUPABASE_ANON_KEY`; o despertador chama a função `ping()` (funciona com o banco fechado); o backup precisa de `SUPABASE_BACKUP_KEY` (chave secreta do Supabase, só no GitHub) depois da virada.
 
 Dentro do código:
 

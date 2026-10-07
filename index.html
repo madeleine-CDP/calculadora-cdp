@@ -22,16 +22,35 @@
       <img src="assets/logo-11663b57.png" alt="Central das Persianas" style="height:46px;width:auto;display:block;margin:0 auto">
       <div style="font-size:11px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-top:2px">CDP Sistema · Acesso</div>
     </div>
+    <div id="login-form">
     <div style="margin-bottom:12px">
       <label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px">Usuário</label>
-      <input type="text" id="login-user" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit">
+      <input type="text" id="login-user" autocomplete="username" autocapitalize="none" spellcheck="false" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit">
     </div>
     <div style="margin-bottom:16px">
       <label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px">Senha</label>
-      <input type="password" id="login-pass" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit" onkeydown="if(event.key==='Enter')doLogin()">
+      <input type="password" id="login-pass" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button onclick="doLogin()" id="login-btn" style="width:100%;padding:12px;background:#5A1524;color:#FFF;border:none;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Entrar</button>
     <div id="login-erro" style="color:#C0392B;font-size:12.5px;margin-top:10px;text-align:center;display:none">Usuário ou senha incorretos.</div>
+    <div style="font-size:11.5px;color:#888;margin-top:14px;text-align:center;line-height:1.5">Esqueceu a senha? Peça para a Bru redefinir.</div>
+    </div>
+    <div id="senha-form" hidden>
+      <div id="senha-titulo" style="font-size:16px;font-weight:700;color:#5A1524;margin-bottom:6px">Crie a sua senha</div>
+      <div id="senha-dica" style="font-size:12.5px;color:#666;line-height:1.5;margin-bottom:14px"></div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px" for="senha-nova">Nova senha</label>
+        <input type="password" id="senha-nova" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px" for="senha-conf">Repita a nova senha</label>
+        <input type="password" id="senha-conf" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit" onkeydown="if(event.key==='Enter')salvarNovaSenha()">
+      </div>
+      <div style="font-size:11.5px;color:#888;margin:-8px 0 14px">Mínimo de 8 caracteres.</div>
+      <button onclick="salvarNovaSenha()" id="senha-btn" style="width:100%;padding:12px;background:#5A1524;color:#FFF;border:none;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Salvar senha</button>
+      <button onclick="cancelarTrocaSenha()" id="senha-cancelar" style="width:100%;padding:10px;background:none;color:#666;border:none;font-size:13px;cursor:pointer;font-family:inherit;margin-top:6px">Cancelar</button>
+      <div id="senha-erro" style="color:#C0392B;font-size:12.5px;margin-top:10px;text-align:center;display:none"></div>
+    </div>
   </div>
 </div>
 <script src="js/login.js"></script>
@@ -40,7 +59,7 @@
   <div class="site-header-in">
     <img src="assets/logo-11663b57.png" alt="Central das Persianas">
     <div class="usuario">
-      <span class="usuario-nome"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span id="usuario-logado"></span></span>
+      <button type="button" class="usuario-nome" onclick="mostrarTrocaSenha(false)" title="Trocar minha senha"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span id="usuario-logado"></span></button>
       <button class="btn-sair" onclick="logout()"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button>
     </div>
   </div>

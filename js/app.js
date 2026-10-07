@@ -856,13 +856,7 @@ function renderResult(r){
 // ═══════════════════════════════════════════════════════
 const SB_URL = 'https://hvgtbwkpavrclndacder.supabase.co';
 const SB_KEY = 'sb_publishable_N2iBuXbs2V4eFrl0UzHjew_Dvm2-oSO';
-const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 
-// Nome de quem está logado (gravado pelo login em 'cdp_sessao'), usado no campo criado_por
-function getUsuarioLogado(){
-  try{ const o = JSON.parse(localStorage.getItem('cdp_sessao') || 'null'); return (o && (o.nome || o.login)) || null; }
-  catch(e){ return null; }
-}
 
 let HISTORY_CACHE = [];
 
@@ -880,7 +874,7 @@ function nomeOrcEditando(){
 }
 
 async function sbFetchHistory(){
-  const res = await fetch(SB_URL + '/rest/v1/orcamentos?select=*&order=created_at.desc', { headers: SB_HEADERS });
+  const res = await sbFetch('/rest/v1/orcamentos?select=*&order=created_at.desc', {});
   if(!res.ok) throw new Error('Falha ao carregar: ' + res.status);
   const rows = await res.json();
   return rows.map(r => ({
@@ -909,9 +903,9 @@ async function sbFetchHistory(){
 }
 
 async function sbInsertOrcamento(entry){
-  const res = await fetch(SB_URL + '/rest/v1/orcamentos', {
+  const res = await sbFetch('/rest/v1/orcamentos', {
     method: 'POST',
-    headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+    headers: { 'Prefer': 'return=representation' },
     body: JSON.stringify({
       ref: entry.ref || '', client: entry.client, date: entry.date, items: entry.items,
       total_tabela: entry.totalTabela, total_cartao: entry.totalCartao, total_avista: entry.totalAvista,
@@ -926,9 +920,9 @@ async function sbInsertOrcamento(entry){
 // Atualiza (substitui) um orçamento já existente — usado quando reabrimos um
 // orçamento salvo (reopenOrc) e salvamos de novo, em vez de criar uma linha duplicada
 async function sbUpdateOrcamento(id, entry){
-  const res = await fetch(SB_URL + '/rest/v1/orcamentos?id=eq.' + id, {
+  const res = await sbFetch('/rest/v1/orcamentos?id=eq.' + id, {
     method: 'PATCH',
-    headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+    headers: { 'Prefer': 'return=representation' },
     body: JSON.stringify({
       ref: entry.ref || '', client: entry.client, date: entry.date, items: entry.items,
       total_tabela: entry.totalTabela, total_cartao: entry.totalCartao, total_avista: entry.totalAvista,
@@ -940,7 +934,7 @@ async function sbUpdateOrcamento(id, entry){
 }
 
 async function sbDeleteOrcamento(id){
-  const res = await fetch(SB_URL + '/rest/v1/orcamentos?id=eq.' + id, { method: 'DELETE', headers: SB_HEADERS });
+  const res = await sbFetch('/rest/v1/orcamentos?id=eq.' + id, { method: 'DELETE' });
   if(!res.ok) throw new Error('Falha ao excluir: ' + res.status);
 }
 
@@ -2086,9 +2080,9 @@ async function criarOrcamento(){
   btn.disabled = true; const rotulo = btn.innerHTML; btn.innerHTML = 'Criando…';
   let linha;
   try{
-    const res = await fetch(SB_URL + '/rest/v1/orcamentos', {
+    const res = await sbFetch('/rest/v1/orcamentos', {
       method: 'POST',
-      headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+      headers: { 'Prefer': 'return=representation' },
       body: JSON.stringify({
         ref: '', client: nome, date: new Date().toLocaleDateString('pt-BR'), items: [],
         total_tabela: 0, total_cartao: 0, total_avista: 0,

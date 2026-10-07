@@ -49,7 +49,7 @@ button,input,select,textarea{font-family:var(--sans)!important}
 .site-header-in{max-width:1160px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px}
 .site-header img{height:30px;width:auto;display:block}
 .site-header .usuario{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--tinta-suave)}
-.site-header .usuario-nome{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--fundo);color:var(--tinta);font-weight:600}
+.site-header .usuario-nome{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--fundo);color:var(--tinta);font-weight:600;border:none;font-family:inherit;font-size:inherit;cursor:pointer}
 .btn-sair{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--linha);background:#fff;color:var(--tinta-suave);font-size:13px;font-weight:500;cursor:pointer}
 .btn-sair:hover{border-color:var(--vinho);color:var(--vinho)}
 
@@ -203,7 +203,8 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--vinho)}
 @media (max-width:560px){
   .site-header-in{padding:10px 16px}
   .site-header img{height:26px}
-  .site-header .usuario-nome{display:none}
+  .site-header .usuario-nome #usuario-logado{display:none}
+  .site-header .usuario-nome{padding:7px}
   .card{padding:18px!important}
   .tab-btn{padding:0 14px!important}
   .cli-grid{grid-template-columns:repeat(2,minmax(0,1fr))}

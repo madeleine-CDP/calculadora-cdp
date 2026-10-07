@@ -189,8 +189,8 @@ async function mudarEtapa(etapa){
   if(!EDITING_ORC_ID || !e) return;
   const antes = e.etapa;
   try{
-    const res = await fetch(SB_URL + '/rest/v1/orcamentos?id=eq.' + EDITING_ORC_ID, {
-      method: 'PATCH', headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+    const res = await sbFetch('/rest/v1/orcamentos?id=eq.' + EDITING_ORC_ID, {
+      method: 'PATCH', headers: { 'Prefer': 'return=representation' },
       body: JSON.stringify({ etapa })
     });
     if(!res.ok) throw new Error(res.status);
@@ -279,8 +279,8 @@ async function evoluirOrcamento(){
   const itens = (e.items || []).map((it, i) => ({ ...it, id: Date.now() + i }));
   let linha;
   try{
-    const res = await fetch(SB_URL + '/rest/v1/orcamentos', {
-      method: 'POST', headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+    const res = await sbFetch('/rest/v1/orcamentos', {
+      method: 'POST', headers: { 'Prefer': 'return=representation' },
       body: JSON.stringify({
         ref: '', client: e.client, date: new Date().toLocaleDateString('pt-BR'), items: itens,
         total_tabela: itens.reduce((s,i)=>s+(i.tabela||0),0),
@@ -414,8 +414,8 @@ async function gravarOrcamentoAtual(extra){
   return patchOrcamento(corpo);
 }
 async function patchOrcamento(corpo){
-  const res = await fetch(SB_URL + '/rest/v1/orcamentos?id=eq.' + EDITING_ORC_ID, {
-    method: 'PATCH', headers: { ...SB_HEADERS, 'Prefer': 'return=representation' }, body: JSON.stringify(corpo)
+  const res = await sbFetch('/rest/v1/orcamentos?id=eq.' + EDITING_ORC_ID, {
+    method: 'PATCH', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(corpo)
   });
   if(!res.ok){ const t = await res.text(); throw new Error(t.includes('está fechado') ? 'fechado' : res.status + ' ' + t); }
   const j = await res.json(); const linha = Array.isArray(j) ? j[0] : j;
