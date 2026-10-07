@@ -114,6 +114,8 @@ async function renderInicio(atualizar){
       </div>
     </section>
 
+    <div id="inicio-confirmar"></div>
+
     ${blocoRetornosInicio()}
 
     <section class="inicio-bloco">
@@ -135,6 +137,10 @@ async function renderInicio(atualizar){
         <div class="mes-perdido"><span>Perdidos</span><strong>${perdidos.length}</strong><em>${Object.entries(motivos).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([m,n]) => escHtml(m) + ' (' + n + ')').join(' · ') || '—'}</em></div>
       </div>
     </section>`;
+  if(typeof carregarConfirmarAmanha === 'function'){
+    if(typeof CONF_DIAS !== 'undefined' && CONF_DIAS.length && !atualizar) desenharBlocoConfirmar($('inicio-confirmar'));
+    carregarConfirmarAmanha();
+  }
 }
 
 function abrirListaEtapa(etapa){

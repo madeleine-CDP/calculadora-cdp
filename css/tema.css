@@ -789,6 +789,27 @@ select.cli-in{appearance:auto}
 .ag-meta{font-size:12.5px;color:var(--tinta-suave)}
 .ag-meta:empty{display:none}
 .ag-obs{font-size:12px;font-weight:600;color:#7A5A00;margin:2px 0}
+/* Confirmação do dia seguinte (3C) */
+.conf-lista{display:flex;flex-direction:column;gap:8px}
+.conf-item{background:#fff;border:1px solid var(--linha,#E7E0D8);border-left:4px solid #E0A800;border-radius:14px;padding:10px 12px}
+.conf-item.st-enviado{border-left-color:#5B8DB8}
+.conf-item.st-confirmado{border-left-color:var(--verde)}
+.conf-item.st-reagendar{border-left-color:var(--red)}
+.conf-topo{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.conf-hora{font-size:12.5px;font-weight:700;color:var(--tinta-suave)}
+.conf-sub{font-size:12.5px;color:var(--tinta-suave);margin:2px 0 6px}
+.conf-ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:6px}
+.conf-acoes{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.conf-btn{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:13px;font-weight:600;padding:7px 12px;border-radius:999px;border:1px solid var(--linha,#D9D1C7);background:#fff;color:var(--tinta,#2A2421);cursor:pointer;min-height:36px}
+.conf-btn.conf-wa{background:#E8F3E1;border-color:#BBD8AA;color:#24502F}
+.conf-btn.ok{background:var(--verde-suave);border-color:#B9CFC0;color:var(--verde)}
+.conf-link{font:inherit;font-size:12.5px;background:none;border:0;padding:4px;color:var(--tinta-suave);text-decoration:underline;cursor:pointer}
+.conf-st{font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+.conf-st.env{background:#E6EEF6;color:#2F5677}
+.conf-st.ok{background:var(--verde-suave);color:var(--verde)}
+.conf-st.reag{background:#FBE4E2;color:var(--red)}
+.conf-nota{font-size:12px;color:var(--tinta-suave)}
+.ag-card .conf-ctrl{margin:6px 0 2px}
 .ag-itens{font-size:12.5px;color:var(--tinta);background:var(--fundo);border-radius:10px;padding:6px 8px}
 .ag-links{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px}
 .ag-aviso{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;background:#FFF1C9;color:#7A5A00;border-radius:14px;padding:12px 14px;margin-top:10px}

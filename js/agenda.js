@@ -109,7 +109,10 @@ async function renderAgenda(recarregar){
     box.innerHTML = '<div class="hist-empty">Carregando compromissos…</div>';
     try{
       if(typeof HIST_CARREGADO !== 'undefined' && !HIST_CARREGADO){ try{ HISTORY_CACHE = await sbFetchHistory(); HIST_CARREGADO = true; }catch(e){} }
-      const d = await agendaChamar('eventos', { de: ini.toISOString(), ate: fim.toISOString() });
+      const [d] = await Promise.all([
+        agendaChamar('eventos', { de: ini.toISOString(), ate: fim.toISOString() }),
+        (typeof carregarConfirmacoes === 'function' ? carregarConfirmacoes(inicioDoDia(new Date()) > ini ? inicioDoDia(new Date()) : ini).catch(() => {}) : null)
+      ]);
       AG_EVENTOS = d.eventos || []; AG_EVENTOS._chave = +ini + '|' + +fim;
     }catch(e){ box.innerHTML = '<div class="hist-empty" style="color:var(--red)">' + ic('alerta',16) + ' Não foi possível carregar a agenda agora.</div>'; return; }
   }
@@ -147,6 +150,7 @@ function cardEvento(ev){
       <strong>${escHtml(p.cliente || ev.titulo || '(sem título)')}</strong>
       <div class="ag-meta">${[p.bairro, ev.local && ev.local !== p.bairro ? ev.local : ''].filter(Boolean).map(escHtml).join(' · ')}</div>
       ${itens ? `<div class="ag-itens"><b>Itens:</b> ${escHtml(itens)}</div>` : ''}
+      ${(typeof controleConfirmacao === 'function' && String(ev.inicio).slice(0, 10) >= chaveDia(new Date()) && ehCompromissoDeCliente(ev, p)) ? controleConfirmacao(ev) : ''}
       <div class="ag-links">
         ${orc ? `<button type="button" class="ret-link" onclick="reopenOrc(${orc.id})">${escHtml(numCDP(orc.numero) || 'Orçamento')} ›</button>` : ''}
         ${ev.link ? `<a class="ret-link" href="${escHtml(ev.link)}" target="_blank" rel="noopener">Abrir no Google ›</a>` : ''}
