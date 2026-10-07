@@ -31,7 +31,7 @@ const PROPOSTA_TROCAS = [
 // As trocas acima ficam guardadas caso um dia se queira o visual novo.
 const PROPOSTA_VISUAL_NOVO = false;
 function vestirProposta(html){
-  if(!PROPOSTA_VISUAL_NOVO) return html;
+  if(!PROPOSTA_VISUAL_NOVO) return fielAoWord(html);
   let h = html;
   PROPOSTA_TROCAS.forEach(([de, para]) => { h = h.split(de).join(para); });
   // ícones grandes dos blocos de condição (eram emojis em 22px)
@@ -64,4 +64,27 @@ function prepararTipoProposta(){
   const sel = $('p-tipo'); if(!sel || !e) return;
   sel.value = e.etapa === 'pre_orcamento' ? 'PRÉ-ORÇAMENTO' : 'ORÇAMENTO PÓS-VISITA';
   if(typeof onPTipo === 'function') onPTipo();
+}
+
+
+// ── Fidelidade ao modelo do Word (MODELO PRÉ-ORÇAMENTO / ORÇAMENTO PÓS-VISITA) ──
+// Valores como no Word: R$ 1.575,00
+function fmtCent(v){
+  return 'R$ ' + (Math.round(Number(v)||0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fielAoWord(html){
+  let h = html;
+  const isPos = h.includes('PÓS-VISITA</span>') || h.includes("Observações <span style=\"color:#BF8F00\">importantes</span> · <span style=\"color:#BF8F00;text-decoration:underline\">PÓS-VISITA");
+  // 1) capa do Word (já traz "PRÉ ORÇAMENTO"/"ORÇAMENTO PÓS-VISITA" e "PROPOSTA EXCLUSIVA · 2026" na foto)
+  const capa = new URL('assets/proposta-capa-' + (isPos ? 'pos' : 'pre') + '.jpg', location.href).href;
+  h = h.replace(/(<!-- CAPA -->\s*<div[^>]*>\s*<img src=")data:image\/[a-z]+;base64,[^"]+(")/, '$1' + capa + '$2');
+  // 2) faixas com o logo entre as seções, como no Word
+  const m = h.match(/<!-- LOGO TOPO -->\s*(<div[^>]*>\s*<img[^>]*>\s*<\/div>)/);
+  if(m){
+    const faixa = m[1].replace(/margin:-32px -40px 24px -40px/, 'margin:26px 0 18px 0');
+    ['<!-- PRODUTOS & SERVIÇOS -->', '<!-- INVESTIMENTO & VALORES -->', '<!-- A JORNADA COMPLETA -->', '<!-- OBSERVAÇÕES IMPORTANTES -->']
+      .forEach(marca => { h = h.replace(marca, marca + '\n' + faixa); });
+  }
+  return h;
 }

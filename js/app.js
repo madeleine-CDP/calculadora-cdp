@@ -2358,9 +2358,9 @@ function gerarProposta(){
   const tipo     = $('p-tipo').value;
   const hoje = new Date().toLocaleDateString('pt-BR');
 
-  const tabela = r ? fmt(r.tabela) : '—';
-  const cartao = r ? fmt(r.cartao) : '—';
-  const avista = r ? fmt(r.avista) : '—';
+  const tabela = r ? fmtCent(r.tabela) : '—';
+  const cartao = r ? fmtCent(r.cartao) : '—';
+  const avista = r ? fmtCent(r.avista) : '—';
   const qty = r ? r.qty : 1;
 
   const isPos = tipo === 'ORÇAMENTO PÓS-VISITA';
@@ -2378,7 +2378,7 @@ function gerarProposta(){
   const ambientesLista = [...new Set(items.map(i=>(i.label||i.ambiente||'Item').toUpperCase()))].join(', ');
 
   const doc = `
-  <div id="proposta-print" style="background:#fff;font-family:'Gill Sans','Gill Sans MT',Poppins,sans-serif;color:#333;max-width:900px;margin:0 auto;box-shadow:0 2px 40px rgba(0,0,0,.12);border-radius:8px;overflow:hidden">
+  <div id="proposta-print" style="background:#fff;font-family:Poppins,'Gill Sans MT','Gill Sans',sans-serif;color:#3B3838;max-width:900px;margin:0 auto;box-shadow:0 2px 40px rgba(0,0,0,.12);border-radius:8px;overflow:hidden">
 
     <!-- CAPA -->
     <div style="position:relative">
@@ -2388,41 +2388,41 @@ function gerarProposta(){
     <div style="padding:32px 40px">
 
       <!-- LOGO TOPO -->
-      <div style="text-align:center;background:#F5F5F0;padding:14px;margin:-32px -40px 24px -40px">
+      <div style="text-align:center;background:#F2F2F2;padding:14px;margin:-32px -40px 24px -40px">
         <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAp0AAACuCAIAAAD7xiFDAABQi0lEQVR4nO2dd1xT1/vHT3bCHirKEHEgKgoiiou6xV2tq2qromK1YrW21tZV1Godte7dOlp33RsXbnAvBEU2KDIEZCVk3Pv7I79vmib3niQ39yQI5/3qH7f3nDznBJM895zzPJ+HQ5IkwGAwGAwGUy3gWnsCGAwGg8FgWAP7dQwGg8Fgqg/Yr2MwGAwGU33Afh2DwWAwmOoD9usYDAaDwVQfsF/HYDAYDKb6gP06BoPBYDDVB+zXMRgMBoOpPmC/jsFgMBhM9QH7dQwGg8Fgqg/Yr2MwGAwGU33Afh2DwWAwmOoD9usYDAaDwVQfsF/HYDAYDKb6gP06BoPBYDDVB761J/ARQBBEUWFhzK5d76OjOS9fit68Mf61DuvWDfnmG3Rzw2AwGAxGGw5JktaeQxXl5fPnd7dvV/z1l6CkhLGRsLdv69arx+KsMBgMBoOBgNfrFFw9dix1wgTBhw8AAIEZdmQ+PtipYzAYDMaSYL/+H+5cuvSqXz+uUmmOO9dgP3o0G2YwGAwGgzEWvA///5Akub1VK3F8PIs2R1VWCoVCFg1iMBgMBgMHr9cBACDh6dPYdu3EcjmLNpUSCXbqGAwGg7EwOM8NnNu9+35gIJ9Vpw4A8Ni+nV2DGAwGg8EYpKbvw185ejR72DAUlgcXFTk6OaGwjMFgMBgMHTV6vZ7y6hUipy5r3hw7dQwGg8FYnprr10mSvNGyJSLjruPHI7KMwWAwGAyEmuvXd375JVehQGR8INaYw2AwGIw1qKHx8CqVirN/PyLjBJ8vEokQGf8oePv2bXFxsYODg5ubm0DAihYABoPBYIyihvr1XV98IUAWMOhz5Agiy1WQZ8+eXbt27dSpU4mJifCenp6en376ac+ePdu2bcvhcEwaJT8/X852woIxuLm58fkU3xGFQpGXl6e+dnR0tLOzs+y8/qWoqKiiogIAwOFw3N3ddVrv3bunbq1q+Pv716pVS/sOSZIfPnww06xAIBAIBFU2v5QgiBIqUWpbW1tEj78KhSItLU37juaP4+npSfnZxlQDamg8/B4T/YpJjJbLq/0iNSkpaebMmS9evFAqlaa+lsfj+fr6rlq1qnXr1ka+xMPDw9RRzKdbt2579+6lbHr06NHAgQPV1xwOJyEhwcHBwYJT+5cJEyZER0cDAPh8fkZGhk7rsmXLNm3aZI15GSA9PV3nO5KZmdmhQwdWjPN4PIlE4uLi0rhx4/Dw8O7du7Ni1nymTJly+vRp/fuffPLJgQMHUIz4+vXrrl27UjZdvXq1adOmKAbFWJ2aeL7+4vFjdMalbdpUY6euUCj27dvn6enZrVu3p0+fMnDqAACVSpWYmDhgwID69esfOHBAgSzKwRxCQ0PpnLoOJEkGBwdXVlainhIDhqFJ9zATHo+H9DuiUqnKysoyMzOvXr365Zdfenh4NGrUaP/+/aWlpegGNQZKpw4AuHHjBqIRa+ayDVMT92HiVq9G97a9vv4amW0rs3r16g0bNtC5YR8fn6CgoMaNG7u6ukokkuLi4szMzGfPnj169IjuJSqV6vvvv58/f/7s2bOnTJmCcu6m0bFjx4MHDxrfv7y8PCAgICEhgcutWg/Kvr6+dnZ2ZWVl1p7If5g7d65J/d3d3cVisTE9KysrP3z4oP9+ZTLZ7NmzZ8+e3alTpy1btri6upo0AVY4efIkpHX79u2TJ09mfdCq9k+PsQw1bh+eJMk/xWIBmsNagssdK5fzeDwUxq1IQkJC37599Vfn9vb206dPnzZtmkELWVlZkZGRT58+pfPxNjY2169f1z8hVkO3D9+wYcOJEycaHN1UxhtKU9Teh9fg6ekZGxtrYdcO34c3k0mTJp0/f56y6enTpzoH5GYC2Yc/f/58q1atTDVYUFAwbdq0uLg4/c9tmzZtDh06JJFImEyUKT179oTEoNjZ2b169Yr1QSk/qGrwPnw1psat199kZSFy6gAAhbNzNXPqJElOnjz53LlzOvdDQ0N/+eWXxo0bG2nHy8tLvV45f/78okWLsrKydDpUVFS0bdv29evXNjY2xk+vTp06Bn2wxcjOzg4LC7t06ZK1J4IBAIBatWodOnQIALBz586oqCiVSqVpevjwYdOmTRctWhQeHm6ZyeTn58MDS8vKyhISEpo3b26Z+WCqN1Vr29ACnDdiccmYlqZs3lZ9CILw9vbWcepisTghIeHgwYPGO3Vt+vbtGxcXFxcXp7+u/fPPP01y6lWQhISEsLAwa88C8x8mTJiQmZkZGBiofVOlUs2fP79nz56WmcO6desM9tmwYYMFZoKpCdQ4vy48cwad8Q6W+pmwAHFxcV5eXtqrHADA+PHjU1JSHB0dzTTu5eWVlZX1008/abz7r7/+2qdPHzPNVgXi4+OnTp1q7VlgdDl79uy3336rczMxMbFx48aFhYWoR9+1a5f6AhIweOrUKdTTwNQQapZffxwXh854ZefO6IxbmNjY2KFDh+rcPHjw4NKlS1kcJTIyMiEhQSQSrV27duzYsSxati6nTp2qUmGAGDXff//9qlWrdG5KpdKgoCDKtHK2OKO1ltizZw8kpOnixYvopoGpOdQsv34vKgqd8SazZqEzbknOnz+vkx/F4XDOnj0bGhrK+lj29vapqanDhw9n3bJ1OX369OrVq609C4wuo0ePHjRokM5NhULRokWL8vJyRINqnoZFIlGXLl28vLzoek6aNAnRHDA1ihrk11UqleDaNUTGCT4/lCbu9OMiPj4+IiJC5+a2bdt0jicxBvn999937Nhh7VlgdNmyZYt+bAdBEJ3R7LdlZWVlZmaqr9WbUpDISqVSqR9SisGYSg3y64lPn/KQiYcoGjWqBqKMJSUlYWFhOvuEo0aN6t+/v7Wm9FETFRWFD02rIHfv3tW/mZeXN336dNbH0tb7i4qKAgA4ODjQpdhxOBy8zYMxnxrk1+/89BM644HbtqEzbhlIktRfsnh4eOgfSWKMZ+rUqU+fPrX2LDD/wd3dvU2bNvr3jx07Fh8fz+5Yf//9t/oiKChIczMyMpKu/9GjRwmCYHcOmJpGDfLrIpQxKe26dEFn3DLMmzfv/fv32ndIkjxw4ICpNVowOvTr1y8pKcnas8D8h19//ZXyPrvKu9o5oj/++KPmWv+oSwNBEC9fvmRxDpgaSFXcOv7w4UN6empFeYVCYYKATGDrNpDaGw9u3WJjatTIunVjxU5mZkZubq5MKiVJYx/YuTxe586fmD/027dv9+zZo3MzICCgUaNG5huv3nA4hkUbe/bsGRcXR6emh7E8LVq0oLxfWlp64sSJwYMHszLKT//bI7SxsenUqZPmvq2traenZ3Z2NuWrPvvsM+zaMeZQVfz6+/fvT588aCsmCIJgJtnm0AXmXB/OmGGUwDQjghcvZvzaGzeuZaU8EYp4zN54WYWSFb/ejerRhE5DFKNNZmYmJMJZjUqlCg4OzsrKqmZyhB81EydO/PPPP/Xv//DDD6z49fT09Pz8fPV216effqrTevjw4Y4dO1K+sLS0VC6XV9lqs5iqj5X9el5e7sWLZ0TcCg6HYycBAHCY/fCVVcAKiykUCj7bx2YaCJEooH17U191+/bN1y8f2dnwAAAiMR8AwOyNd+s5mMGrdDh+/Lh+fQjKA0iMPlwu98aNG127doUfi3I4nGbNmj148MBaFV0xOsybN4/Sr5eXl7PiVtevX685w9IPUvH29obs9MydO/e3334zcwKYGovVztflcvmenetuXPlHzJOaf4IbHNID0vrg+nU+Mk34yqAgkyLh792L2/fX2pzMp2qnbibe3g3MNzJnzhz9m/riXBg6GjVq9ODBA4PdysvLjS85j0ENRPrN1IpzlKjV6QEAvr6+lD9xM2bMoHvtsWPHzJ8ApsZiBb9OEMQ/h/edOrrdVsLOniShUjVp4gvp8JxVlTQdgleuNLLnu3c5f+1ck5nyQCRgZ5tEWsmCnezsbH1FDh6PR7kzj6HDzc3t4MGDBp9QZTJZQEBA1SzWXtPgcrl2dnaUTfCaqsagLrKnhi6jZNy4cXTr9crKymfPnpk5B0yNxdJ+XaFQ7N2znqMqYtFmhZwrEokgHUTI5GgAAMHGyVlcvHj+2qV/bCS0SwQGtGpt8v6/Pj16UGx1uLm5mW+5phEaGkq5r6tDQUEB5d8cY3nowkJlMpmZljWZbLa2tnRHWnXq1PH29qazgKIcO6aGYFG/npiYcPzQZhsxy4f6Po38Ia33UDr1yr59DfYhSfLvPdtK3qfw+Wz+tSsVyoCAQDONKBSK0tJS/fuQ/FoMhLCwMLoEKm3S0tK6dOliMIoeg5r69etT3icIQm7GyV1aWlpFRYX6esCAAZBdnCVLltA1ZWVl6VeOx2CMwXJ+/enTJ88eXuIiiAfuAo2EfzxhAusjavjEiE34v3ZukggVrA+tVLLweES3dTxmzBjzjVsAnXJzVYGxY8dOM6IWcHJy8pdffmmB+WAg2Nvb0zXl5uYyNrtixQrN9bJlyyA94YVio1DWs8BUYyzk1zMy0l8+v44iyadCCnOZKpVK8D9xZtZRCoVNabJgNezetcUWTUnxXn0+M9/IGZqqtdVAE9eKzJ0797PPDP/rxMTETED50IkxCOT8TiqVMrNJEMTp06fV166urmKxgQTbcePG0TUdP36c2RwwNRxL/HyTJHnn2gmBEMlYn3QfDGm9euQID9mSjujTBx4ndf3aVTsxqtFZETmJjY0134gVKSwsPHLkCCLj5kiPbdiwoaSk5PLly/Bu0dHRixcvXrhwIeOBMOYA2e/Rrw1jJNplXTQishAiIyP1JaHUFBcXP3v2rFWrVsxmgqmxWMKv7/lzvZ0tqoHq16cNPAEApK5bh06Opt28efAO77KfI9IhkcpZ0KyQSqWUv2u2trbmG7cMKSkpkGQhc1iwYIGZFvbs2RMcHJyTkwPvtm3btsaNG48ePdrM4TAMgNRmNbjOpiM8PFz9uM/j8Yxxye7u7j4+PmlpaZStUVFROOcNYyrI9+HT0tLsbFFpbJVJOfDHajHK9WhAu3aQ1t07N6ITF+vUmYWAak1ojw5169Y13/hHTdu2badMmWK+nfv37zdr1sxgt9mzZx84cMD84TCmkpeXR3mfJElm34KUlBTNHt7IkSONVOb4+uuv6ZooS89hMHCQ+/VrV8+iM96seRCk9bZWCinryAcNgrRWVFSIhah24CsrlQ3ZkG2nK0ZCl9RbQ+DxeGytkDgczoULF4wJVvj+++/v3bvHyqAY48nIyKC8z+fzmYWYLNaSlF60aJGRr4Lv1qxfv57BTDA1GbT78JWVlfZoosYAAAShCmnfAdIhcehQNrPF/8vgHTsgrTExl/nIFusEYOdsga5+6EeUXdOmTRvWV7o2NjYslrDj8/kZGRn+/v5FRQY0G4YMGXL27NnAwEC2hsYYJJMmqBYiRQehsrLyypUr6ms7OzsbGxN++3r37n2RpuDktm3bvvnmGwbzwdRY0Pr1hIQX6IxXSGHpv0qlkkuzz2w+KrG4Vu3akA7v36Xa2KD62/boDdsqMJ43b95Q3v+I1NC4XO5HEQ1w69atwMBAhcJAuuPAgQNjYmIaN25smVnVcCBBc8zKGJ47d06jSXDixAmTXrtixQo6v15cXPzixQu6AnQYjD5o9+GfP7mOzvjAIbD033N//MFDpvvBGT0avqRD59RVKhVb5T71a72oeffuHSv2MRqcnJySkpIMxlsQBNGlS5fCwkLLzKqGA5H0h8jFQNCsqrlcrp+fn0mvrVOnDuR7jbfiMSaB1q/biFFthJMk6erqCunwdts2REMDAEKg22KnTiKMX1VxWKsGRldYjM7fY8xBKBTGxMQYE0oZFBT0/v17C0yphhMREUHXFBISYqq11NRUTUG/MWPGMDjKmThxIl0Tnc4EBkMJQr9+/jzCz6JMAROEl0qlkidPEA1NcrnNAwIgHSpKshENDQDo1XsAW6Yg2tQfCywehFuARo0aXblyxaB8rEKhaNOmTRWU0qtOEARB9/AUAP120/Hdd9+pL0iS1FybBDwFw/xSNJiaA0K/nvs2GZ3xVgFtIa1xFy6gG1rx6aeQ1qKiIg4H1f6/VKasDT3XN4lqEKLFWDzEWjRp0mT//v0GuykUiubNm5sjUY6Bs3z5crqmn3/+2VRr5eXlml19Ozs7xl9SSFbk999/z8wmpgaC6mextLRUIkK1llIoVAGBsDrWqcOHIxoaADDp6FFIa8zVi+jS1jl8WjlrBjRo0ICu6WPXoavKdO3a9ffffzfYraysrEMHWLoHhjEqlWrLli2UTbVq1WKwCX/27FnNJvzhw4cZT+zcuXN0TeXl5enp6YwtY2oUqPz648cP0bm3SgVs2pWVlXxke5gKW1v43m/ZBwP6YubQvYfh8nHGA8nD2bhxI4sDYXQYOXLkTz/9ZLDbu3fvunTpYoH51DTmzJmjccM6MNvunj17tvqCy+Wasw0mFArpStFwOJy1a9cytoypUaDy65nJjxFZBgAMGgKrNnbKiMUQY8RTp0Ja5XK5jQRh6iBbkfBqxGKxRCKhbHr8GOE/HwYAEBkZCYmT0pCcnGxMCRmM8SQkJNBpHowcORKyiUVHdna2RvLB/Bp9EO25I0eO4Nq+GGNA5dfFElSR8IRK5eLiAulQ9NdfiIYGALSH/hafOY2w/hLBcWTdZufOnSnvFxcXU9Zlx7DI4sWLe/QwrAd89+7dyMhIC8ynJlBcXDxgAHXkae3atX/77TcGNsPDw9UXJEmaLz8cERFBtyNIkiSdlhQGow0Sv37qBMJELyUHdsZcVFgoevkS0dAKB4fG0LRUpRRh5vfgz0aybnPIkCGU9zkcjqnCGhgG/PXXX927dzfY7fjx48xCrDHaEAQREhJCKbvE4XBu3brFIAyzvLz85f9+cGrXrl2/fn0zJymRSOrVq0fXak6NQUzNAYlfLy7MQmFWTXBb6iWmmjsovRF36FBIa3FxMRdZSIG0UikUslDDTYdP6WP7N23axPpwGH3+/vtvHx8fg90OHjxIF+qFMYbk5GQfHx9KbQYbG5vExERmZREOHDigOaqHxNibxKlTp+iapFJpSUkJK6NgqjHs+/WioiKJGNX2fqVC6evrC+nwDk3VTjWjN2+GtJ4/i3ATXmJTB5FlLy8vyvtZWQgfzjDa3Lp1yxjh0l9++WUbSrWlasz333/fpUsXysIHdevWffToEV20mkG0fXnfvuyEtdarVw8SdMxMCw9To2DfAd+7G4tOLUSphMnRqFQqPjKtNKVQCC/JrJR/QDS0SqX6pGtPRMZv3bpF1wRZzWPY5fr1605OTga7LV68OBpllcJqRkVFxapVqzw8PCgD5UiSHD9+/MOHDxk79cLCQqlUqr6G12QzlVmzZtE1HTp0iMWBMNUS9oO3c3OSbMSoYsL7DYQdLx2cNw/RuAAAu4ULIa0FBQUSZO9aRYA6dVCt1/l8vqenZ3Y2hUbegwcPysrKanjZVsvA4XCePHnSvHnzCkPFiiZMmHD06NH27dtbZmJVgQcPHhgvrFteXp6RkfH8+fPY2NiCggK6bm3atPnzzz/NVHkapFWsedq0aeaY0mHUqFGrVq2ibFKpVPHx8f7+/iwOh6lmsO+K0Dl1AAD8e1i+fz9sOW8eHcbAkutirkajUzQVSlA5dTWrVq0aNWoUZdN3332H934tg0AgePz4cfPmzQ0qyA4dOvTq1atNmza1zMSszoIFC9g1OGHCBPN3sysrK9PS0tTXAoHAGK0hkxCJRHSVFUePHv3s2TN2h8NUJ1j2wUePHGTXoDYqACt58iYrS4TsSLiyXr360MRWjspAdW1zGDac2umyxSeffEK3ZD9z5kxhYSE8sRDDFnZ2dnFxcW3bwjSS1XTv3v3JkycsigrXKHbt2vXVV195enqaY2SzVrSNQqE4CpWhZJf379/L5XIUgbSY6gHLfl1W+k6EbL0e2gV2xhxnhnyjQcQjYTlmSKtvSSspgn1Y5/r163ShW+3atUtORij1j9HG3d09NjbWGAXZ1q1bJyYmWmBKVqdPnz5GPlmKRCKBQJCfn3/ixAmIhAtJkoMHD4bUaTUG69ZOjYqKWrZsmRUngKnKsOmDCwoK+AJUu9GVlUq42lrxwoXoDgBG05x1qTl35ogE2aOzk6slqq6JxeIff/yRMlFHKpX+/PPPixYtssA0MACA+vXrHzp0aCT0URIAQJJkUFBQmzZtLDMrKzJjxoxWrVqZ9JKNGzeeOXNmypQpdN49Jydnx44dkFKtcPLz861blefYsWNLly79uOoZYiwGm67wxvUr6DThAQ+2Ca9SqfiGAo4Yo5RI+HzYH4pLSFFEKqjp1MlCCuGRkZH79+/PzMzUb9qxY8fw4cNxqI7F6Ny58+HDh0eMGAHvVlFRcfPmTctM6aNjwIABW7ZsgQjARUVFDR48mNlZhrZQ4O3bt83c0qfj5cuXYWFhlE2lpaWJiYnNmzdHMS7mY4fNPLeyEoQlT/r0g+Vc/c1qMKoOtVavhrSmpaWhO3qQyhQWO9vmcDixsbECAYUAMIfDCQsLKypCGEOA0aFTp05Lly7FeuDmMHDgQIh2GwDA4JMTJTKZTHP05uPj06BBAz4a/P39IY8dP/74I4PJY2oCbPp1pJHwrq6ukFbFkSPohu4ALbwRe+cauqHtnZCsAyDcunWLbnOvXbt2kMQhDOuMHz8e/3abyf379yGb1UlJSfv37zfV5ooVKzTXM1AKYQEAJk2aRNf08OFDpENjPl5Y8+v/HNrHlikK+DCnnpacLEQWuSZt1KiOmxukg5BbjmhoAMDgIQgLyVPi6el548YNymViRUVFQECARogDYwG++eabCRMmWHsWHzEcDgee0jZ79mxTT8r/0qosNXw42m8ovOQPs0I1mGoPa36dVCBcyYX1oS7BpCZ29250Qzt98QWkNS83F93QFVIFOuMQGjZsePXqVboaGL6+vjExMRaeUk1myZIldIesGGMIDw+H7/b169fPeGuvXr2SyWTqa4OxjawQFBRE17Rnzx4LTADz0cGOX8999w7dMWCFVAEXepStXIlscDDy558hrWfP/INu6Po+AeiMw/Hz83vx4gVlE0EQY8aM0dSmxFiAnTt31oS4d3Q8evQI0pqYmHj+/HkjTWlXVLNMkggkoa6wsPD58+cWmAPm44Idv341JhpdJLzEFhawWllZyVOgWtcq7ezgmSRiPqrkcpIkg6z6U+7g4JCdne1HVZeWw+FcvHixadOm165dM2eIt2/fDho0aCK0pD1GzcmTJ+EVjzAQ+Hz+1KlTIR0mTZpkUMEXACCVSgsLC9XXzZo1YywsbxI+Pj6QgdasWWOBOWA+Ltjx64QMVaS0SqXq3WcgpMPf48cjGhoA4LV9O6Q1Pv65QIgqVLBCpnJwcERk3Eg4HM6VK1eioqIoW8vKysaMGRMQEMAgfqeoqKhbt25t27Z9+PDhhQsX2NXWrpao/y2wVj9jfvrpJ7gbHjgQ9jujRlvR9ptvvmFhWsbx+eef0zXhOkAYfVhwSyUlH9AlepEkx9ER5t64xxFWR+0wAHau//hhHDo5Gtc6DVCZNpGIiIghQ4Z89tlnKSkp+q0FBQWDBg3icDgjRoz44osvmjVrJpFIKO0olcqkpKTo6OjVq1frxOWdOHGiTZs2DALEPnz4cPHiRVNfZSTNmjWjK2JrFbhc7vPnz4ODg5HqG1ZXeDzekSNHIJEKL1++PHPmzAD6rzxBECdPnlRfkySpXfQFNXPnzt2xYwdd64EDB+jqO0DIyspCsckqEAi8vS0hpYWBwII/PnvmODKVOSCxg2nMvXz+nEdTGsF8Klu2hD/gi3gVAKA6fejfvwrVSK1Vq9aNGzdu374dHh5eXk4R/0+S5KFDh9QVJF1cXFxdXR0cHGxsbEiSlMlk5eXlBQUFBQUFlGH29vb2e/fuDQ4OZjCxxMRERCf9NjY2r1+/RmHZHIRC4e3btykPRzAG8ff3DwsLgyxwp0yZQlklQc3Tp081e/WWiZjTIBQKXVxcNEcAOkRFRTHw6+PGjTN7XhRcunQJhVmMSbDg1wUcVCXPAQCfDoEVZo3bvBmdjmJt6LlvYWEhF1lIgUymqIIKkZ06dUpKSnr06NFXX3319u1bum6FhYV0P0A61KtXb+fOnaZKhFoALpdrZugAOuzt7ZOTk/38/JRKSxQOqGZs2bKladOmCpqIHJIku3Tpcv36dcrWr776SnNt+VPtEydOfPLJJ5RNZWVlKSkpdPUdLAZJkrt27cISeFUBc8/X37x5w8o8KJFKDRSsVP79N7rR+9ErUAIATh77C9JqJr4tDJf9sBZBQUH3799/8ODBzJkzxWIxAwsCgWD69OlxcXEPHjyogk4dALB8+XIPDw9rz4IWiUSCUw2ZIRKJ4C45OTmZckGvVCo1v3UtWrRAMjkoDRs2hKhZb9q0yZKToWT69Ok4IbOKwDFTqPLvPdskQlTh6CJb94GDaLXeysvLjyALIyL4/HBomP2hvesQpQCoVKqBn0XY2NigMI6C+/fvr1ix4vHjxwqFgiAI/U8Ul8sVCASNGzf+4YcfevaEFeWjIz4+no2ZGotBJXyZTKapcWct2fyKiorU1FTN/3I4HNb9TVZW1ocPHyibmjdvTqdwwAylUvny5UvKpiZNmohEIhbHMvhx0v83LSgoePfunfra09PTycmJxfkYSXZ2dnFxMV0r5edQ+4OKGlw/oupgrl/fv3utUIQkaE6lUoUNGAf5/uwYPFj4vzAW1ml49mwovVrFg/v30pPvIRq6tJwIn2S5UFvWkcvlRUVFUqlUJBLZ29vjEG4MBoOxJGa55KysLEROHQCgVAL4QzE6pw4A6AjdUHrx/KEtddA3C3jW/7jTlIVCoRtUeReDwWAw6DBrJ+36NVQpRgAAR2jd8ecoax7I2rWD77HbiBGGLPXq3QedcQwGg8FUb8zy60gj4QcMHAxpvbdqFbqh60NlUvLz89EFq1fIcJAzBoPBYJjD3K+/efMGnXYsvOQJQRAksk14FY/XE5oMeu40wsp1bUN6ozOOwWAwmGoPc79+ORqh0Ju7FywJMjsjQ/C/kkqso3J1FQgEkA62EoRl5n2bNkVnHIPBYDDVHoZ+nSRJIQ9hyZN2IbAE7gso5cRb7t8Pab116wa6oUsrALotEAwGg8HUBBj69ZcvX6IreSKVqhwcHCAdREYXVWRA+x49IK3JSU/RDd2wsRX0LjAYDAZTnWDo1+/fpZZaZAU3D1ii1+PYWHRDy0JDIa1KpdJOgipiTqlSdenSDZFxDAaDwdQQGPp1GxHCsO2wPrSCMACAe1qlElmn2Q8/QFqTkxEWApFVEuiMYzAYDKaGwMSvQ0oemU95hYFIeOENVCfcBJ/fmV5jDgAQd+cCoqEBAH3605ZYxmAwGAzGSJj49UsXjrI+Dw2+zdtBWp/dv8+Fyrabg9yQ5LWdBBYnbw4EQdatWw+RcQwGg8HUHJjEvonZLMHwH1QqVWBgEKTD3fnzmVQQM46gDRsgrVevIKwrLJMjzJ2jo6SkZMSIEdp3xGJxvXr1QkNDR44caXxk/ujRoxUKRceOHb/99luDnTMyMv7555+srCxXV9fevXu3b9/emCHatWtXWlpq5HzoEAqFfn5+nTt3HjJkiKenp5nW9Fm0aJGRBWrZgsPh/Pbbb5RlvlauXKn9F+NwOAyE+l1cXJo0adK+fXt2y64w5tWrV2/fvi0pKbG1tbWzs/P19XVxcUEx0IQJEyjvT506tW3btihGXLRokX7hXXt7+x+gJ4OM+frrr2UyGQBALBZv3rwZxRAG2blz561btzTXKIZ49erV3r179e/PmzePWS1KtsjMzMzIyCgsLBQKhRKJpEmTJuwWkDS57sv9+/cykJU8KZMS4yfASp7sQVmVfBz0T7F75zo7CaokNO9Gbdu2C0FknI6CgoLatWsDAAYPHtyxY0cAgFQqffv27YMHD54+fUqS5JYtW8LDwyHVIQEAFy9e1BRnhHyWSJJcu3btrFmzPD09Q0JC/Pz8srOz79y5k5ycHBgYeObMGXd3d8gozs7OkEpWzBAKhTNnzpwwYUJTljQDvL29MzMzWTFlJI8ePWrdujVlk7u7e05ODrvD9e/ff+bMmR07drRMscHMzMzo6Og1a9YkJiYa7Ny1a9fp06d36NChXj0W9r3oBCUPHTqk8yjMCkqlkk4zIzU11cfHh/URHRwcNI99gwcPPn4coRgJHRMmTNi1a5f62szyY3S0atXq+fPn+ve/++673377DcWIlBQXF9+9e/f333+/dOmSwXfq6+s7bdq0sLAwX19fxsKmJu/DJ8QjFGav790M0nr/OsIg/MpevSCtUqnURohqaKVCFdwWdvqAmh49esyePXv27NkLFy7cunXrgwcPysvLv/3228mTJ3t4eMAd6rx582xtbdXXZ8+epesWGho6a9asnTt3ZmVlHTly5Jdfftm9e3dSUlJ8fPyrV688PT2PHDnC7psyiFwuX7lypZ+fX7169ZYuXWrh0c0nKSmJzqkj4uzZs7169bK1tW3fvv2DBw/QDbRhwwZvb29vb+/Jkycb49QBANeuXRs6dKi7u7u3t/fSpUsR+QlELFq0iK7JAu7nxIkTQ4YMQT2KVaB06gCA1atXW2YCt2/fbt26tYuLS58+fS5evGjMxzIpKWnGjBl+fn7Ozs5jxoxhtk9p8nr9yIGNDIYxkmGjIiGt21u1EtH8O5lPq9jY1vR7wg/u309Pvoto6LIK1fiJMxAZh6BZr2/YsCEykuIvf/jw4ZEjRwIA8vLy1D11IEmSz+e/evWqSZMmAIAmTZokJSXpd1u+fPlPP/3UuXPnmzdv6rfK5XI3N7fi4uLk5ORGjRpRTpVuvS4QCBwdHSHvUYNKpZLL5VKplCBo8w62bt06adIkxtJAdOt1gUAAVzA0FQ6HExMTA98Qpluvt2/f3shHKIVCkZWVdePGjcOHD2dkZOgXYrezs4uJiQkODjZ+5nBIkjx37tyAAQP0m4RCoYuLi729ff369Z2cnCorKzMyMoqLi4uKisrKqKtUzJkzZ9GiRcxOECy8Xvfw8Hj79i1dK4pnFO31uhoLL2EB+vX6jBkz1q9fT9caHR3duzdC0e709PTmzZtLpVKd+1wu18XFxcHBwc3Nzc3Njcvl5ubmvn37tri4uLi4mPLv0KZNm4sXL5p05GSaX8/ISL9/54zx/U2irEI5fuJMulaFQvGXnR1fLkcxtEokGltWBtlw/uvPtTY2qI7AQzoN8qpfH5FxCAb9OgCge/fuMTExHh4emZmZ+kGFkydPfvv27ZkzZyQSiUwm43A4b9680d8IdXNzy8vLO3HixKeffko5itpttGrVim6qdH69Q4cOd+7coX+LuiiVyoSEhMuXL69aterdu3f6HWrVqnX69GkjT/11oPPrkZGRG6ChGyig8+uhoaE3GGWUJCQkLF26dL+eGmOrVq0uXLhg/u63QqEIDg5+9uyZ9k0ulzt58uSIiIigINqwm+zs7OPHj//yyy95eXk6Tba2tn/88cfnn5ucaWJJv/7y5ctmzWD7lOfOnevbty+7g+r7dQDAihUrEB3nU4Lar1O+Rw3t27ePRSaF8uWXX+qf63fr1m3OnDndu3ene8ovLS2Njo5esWKF/mYYl8uNjIxct26dkRMwbR/++qUTJvU3iY6dYZ/du1euIHLqAABFu3bwU2R0Tl2lUlnFqRvJmjVr1N768uXL+q27du365ZdfAACrVq0CAJAkuW3bNv1u6m9XQkIC3Sje3t4Qp84ifD6/VatWs2bNysnJKSsra9iwoU6HgoKCDh06qHcpMNo0b9583759SqVSZ93w7Nkzd3f3P/74wxzjKSkpIpFI26lzOJxRo0apVKotW7ZAnDoAwNPTc/r06bm5uTk5OZojITXl5eWjRo3q1q1Kyz1NnTrVzA5sMWfOHI2j/di5cuUKfAc7Li6O9ZAdAID6C6Lt1DkcToMGDQiCuHr1alhYGGTrzt7eftiwYffv3ydJskWLFtoPlwRBrF+/3tnZuby83JhpmObXhSKz6rpCIFSqBtDwkBe//opoaABAu5UrIa3RF2iPjc1HrpKgM24+AQEBQqEQAKC/TDl58qRSqQwMDAQAjBkzRr2apzyoVnuCuXPnPnnyBPF8TcDW1jYlJeXKlSv6geKHDx9u0aKFfnwyhsfjvX//funSpTor2oiIiH5Q7QcIz5498/X11VmxXb58WX9vAE7dunXLysq2bNmic//atWteXl4yZJWizOTatWvwDpmZmZBdenaZMGHChQsIVTosxgIj5MtYf4hRKpX16tUrKirSmUlaWpqpEXDx8fF3797VeU4tLi52dHTU2dOixAQ/ffPmdT4flV+vkHPV/oMOMTI5GgAA5GQdAJDzBqHMXOs2sAo3VQGJRAIA0D9eXbJkiWZ17uzs3LJlSwCAUqnUD3TSbB8FBQUFBQUpkCkQMKB79+7v37/XP2JISEhwdXXVPx7DAADmzp2rHyN5/vx5e3t7U00VFhYGBgbqBD0kJCR0796d2dymTJlSVFSk86yWnZ1dr149ObINP8YsXLhQfcHj8eiC10iS3LRpk8Wm1K9fv/j4eIsNhwjNHvvWrVvp+nz//ffsDlq7du2CggLtO7/++iskKBJO27ZtS0pKdM4EVSpV69atX7x4AX+tCX46JQlVzBoAoFFj2DZs3NWr6IauhK4zSktLbcWo0tvkCqW/f0tExtmiTp066gvtFZVUKn348OGkSZM0dzTfH/1129ChQ9XndiRJPn78WCgU2tvb//rrr5Qn3JZHKBQqlcoGDRro3C8pKfHw8FCpVNaYVFWnb9+++kFJZWVlTZs2NX6fQ6lUtmzZUmelvnDhQvh5s0GcnJyKi4u9vb21bxYXF6NIGDMTzbcmICBg+fLldN1WQjcU2YUkydatW0NOzao+06dPV18IhcLx48fTrRgJgqALmGfAmDFjdDb2mzdv/uOPP5pjk8vlxsbG6hwLEgTh7+8Pl8ow1q8TBGErQZg6EvpJF0jr83Hj0A3dHZrz8OD+XQ4XVdK8XGkFORpTqVu3rvri/fv3mpvffvtt//79tZe5mufKzMzMkpISHSMrVqxITU3VmCorK5s7d667u7ufn5/F9hghcDic58+f6x99FRUV6bgHjAZ1vrjOzaSkpBYtjC1LGBUVpf+vz3h9ow2Px0tJSdFRH3r79i3jbQAU3L9/Pz8/X319/vx5X1/aeldKpfLly5eWmhdQn69VVFRYbER20TwthYWFiUQiyG7H5MmTWRkxPz9f/9jo3j12hF4OHjyoL5QEf0g11q+npKQwzpE3SEUFbEmkUCh4bCtsaFCJxQ3pv04AgKw0hLsUPXpRx4dXKTTHRbVq1dLc3LZt2/z583V6qn+RCYKg/CL5+Pjk5OQUFhZ+9tln6jq8JEm+evXKw8Nj5MiRkPQzy2BnZ/fwIYU2w5s3b9j68lc/7ty5o/+zkJSUZIzyoEql0o/GYDFxgMfjvX79WudZLSYm5ty5c2wNYSaaxZytra16V+zAgQN0nS0c/adQKFxdXXV2lT8Kzp49q9kxUkvpDR8+nE4g/N69e3R5kiahL6vl4+OjczpuDn/++WdAQID2nZKSki+++IKuv7F+PfYWwi9Dz77DIa0x//zDQ7YXSvTrB9eEt7FBpQkPAPDy8kJnnC3evHmjc+fQoUMSiUQ/GUwTuPsrfZCjs7Pz0aNHi4uL4+LiunT5/02aw4cP+/r6Wt21t2zZsheVPNGOHTv0/wgYNZTnl+vWrUtNTYW/cO7cufo3R40axc60AAAAiMVi7Wl07Njx9u3bffr0YXEIc7j6v+PF33//XX0BScTIy8vT3wZDikwmY0uK0ZIsWbJEfSEUCtUbNo6Ojp06daLsTBDEwYMHzRwxKSlJ/+xp2bJlZprV4dGjR5oDhbp16x45coQy+UiNUX6dJEkbZGfMhEoF1xBNMzppjwEhP/0EaT1z+gS6oSuVVToSXoM6kFh7sb5s2bJ58+bp96xdu7Y6Jam0tBT+FMzhcEJCQq5du0aSpL+/PwAgJSWF9TAWBuzYsYNyXwqFnnz1IDw8XP/8giRJneWFPocOHdK5w+FwnJycWJwbAMDT03Px4sVr1qwhSfL27dsdO3aEP8dbDM03iMvljh49Wn3N4XA+++wzyv4EQaxdu9Yyc9OgFjCvgvGGdEil0rt3/19A7OjRf+uTQVYa06ZNM3NQSj0fdRwxi3C53Pv373/xxRcEQeTk5AwdOhSyH2DUR/zK5YvsTU8XqcKAQKuYpVMKSlpC1bKKC9LQDd0ptAod9dGRk5OjjgnXxD/n5eU9e/YsMDDwLBVqnXkAgPESp8+fP1efyFr+Z0sfb29vuoOrv//+28KT+SgQCARDhw7Vv19WVnb69Gm6V5WXl2dkZOjctLGxYSz2B2HBggUzZ85k3ayZaE4c2rZtqx29/xP9SsNi6qfaKBSKgIAAq++lGYnmaIPL5WrvvdGt1wEAcrk8NzfXnEFjYmL0bxqpg2kSrVq1+vvvv405EDfKr2dlvDJ7SrQ0928Dab1zEeEjhZxG/kxNaWmpWIxqE75SrmzQoMpF5+qzePFi9ZK6Xbv/V7D/+eefeTzeZzRs375d3S0lJUXzWyCXy7du3QpJb1P/7FYRTW+63S39eAKMmp9//pnyPp2IIQCAUguvyqaYs87169c1qik6z4vBwcF067CSkhLWt+KnTZtmMDvx5cuXmqSYKo4mR2PIkCE6EsKa/Xl9GEsvAABIkkxOTta/X1lZydim+Rj261Kp1EaM6gdXpSTaQkueJAwejGhoAMDQP/+EtF6/dgXd0CpgzSqBRpKUlLR161Yej6et1bp169Y7d+5U0qOW7SRJUnNqOGnSpKlTp0Kqwjx69AjQi3damJ49e1Lez8zM1M4IwGjw8/OjvJ+Zmfn6NbX2A6ULV6lUFi50ay2ioqLUFwKBQF1bQRvIEyTrVWK5XG5GRobBbZL379/TfS+qDtpV6dQ6mNpA9mzi4+MZu2G6PFj1b5q1MOzXExNfoNgcUyNVwJ4YCIIQIBMGUYlELq6ukA6FBemIhgYA9Olb1QsoRUdH+/n5SSSSDx8+aJ7o9+/f7+rqqlm7U6IJhtccO+3evRsAMHw4dXRkZWWlWvhJo9FhdehqM1te5v1jgS5FmE4zju4vbLwC9keNRmOO8hMFSXqmrKtkJkaqk165csWcda0F0F6R6z9r2tnZ6adlqpHL5YcPH2Y2KJ1ztJj6LyWG/frzJ7fQDd9vACz89dTmzeiG5owdC+9gI0aoCV+njhsi4wxIS0u7c+fOnTt3bt26dfbs2aioKCcnpwEDBowfP768vFx7VzAqKsrgUaWLi4v6iDo3N1ednsvlcp8/f87n8wUCwfr16zV7sEqlUl2nSCaT9enTR7OIsTqUB8YAAIhySA0nIiKC8j5d6rB2GKY2ixcvNlIB++NFc4LO5XLpatJA8uxRfAhFIlFiYiK8RgYA4Pz581OmTGF9dFbIz89//Pix+lo/JFMNJHaBMjvDGDgcjoeHh/799+/fX0dZWByOYb9uK0GonQI/tsk1r5gEnA7/0ySi5MRxhOXASS77IRUM4PF49erVq1ev3oEDB4YNGzZs2LDRo0cvXrxYJpPdunWrrKxs586d2nvjb9++LSsrM+aYed68eWrLs2bNUt/x9/fPzc2NiIiYMWOGu7u7WCx2cHAQi8VhYWHe3t5Pnjw5f/48qvdpOp07d6a8b90zs6pM//79Ke9rdFd0cHJycnZ2pmwKDAysIpEWiFAXSQIAdOrUiS66avHixXQvh9QeNQc/Pz9jNOa2bdtGWQPC6mhvvA8bNoyyz8CBA+lenp2dzfhTR3c40rt3b2tJahrw62fPnEQ3tgwaCV9eXi5++hTR0ASf7wfNQ6gsR5ivHNa3SsjRODs7v/0vmZmZd+/eXb58ub+/v37hand3dyO14SZOnKg2qB0T5ODgsHnzZpIkSZKUyWQlJSVKpZIkyYSEBIM5URZG/8gTA4fBuW9ISAjl/eTkZA8PDxS1tqoCFy9e1JzIQtRhO3XqRJfyl5OTk52djWJuTZo0uXLlisE8wPnz5+/cuRPFBMxB87gzbNgwyFsYRy9dyrgY7pdffkl5Xy6Xe3h46NfLsAAG/gkLctPRjR3QGlZt5Q59koz5EDQPdGqQhkfJZEq6lQqmiqD/TIOBwyApHKKqkZOT4+bmZsliJxZD+wxYX9lJGzpvAQAYP348i1PSpnv37hDNOw2TJk06duwYojkw4MiRf7dXKaU1NEBquF25wjBQmk5yAABAEESLFi3GGjrzZR3Yt7GkpMTWBlXEnEKhbNkSVuslA6Um/EToZ/fqlWh0oYI8kRMiyxi2MHjQiNGBQS5D/fr1Idr7crk8MjJSKBRevnz5Y0meNkhFRcWtW/8frkQpZqINZL+dsQcyhhEjRujXutWBJMmhQ4dWndowmpBbW1tbdeVoOjgcDl1VIaVSacwzDSWQeE+SJNVJ50uXLrWY5D7s9+vhw/voBpYrYI6zsrJSgEzkSGljA+9QWZ6LLnO9e/eqImOJoYPdSrKPHj1CFHBnZrUoq/P48ePatWtDKuYpFIpevXoJBIJJkyYtWbLEFZrAUvXRPpn+6quvDPb39/enK5m6adMm84XS6JgyZUpqaqomDoCOVq1axcbGsp56ZyqZmZmave4VK1YY7B8VFUWn17ts2TJmSsbffPPN2rVr09JgOmbz58+fP39+v379Fi1aFAzVQzMfmF9/k/FMLELl3j4bMR7SegJlXULxN99AWisqKtA5dZVK5fa/mmaYKgu78XHqXAMWDaq5efMm6zYZw6yarbOz87Fjxz6FykMBABQKxZYtW7Zs2SIUCg8cODB48OAqogVrKhrN8G7duulUiKdkx44ddKlZa9asQefXAQArV65MT0//559/IH1UKlW7du2kUild1qJl0Dx/cDgcY/4mI0aMGDt2LOV3PD4+XiaTMXs7z549c3JyMvhFOHfunLry0Pfff798+XJEG8Owrwc6p06oVHCRo2KUmp0d9GreaXPh3Cl0QwP+x73gqCFUnQ1GOiIiIuiC9q1Ceno6sxcOGjTI+CAsuVw+dOhQHo8XGhp64sSJj2t/XruOHPwMWEO7du3ofidTUlIY/82N5PDhwwMGDDDYTSKRWLcq0saNG9UXgwYNMvIlXbt2pWuaMWMGs2nY2dllZmYaH5rz22+/8fl8Hx+fTZs2acQH2YLWryNN9FJyHCCt+Xl5AiplPlaQOzs3hEY7q+TUmTmsMGLkGHTGMWxBl3gqkVSJUj21atWCBJ1ZBY3QCgPCw8Nv3rxp0gn9rVu3hgwZIhaLW7Zsaaa4t8XQVtvt0aOHMS/hcrmD6QU39SXVWOfUqVPwolxqfH19raUBrB0xZ7zS85kzZ+iaNErYDHB3d8/NzTVmJ0ZDenp6ZGSkk5NT7dq1Wcx3p/XrJUVIUinUtO/wCaT17smTPGQJrHz62EUAQEFBATo1U6lMWUWkUjFw6L72zDJ3IyMjSVbJz8+vah8kul9DBwfYE7yGzp07y2SyVq1ggbT6KBSK+Pj4unXrCgSCtWvXVmVBm4KCggcPHqivIeoo+kBC2P6EymCzAofDefPmjbosE4SKigq1uhTq+eijUchwdXU1/tCaz+e7udEqg0G8vkEcHR1LS0s///xzk76hBEEUFBR07dqVw+FMmTLF/J0Yar/+/v17kRDVD0elTNmwYSNIh1ymOyHGMAaqYXfxAsJ8fVt7fLL+cUBXmBJdftHHDp0O/IgRI4y0IBQKnz59Gh0dzWB0pVL57bffOjg4dOvWrWp6d+1SbCY9Hdra2rq4uNC1WibZ7OHDh5CSoGqkUqmvry+zMAvGpKSkaFL5TS3ZB4lgN19458CBAykpKczCPLdt2+bj4+Pn5/fUDPkWar9+N+4WukQvggOLSqisrOSj04S3saETslZDKFg+5/h3aJWq8ycfQWFWDF2ui5+fHxYeoASSvQNJwqakd+/eJEkuW7bMyIW+NgRBXLt2TS0Djki5hTGahIhOnTqZutdy8iTtYuOHH34wa1rGIRKJysrKDH74s7Ky6FLIELFy5UqNSJyp5RaHDBkiEFAHkMXFxZkvi+Tj41NQUBATEwNJ5oTw6tWrwMBAW1vbe4zKlFP79cI8hHXH+w2krv+h5rApm1Sm4gBVIH/37p0YmSa8UkV+LLUOazhz5syhvG8w7afGQpdcJBQK6cK54fz0009FRUVnz55l9pWJi4vz8vIaOHAg3b6LhdGuZLhgwQJTXx4SEkIXjZWammqxJ5jXr1/bGMoQfv36NbN/cWbs2LFDfcGg1hz8w2kwg99Iunbtmp6e/vjx49DQUAYvr6ioCAkJ8ff3N3VnnsKvkySJzr2pCBV8d0IGzawwa2gOpz1N2qKa6zGXEA0NALB3qo/OOIYtXrx4kZWVpX9fLBYbExtMCZ0GeLWB7qC3Q4cOdEsig3C53H79+uXm5paVlfXu3ZtBxOKZM2dEIlFMTAyzCbDI7Nmz1RcSiSQsLMzUlwsEArpCRCRJbkZZHEsbV1fX/Px8g5JNcXFxEP01Fjl+/Lhmsc7smVs75k4HxmVgKAkMDLxx4wZJkvPnz6eTB4bw4sULHx+fyMhI4485KPz6saMHTR3YeNy9AiGt2ZmZQmSPn0p3d8/6MOfKIYpRDa1UDvrUEp91jJmMGUOdsGDdTJ6qzOPHj+n+OJDfTeOxtbWNjo6uqKiIjo7u3bu3qS/v3r17jx49lEql+TNhRnZ2tkY1hbGeKERuBSIyzzo2Njbx8fEGXfvx48e/+OIL1JMJDw9XX9SpUweuMUdH7dq1ITsQzDbA4SxZsqSoqOj58+dTpkwxVdRy06ZNnp6elKsOfSj8uqwiz6TxjKdCpgj9pAukQ9xBhI8UEpqSiGpKSkq4XFShgg4uDRFZxrDIjRs3KGNVFixYAIldquHQlW9p3749XTFWZvTu3Ts6OpokydOnT9vY2Bh/Sn316lWBQGCtWnxr167VXG/dupWZEU9PT7r3q1Kpnj17xswsA5o2bfrkyRODf/x9+/YZmaPPjKSkpA8fPqivNQ6eAZCsNsaJ7Abx9/ffsmWLQqF49+5dgwYNjP8kv3v3rn79+saIXOn69bzcXD4yKafOnxjQDfiwaBGqsQEYAY1yPH5sH6JxyyuU/fobK5iAsRZZWVmURa8DAgIgRTNrOCtXrqTU3BUKhdoyLOwyYMCA8vLy4uLiuXPnwuWttHF2dk5NTUU0JQiaSPjWrVubYweSfAUpP4qCFi1aGPOPu2zZMu1nGnbRzt3XqPgxYNCgQXQR4vfu3SspKWFs2Rjc3NzS0tIIgti+fbufn5+Rr+rUqZNBKSddH37zZgyiSHg3j5YNG8HS20iS5COTxSdEIrgSEI+D6nF+9FiEco8YViAIolmzZvrHV7Vr1378+LFVplT1SU1NpUvF3rx5M+rcAQcHh6VLl5aUlGRnZ7dp08Zgf6lU2rRpU3aV/w2i7f+MkS6HADmYz8rKKioqMse4qfTp0+ePP/4w2G3WrFmQ+mmMIUly377/X4YFBQWZIypsb2/fsWNHyiaCIA4fPszYsklEREQkJiYWFxd/A9U41zBx4sSrV69COuj+RSpK2a8Dr1KpCI4jfAceALB78mTWh9ZQi744EgAgJSVZLGQ/VFCpJEK7D2McOoSxDJmZmQKBQD/v2cfHJzs723wFGAv7Esvw4cOHpk2bUiq5Dh8+fOLEiRabiYeHx4MHDxQKxaxZs+AB20ql0svLy5L/HJriLvb29r169TLHFI/Ho6tWQpLkhg0bzDHOgIkTJy4ytL1KkuSECRPM0SKk5PTp05oPnsbBMwZSNw+pAr8+jo6O69atI0lyz549BrPjevXqBQmS1/XrEgSR8PbODUd8bjiNVXn0KOtDa+gwZAik9W4ckhIaPfuOdnPDWjRVml27djVu3FjfP3Xu3Dk5ORmudmAkFivOaDHevHnj7u5OGYwWFhZ26NAhy0+Jz+evXr26uLgY7uFyc3O/++47y0wpLS1NE1HISog4JEX7119/Nd++qSxcuNCYQ+hu3brFxsayOK4mO8DV1bVp06ZmWoPE3MnlcqsIIYwdOzY9PV1T0pcSgiAguXP/8euHDvzF2tQAAAAolETDph369Td8/JPy6pUQ2VaS1Ne3Vu3akA5CLssaVWXlqiEjprIbN4Rhl7t379apU2fChAn6C7j58+ffvHnzIy0ahpqTJ096enpSPqz06dPnwoULVtS4FQgEkZGRcrm8ffv2dH02bNhgmbz233//XZOIZXxtGwj+/v50h4kymaygoMD8IUxl7dq1xuxDdOrUKZmlkh+vXr3SPFBOmjSJlQ8bJA5g2LBh5ttnRqdOnUiSnDlzJt17zM7OvnLlCmXTf365eIDNMIHSCuLToZOCggwffQEAYtn43NPhDE0vyWO7boSDS8Pxk2agE+zDMEYul58+fXrYsGGOjo7t27fPz9et8ePt7Z2amrpkyRKrTK+KExcX17RpU8pKJFwud+/evefPn7f4pCgQCASxsbG///47XQeDlWFZQZNZ3rhxY7aeESHqp2bG5THm4sWL/fv3h/chSdLPzy8vj4VMK+3M8iiozpjxTKCv8Pnw4UNrlbRRs2bNGkjGHV3m57+fNhbLIsnlyqCQfuETvzGoT/TvS+g/r+YzHKphd/YMO8ERhEpVVqEaNiqyd1g/VgxiDBIbG8sxBZFINGjQoKNHj+pHujo4OFy4cCE9Pd3Hx8cq78ViGFldhiAIuVxeUlKSmZn59ddfczicDh06JCUl6VjjcDitWrVSqVR0qf/W4ttvv6WTDrxx4wbq0S9fvqw53Nm9ezdbZjUH9vq8efPGWpEcZ86cady4MbyPSqXy9vY2U5+1srJSI4nv4eHBVt13e3t7ug0epVIJL0JvAYKDg+/du0f5aEgQREZGhv79f0/Tr1w+JzT7mbJMSrQM6NimjbF1ddTI5XIesuxSha0t/GFZJCAAMGttrVQSgO/UZ8AgBlpCGKvj7++/dOlS44s3f9Swe77A5/MfPnxoah02i7F8+fJ169bpr7cqKiqSk5MNuiJz0Byoi0SiWrVqpaSksGXZ398/Pj5e/z5Jkr/99ptJxeJY5PXr176+vnTlf9TIZLKGDRvm5+cz3ss8ceKE5nrXrl0s/lWHDh0aFxdH2TR79mxTyxywTtu2bUeNGkUZJLhv3z59dTytKDlFCRCZ/OdWpwbJZESLgE7BbduZ+nI1f40ahS5kvNHff0Nanz9/JhQw+ZCp33ilUjTi8/FsPTZiLIP6vEosFm/evBmXaDMHpVJp4RJephIXF0cZGPXs2TN0fj0tLa209P8rSFVWVhqfmmwmq1evtpZfBwC8evXK1dUVnnFXVFTk4uKikZQxlc+1tMUYiA8yIzc3lyRJq1dG3rt3L6Vfp1Sg+9evezQw4aGbw+VIJDb16rl7enoymKIO3NOnzTdCRzvoP7+tjW3tegaqC2vDF/Dt7R0aNPBhUG8Kwzpubm7Gr7Pt7e09PDz8/PxCQkKYlVCsBkgkEg8PDyM7CwSCnJwc+N5ply5d8vLyquyjbUBAAOV9Vs566bBWfMb79+/fvXtXt651cnA4HM7bt29r1aoFL5VbUlLSokWLFy9emGpf/wzIYvTo0QOeL24ZhEKhfsgnZRDov369S9duaCdFQ8LTpwCZerMsIABeObhho0ZwtRxMVaZhw4YQJUiMPsHBwaaeLhcWFnp7e5eVlVG2lpaWjhs3jnFum0Kh2LNnz8aNGzMzMwsLC5kZYQC6bQaCIPbs2YPIuEEGDx5Mt59sAcRicVZWlpubG/ykPyEhwcvLy9SE/sjISPNmxxx4ypmGCxcurF+//v79+/oBuazg5+enrxmsybnQBlXdNuO5u3Ejj2pmrFA3IgKRZQymhuDi4lJcXNyoUSPKCB0AwOHDhxcsWODv72+S2fHjx+v4v4qKCuMjbc0EnRzelStXNBFzJ0+epNswMAe5XO7r60vZdPfuXYIgrJii6ezs/Pr1ax8fH0p/oyE7O9skKbry8nJNTpebm9vdu3fNmiUNISEhlPHjCoVi//79o0ePpnzV3bt3dcLu9u7di6LyDWVkPqXumfX9umrvXnSfwX4oNewwmBoCj8e7efNmffpyiO3atSsvLzfpDPLnn3/W8esrV65kK3PJII2Q7dJp1NolEsmAAQMQuVhPT086yZT169fPnDkTxaBG4u3t/erVK7onD2b8888/mqelx48f16tXj0XjGhYuXEinMbdo0SI6v65f+mjFihUo/DplnKCdnZ3+TSsrb7wvKBAgyw5U2thgDVcMhhW8vLwi6He/pFKpqdqxPj4+OnHRa9eupRSmNQdKORQej2eMpDwDMjIyNIXjJk6ciG7dDDl+srymrD5NmjS5dOkSiwY1nz1bW1tETh0AMHXqVLryqUlJSZBqvzriAfHx8XSbW+ZAeXhEWTjAyn79mBkl9gzS4tQpdMYxmJrGtm3bIPVqd+3aZaro5pYtW7T/98OHD9u2bWM4ORq6daMIG3JzczO1+rWR/PDDD5prc+qMGaRnz550sYqpqamZmZnohjaSnj17sqVTpO1TDYrSmwOHw4Gcm4wbN46uST9mZQhUuZwBGzdupLxPGaZgZb8upC8+aD7te/RAZxyDqWlwOJwTJ05ANtu9vLxMWnCHh4dLJBLtO19//bWZ0iXaZGRkaBTatUFUp0sul2ssOzk5GV9DlgECgaBLF9pKWvoJzVahT58+mzdvNj9DbNSoUeoLHo+HuhYLJERu//79dE12dnY6T5CPHz8+cuQIW7MiCILy37Rr166Uf15r+vVn9++jM15JLxCNwWCYERoa2rlzZ0gHiCCaPnw+X1+LzdfXF54oZSQEQXTr1k0/eqtBgwadOnUy374+2lVZIdqfbPHXX7TlPMyvcsYWU6dOXbBggTkWSkpKNEHgzZs3R51RKRaLHR0d6VqPHz9O13Tw4EGdc6VRo0Y9evSIlVl99dVXGkUEDVwuly77zpp+/S7KGkQNjCtki8FgTAKeJvfnn3+alBo+YsSIoKAg7Tv5+fmsrHT9/f3T0tL079++fdt845RoNOYEAkGTJk0QjaKhTp06kPP7quPaFy1aNH36dMYv379/v2YTPiYmhqVJwVi8eDFd0/Lly+ma6tSpc+q/J79KpTI4OBhSTdVIdu7cSVnt/o8//qDbC7GaX1epVBxkVSIIPr/r/2r5YTAYdjl48CBdE0mSkLB5Sh48eKBzqEmSpFAohKxH4ZSVlQUGBiYmJuo3nTp1yt3dnZlZOOnp6Zq9Ae1TdqTs3buXrgnpObSprF+/nrFO86xZs9QXdnZ2lpGTGjduHJ3S7b179/TXzRr69eunma0akiR9fHymT58Oz/qDMG3aNMqI1PDw8HD66DSr5bllpqWhi4RXuLqyUjkbgzGf+/fvI/qR7d27d4cOHVBYhjNy5Mg5c+bQRfxWVlZOmjSJcoVBCYfDefjwoYeHh3bqsEKhGDdu3KxZs/bt20cZ8UvHmjVr5syZQ6mLcufOHXR/Ls0BBIfDsZiYK6QwXXJycmZmpqnPWOg4efJkSEiIqccTb968kUql6mtILTt2cXR09PHxoSss+9tvv0G+zqtXr1YqlevXr9e+uXHjxh07dsyaNcukUMonT5507dqVUnN3zpw5kJ0DAIwu7sQ62/r23Q0Aov9ir1yx1vvCoICuoE6HDh2sPbV/sfBvaN26dSGTocsFCg0NZeXNVhoq1PT69WtTbUZERFDuK3I4nD59+hw7duzVq1dyuVz/heXl5XFxcVOnTqWbjJeXV3Z2tvEzobNz6NAhyv4VFRWaFZ6np6epb9wcetBHB3/33Xd0r9KcdKiXkpZBpVK1bNmScqp0L9EkwfP5/NLSUotNFX4ubvDl//zzD93C0s/Pb+vWrU+ePPnw4YP+C1UqVWJi4urVq0UiEeXLxWLxkSNHDE6AQyLTeoOzB6WM/jgrvSkMIpydnSnDpDt06HDnzh2LT4cab29vi+UXcblcmUwGkWdwd3fPycnRvx8aGspWldJ169ZB9E8cHR0ZRLYnJSWFhITAX2hnZ2dvby8QCHg8nkqlKikpUf9E0vXfvXv32LFjTYrKput86NChESNG6N/fv3+/pkxtdna28Qr85vPo0SO6XHwul0snl+vg4KDeT54+fbrO4hIpSqWyVq1a+mtQyn++0tJSJycndYZFx44d0QVGUAL5wNy8eRMePQoAKCoqGjRoEFyAViKR2Nvbi8Vi9Se5oqKiqKgIonAcERGxbt06nRQSSqxzvv7QOLldZsi6dkVnHIOxOhwOJzo62uqaSzNmzICcVX/48OHbb7811aavr29RUdGNGzcaNmxI98NaVlaWk5OTmZmZlpaWmZlZXFxM6RW8vb137txJkuS4ceNQF+PSnICKxWJLOnUAQFBQEF30HEEQDx8+tORkDMLn8/Py8mrVqmVM561bt2rSJi0fBgiRPpw3b57Blzs7O9+8eTM/P79NmzZ0YglSqTQvL0/zSS4oKKB06i4uLlOnTlUqldu3bzfGqQMArLNe396tm+jaNUTGm0RHd7RUCT+MZcjJyaFMjBYKhbVr17b8fCjJzs6Gl7tgCy6X6+3tDe+TlZVFKY8lkUhYrPdVVFQEWVvzeDxzziZycnLOnj27Zs2ahIQEI1/C4XB69OgRHh7eq1cvcz4YlIH0AIA6depQ1pHSZMmLxWLLlwp89+6d5hBaB1tb2zp16ujfz8jIUH+hHB0dIVpDiCgrK9OpjOLj46PfLT8/X1OszMJPSwAAuVxOKX4AjPsCaiOVSi9fvrxp06ZLly4ZL/DQrFmziIiIfv36NW3a1Pix1FjBrxMEsVss5qH5BVTa208sKUFhGYPBWJH09PRLly49ffo0OTn5w4cPKpXK0dHRzc2tefPmHTp0+OSTT+himDGYKkVpaenZs2efPHmSkJBQXFwsk8lsbGxcXFyaN2/eunXrHj160IUTGY8V/PqjO3eeo9GFAAC4bts2ANd6wWAwGExNxQp+fVv37mI08gKVrq6TCwpQWMZgMBgM5qPACn4dUSS80sbms6wsZ4ufFWEwGAwGU3WwdDz8PWThcj3j47FTx2AwGEwNx9J+/TGCajwqkajzy5feVBGVGAwGg8HUKCyqI6tUKoVJSezaJLncfqmpddFoPmMwGAwG83Fh0fX67fPnuVQ5tcxQcTjy/v3Hq1TYqWMwGAwGo8ai6/XEFSuMEssxAnnduu1Pn24ZHMySPQwGg8FgqgMWjYc3PxJexeGoHB3bXrgQGBLCypQwGAwGg6lOWG69fufSJXNeLnd1tZk4MXTSpIZNmrA1JQwGg8FgqhmWW6/vqFVL+P69kZ0VQiHp7k74+dXu3bvr2LGOTk5YJBKDwWAwGINYrU4rBoPBYDAY1rFOnVYMBoPBYDAowH4dg8FgMJjqA/brGAwGg8FUH7Bfx2AwGAym+oD9OgaDwWAw1Yf/A1TidAsazc4XAAAAAElFTkSuQmCC" style="height:44px" alt="Central das Persianas">
       </div>
 
       <!-- NOSSA PROPOSTA -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">NOSSA <i>PROPOSTA</i></span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">NOSSA <i>PROPOSTA</i></span>
       </div>
-      <div style="font-size:12.5px;line-height:1.7;color:#444;margin-bottom:8px">Um ambiente bem planejado se destaca pelos <i>detalhes</i>. <strong>Cortinas e persianas transformam espaços, equilibrando iluminação, conforto e sofisticação.</strong></div>
-      <div style="font-size:12.5px;line-height:1.7;color:#444;margin-bottom:20px">Na <strong>Central das Persianas</strong>, oferecemos <i>soluções sob medida</i> com uma variedade de modelos e coleções que valorizam cada ambiente. Nesta <i>proposta única</i>, apresentamos opções pensadas especialmente para o <strong>seu espaço</strong>, considerando suas preferências e especificações.</div>
+      <div style="font-size:12.5px;line-height:1.7;color:#7A7268;margin-bottom:8px">Um ambiente bem planejado se destaca pelos <i>detalhes</i>. <strong>Cortinas e persianas transformam espaços, equilibrando iluminação, conforto e sofisticação.</strong></div>
+      <div style="font-size:12.5px;line-height:1.7;color:#7A7268;margin-bottom:20px">Na <strong>Central das Persianas</strong>, oferecemos <i>soluções sob medida</i> com uma variedade de modelos e coleções que valorizam cada ambiente. Nesta <i>proposta única</i>, apresentamos opções pensadas especialmente para o <strong>seu espaço</strong>, considerando suas preferências e especificações.</div>
 
-      <div style="font-family:'EB Garamond',Garamond,serif;font-size:24px;margin-bottom:6px">Olá, <span style="color:#B68235;font-weight:700;font-style:italic">${nome}</span></div>
-      <div style="font-size:12.5px;color:#555;margin-bottom:20px">Preparamos esta proposta pensando especialmente no <strong>seu espaço</strong> e nas suas <strong>preferências</strong>!</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:24px;margin-bottom:6px">Olá, <span style="color:#BF8F00;font-weight:700;font-style:italic">${nome}</span></div>
+      <div style="font-size:12.5px;color:#7A7268;margin-bottom:20px">Preparamos esta proposta pensando especialmente no <strong>seu espaço</strong> e nas suas <strong>preferências</strong>!</div>
 
       <!-- DADOS DO CLIENTE -->
       <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12.5px">
         <tr>
-          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;color:#333;font-size:11px">⭐ CLIENTE:</td>
-          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;color:#333;font-size:11px">🪪 CPF/CNPJ:</td>
+          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">⭐ CLIENTE:</td>
+          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">🪪 CPF/CNPJ:</td>
         </tr>
         <tr>
           <td style="padding:7px 10px;border:1px solid #DDD">${nome}</td>
           <td style="padding:7px 10px;border:1px solid #DDD">${cpf}</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;color:#333;font-size:11px">☎️ TELEFONE:</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;color:#333;font-size:11px">✉️ E-MAIL:</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">☎️ TELEFONE:</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">✉️ E-MAIL:</td>
         </tr>
         <tr>
           <td style="padding:7px 10px;border:1px solid #DDD">${tel}</td>
           <td style="padding:7px 10px;border:1px solid #DDD">${email}</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;color:#333;font-size:11px">📍 ENDEREÇO:</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;color:#333;font-size:11px">👤 CONTATO:</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">📍 ENDEREÇO:</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">👤 CONTATO:</td>
         </tr>
         <tr>
           <td style="padding:7px 10px;border:1px solid #DDD">${end}</td>
@@ -2432,11 +2432,11 @@ function gerarProposta(){
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:24px;font-size:12px">
         <div style="border:1px solid #DDD;border-right:none">
-          <div style="background:#F0EEE9;padding:7px 10px;font-weight:700;font-size:11px">💻 SITE:</div>
+          <div style="background:#F2F2F2;padding:7px 10px;font-weight:700;font-size:11px">💻 SITE:</div>
           <div style="padding:10px">${site==='—' ? '<span style="color:#999">—</span>' : `<a href="${site.startsWith('http')?site:'https://'+site}" style="color:#5A1524;text-decoration:none;font-weight:700">${site}</a>`}</div>
         </div>
         <div style="border:1px solid #DDD">
-          <div style="background:#F0EEE9;padding:7px 10px;font-weight:700;font-size:11px">📱 INSTAGRAM:</div>
+          <div style="background:#F2F2F2;padding:7px 10px;font-weight:700;font-size:11px">📱 INSTAGRAM:</div>
           <div style="padding:10px">${insta==='—' ? '<span style="color:#999">—</span>' : `<a href="https://instagram.com/${insta.replace('@','')}" style="color:#5A1524;text-decoration:none;font-weight:700">${insta}</a>`}</div>
         </div>
       </div>
@@ -2444,88 +2444,88 @@ function gerarProposta(){
       <!-- DATA / VALIDADE / TIPO -->
       <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:12.5px">
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">📝 PROPOSTA</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">🗓️ DATA</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">⏳ VALIDADE</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">🔘 TIPO</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">📝 PROPOSTA</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">🗓️ DATA</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">⏳ VALIDADE</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">🔘 TIPO</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;font-weight:700;color:#B68235">${numeroDaProposta()}</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;font-weight:700;color:#BF8F00">${numeroDaProposta()}</td>
           <td style="padding:7px 10px;border:1px solid #DDD">${hoje}</td>
           <td style="padding:7px 10px;border:1px solid #DDD">${validade}</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;color:#B68235;font-weight:700">${tipoLabel}</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;color:#BF8F00;font-weight:700">${tipoLabel}</td>
         </tr>
       </table>
 
       <!-- PRODUTOS & SERVIÇOS -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">Produtos <i>&</i> Serviços</span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Produtos <span style="color:#BF8F00;font-weight:400">&amp;</span> Serviços</span>
       </div>
-      <div style="font-size:12.5px;color:#555;margin-bottom:14px">Nossa <i>proposta</i> para <i>sofisticar</i> o seu ambiente:</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Nossa <b><i>proposta</i></b> para <b><i>sofisticar</i></b> o seu ambiente:</div>
 
       <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:11.5px">
         <thead>
-          <tr style="background:#F0EEE9">
+          <tr style="background:#F2F2F2">
             <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">AMBIENTE</th>
             <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">MODELO E<br>COLEÇÃO</th>
             <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">DETALHAMENTO</th>
             <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">QUANTIDADE</th>
             <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">🏷️PREÇO<br>TABELA</th>
-            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#E3ECF7">💳PREÇO<br>CARTÃO</th>
-            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#E5F0E3">💵PREÇO<br>À VISTA</th>
+            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#EBF2F9">💳PREÇO<br>CARTÃO</th>
+            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#E8F3E1">💵PREÇO<br>À VISTA</th>
           </tr>
         </thead>
         <tbody>
           ${ordenarPorAmbiente(items).map((item,idx) => `
           <tr>
-            <td style="padding:10px 8px;border:1px solid #DDD;font-weight:700;text-align:center;vertical-align:middle">${item.label||item.ambiente||'Item'}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;font-weight:700;text-align:center;vertical-align:middle;font-size:10px;text-transform:uppercase">${item.label||item.ambiente||'Item'}</td>
             <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle">${fabName(item.fab)} ${item.prod||''} ${item.fam||''}${item.col?' '+item.col:''}</td>
-            <td style="padding:10px 8px;border:1px solid #DDD;line-height:1.5;text-align:center;vertical-align:middle">${item.detail||detail||'—'}${item.foraDoPadrao?`<br><span style="color:#B54708;font-size:10.5px">⚠️ Medida fora do padrão de fabricação — provavelmente fora da garantia de fábrica.</span>`:''}</td>
+            <td style="padding:8px 8px;border:1px solid #DDD;line-height:1.45;text-align:left;vertical-align:middle;font-size:9.5px;text-transform:uppercase">${item.detail||detail||'—'}${item.foraDoPadrao?`<br><span style="color:#B54708;font-size:10.5px">⚠️ Medida fora do padrão de fabricação — provavelmente fora da garantia de fábrica.</span>`:''}</td>
             <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle">${item.qty||1}</td>
-            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle;color:#C0392B;text-decoration:line-through">${fmt(item.tabela)}</td>
-            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;font-weight:700;vertical-align:middle;background:#E3ECF7">${fmt(item.cartao)}</td>
-            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;font-weight:700;vertical-align:middle;background:#E5F0E3">${fmt(item.avista)}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle;color:#C0392B;text-decoration:line-through;white-space:nowrap">${fmtCent(item.tabela)}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;font-weight:700;vertical-align:middle;background:#EBF2F9;white-space:nowrap">${fmtCent(item.cartao)}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;font-weight:700;vertical-align:middle;background:#E8F3E1;white-space:nowrap">${fmtCent(item.avista)}</td>
           </tr>`).join('')}
         </tbody>
       </table>
 
       <!-- CONDIÇÕES -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">Condições <i>especiais</i></span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Condições especiais</span>
       </div>
-      <div style="font-size:12px;color:#555;font-style:italic;margin-bottom:12px">Descontos abaixo <strong>já aplicados</strong>!</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Descontos abaixo <b><i>já aplicados</i></b>!</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
         <div style="border:1px solid #DDD;border-radius:6px;overflow:hidden">
-          <div style="background:#F0EEE9;padding:8px;text-align:center;font-weight:700;font-size:12px">À VISTA · PIX</div>
+          <div style="background:#F2F2F2;padding:8px;text-align:center;font-weight:700;font-size:12px">À VISTA · PIX</div>
           <div style="display:flex;align-items:center;gap:12px;padding:14px">
             <div style="font-size:22px">💵</div>
             <div>
-              <div style="font-size:26px;font-weight:700;color:#333">15%</div>
+              <div style="font-size:26px;font-weight:700;color:#3B3838">15%</div>
               <div style="font-size:10.5px;color:#666;line-height:1.5">50% de entrada + 50% 1 dia antes da instalação<br>Banco do Brasil (001) · Agência 1837-6 · CC 121800-0<br>PIX CNPJ: 11.360.869/0001-63</div>
             </div>
           </div>
         </div>
         <div style="border:1px solid #DDD;border-radius:6px;overflow:hidden">
-          <div style="background:#F0EEE9;padding:8px;text-align:center;font-weight:700;font-size:12px">CARTÃO DE CRÉDITO</div>
+          <div style="background:#F2F2F2;padding:8px;text-align:center;font-weight:700;font-size:12px">CARTÃO DE CRÉDITO</div>
           <div style="display:flex;align-items:center;gap:12px;padding:14px">
             <div style="font-size:22px">💳</div>
             <div>
-              <div style="font-size:26px;font-weight:700;color:#333">5%</div>
+              <div style="font-size:26px;font-weight:700;color:#3B3838">5%</div>
               <div style="font-size:10.5px;color:#666;line-height:1.5">100% do valor na entrada<br>Em até 8x sem juros.<br>Bandeiras: Visa, Master, Elo, Amex.</div>
             </div>
           </div>
         </div>
       </div>
-      <div style="border:1px solid #F0D08A;background:#FFFBF0;border-radius:6px;padding:10px 14px;font-size:11px;color:#7A5A00;margin-bottom:28px">⚠️ <u>OBS.:</u> Os descontos já foram aplicados sobre o valor inicial de tabela e estão refletidos nos preços apresentados acima.</div>
+      <div style="border:1px solid #F0D08A;background:#FFF1C9;border-radius:6px;padding:10px 14px;font-size:11px;color:#7A5A00;margin-bottom:28px">⚠️ <u>OBS.:</u> Os descontos já foram aplicados sobre o valor inicial de tabela e estão refletidos nos preços apresentados acima.</div>
 
       <!-- INVESTIMENTO & VALORES -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">Investimento <i>&</i> Valores</span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Investimento <span style="color:#BF8F00;font-weight:400">&amp;</span> Valores</span>
       </div>
-      <div style="font-size:12px;color:#555;font-style:italic;margin-bottom:12px">O investimento inclui todos os <strong>benefícios</strong>:</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">O investimento inclui todos os <b><i>benefícios</i></b>:</div>
       <div style="display:flex;gap:16px;border:1px solid #DDD;border-radius:6px;padding:16px;margin-bottom:20px">
         <div style="font-size:34px;flex-shrink:0">🎁</div>
-        <div style="font-size:12px;color:#444;line-height:1.9">
+        <div style="font-size:12px;color:#7A7268;line-height:1.9">
           <div><strong>01. Consultoria</strong> especializada e personalizada — para definirmos juntos a melhor opção para o seu ambiente;</div>
           <div><strong>02. Visita técnica</strong> gratuita e sem compromisso;</div>
           <div><strong>03. Soluções em cortinas e persianas</strong> sob medida e serviços especializados;</div>
@@ -2535,44 +2535,44 @@ function gerarProposta(){
       </div>
 
       <!-- VALOR TOTAL DA PROPOSTA -->
-      <div style="display:grid;grid-template-columns:150px 1fr;border:1px solid #6B5D4F;border-radius:6px;overflow:hidden;margin-bottom:24px">
-        <div style="background:#6B5D4F;color:#FFF;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-family:'EB Garamond',Garamond,serif;font-size:17px;font-weight:700">VALOR TOTAL DA PROPOSTA</div>
+      <div style="display:grid;grid-template-columns:150px 1fr;border:1px solid #7A7268;border-radius:6px;overflow:hidden;margin-bottom:24px">
+        <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-family:Garamond,'EB Garamond',serif;font-size:17px;font-weight:700">VALOR TOTAL DA PROPOSTA</div>
         <div>
-          <div style="background:#6B5D4F;color:#FFF;padding:8px 14px;font-size:11px;font-weight:700;text-align:center">AMBIENTES E OPÇÕES: ${ambientesLista}</div>
+          <div style="background:#7A7268;color:#FFF;padding:8px 14px;font-size:11px;font-weight:700;text-align:center">AMBIENTES E OPÇÕES: ${ambientesLista}</div>
           <table style="width:100%;border-collapse:collapse;font-size:12px">
             <tr>
               <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px">🏷️PREÇO TABELA</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#E3ECF7">💳PREÇO CARTÃO</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#E5F0E3">💵PREÇO À VISTA</td>
+              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#EBF2F9">💳PREÇO CARTÃO</td>
+              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#E8F3E1">💵PREÇO À VISTA</td>
             </tr>
             <tr>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;color:#C0392B;text-decoration:line-through">${fmt(somaTabela)}</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-weight:700;background:#E3ECF7">${fmt(somaCartao)}</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-weight:700;background:#E5F0E3">${fmt(somaAvista)}</td>
+              <td style="padding:8px;text-align:center;border:1px solid #DDD;color:#C0392B;text-decoration:line-through">${fmtCent(somaTabela)}</td>
+              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-weight:700;background:#EBF2F9">${fmtCent(somaCartao)}</td>
+              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-weight:700;background:#E8F3E1">${fmtCent(somaAvista)}</td>
             </tr>
           </table>
         </div>
       </div>
 
       <!-- CTA -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:6px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">Vamos <i style="color:#B68235">transformar</i> o seu ambiente?</span>
+      <div style="background:#F2F2F2;padding:10px 14px;margin-bottom:6px">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Vamos <i style="color:#BF8F00">transformar</i> o seu ambiente?</span>
       </div>
-      <div style="font-size:12px;color:#555;font-style:italic;margin-bottom:12px">Escolha abaixo como prefere continuar:</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Escolha abaixo como prefere continuar:</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px">
-        <a href="https://wa.me/${WA}?text=${waMsgFechar}" style="flex:1;min-width:160px;text-align:center;background:#E5F0E3;border:1px solid #BFE0BA;color:#2E7D52;text-decoration:none;padding:14px 12px;border-radius:6px;font-weight:700;font-size:12.5px">✅ FECHAR A COMPRA!</a>
-        ${!isPos ? `<a href="https://wa.me/${WA}?text=${waMsgAgendar}" style="flex:1;min-width:160px;text-align:center;background:#E3ECF7;border:1px solid #B9CDE8;color:#2C4D7A;text-decoration:none;padding:14px 12px;border-radius:6px;font-weight:700;font-size:12.5px">🗓️ AGENDAR VISITA TÉCNICA!</a>` : ''}
-        <a href="https://wa.me/${WA}?text=${waMsgDuvidas}" style="flex:1;min-width:160px;text-align:center;background:#F0EEE9;border:1px solid #DDD;color:#555;text-decoration:none;padding:14px 12px;border-radius:6px;font-weight:700;font-size:12.5px">💬 TIRAR DÚVIDAS!</a>
+        <a href="https://wa.me/${WA}?text=${waMsgFechar}" style="flex:1;min-width:160px;text-align:center;background:#E8F3E1;border:1px solid #BFE0BA;color:#2E7D52;text-decoration:none;padding:14px 12px;border-radius:6px;font-weight:700;font-size:12.5px">✅ FECHAR A COMPRA!</a>
+        ${!isPos ? `<a href="https://wa.me/${WA}?text=${waMsgAgendar}" style="flex:1;min-width:160px;text-align:center;background:#EBF2F9;border:1px solid #B9CDE8;color:#2C4D7A;text-decoration:none;padding:14px 12px;border-radius:6px;font-weight:700;font-size:12.5px">🗓️ AGENDAR VISITA TÉCNICA!</a>` : ''}
+        <a href="https://wa.me/${WA}?text=${waMsgDuvidas}" style="flex:1;min-width:160px;text-align:center;background:#F2F2F2;border:1px solid #DDD;color:#7A7268;text-decoration:none;padding:14px 12px;border-radius:6px;font-weight:700;font-size:12.5px">💬 TIRAR DÚVIDAS!</a>
       </div>
 
       <!-- ENTREGA & INSTALAÇÃO -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">Entrega <i>&</i> Instalação</span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Entrega <span style="color:#BF8F00;font-weight:400">&amp;</span> Instalação</span>
       </div>
-      <div style="font-size:12px;color:#555;font-style:italic;margin-bottom:12px">Nossos <i>prazos</i> para <i>sofisticar</i> o seu ambiente:</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Nossos <b><i>prazos</i></b> para <b><i>sofisticar</i></b> o seu ambiente:</div>
       <div style="display:flex;gap:16px;border:1px solid #DDD;border-radius:6px;padding:16px;margin-bottom:20px">
         <div style="font-size:34px;flex-shrink:0">🚚</div>
-        <div style="font-size:12px;color:#444;line-height:1.9">
+        <div style="font-size:12px;color:#7A7268;line-height:1.9">
           <div style="font-weight:700">ENTREGA E INSTALAÇÃO INCLUSAS!</div>
           <div><strong>01. Novas cortinas e persianas:</strong> em até 12 dias úteis!</div>
           <div><strong>02. Serviços:</strong> em até 5 dias úteis!</div>
@@ -2580,13 +2580,13 @@ function gerarProposta(){
       </div>
 
       <!-- COBERTURA & GARANTIA -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">Cobertura <i>&</i> Garantia</span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Cobertura <span style="color:#BF8F00;font-weight:400">&amp;</span> Garantia</span>
       </div>
-      <div style="font-size:12px;color:#555;font-style:italic;margin-bottom:12px">Nossas <i>coberturas</i> de garantia:</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Nossas <b><i>coberturas</i></b> de garantia:</div>
       <div style="display:flex;gap:16px;border:1px solid #DDD;border-radius:6px;padding:16px;margin-bottom:28px">
         <div style="font-size:34px;flex-shrink:0">💎</div>
-        <div style="font-size:12px;color:#444;line-height:1.9">
+        <div style="font-size:12px;color:#7A7268;line-height:1.9">
           <div style="font-weight:700">GARANTIAS INCLUSAS!</div>
           <div><strong>01. Novas cortinas e persianas:</strong> 1 ano (contra defeitos de fabricação)!</div>
           <div><strong>02. Serviços:</strong> 3 meses!</div>
@@ -2594,94 +2594,94 @@ function gerarProposta(){
       </div>
 
       <!-- A JORNADA COMPLETA -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">A <i style="color:#B68235">jornada</i> completa · Do início à <i style="color:#B68235">transformação</i></span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">A <span style="color:#BF8F00">jornada</span> completa · Do início à <span style="color:#BF8F00">transformação</span></span>
       </div>
-      <div style="font-size:12px;color:#555;margin-bottom:14px">Como funciona <i>o passo-a-passo</i>:</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Como funciona <b><i>o passo-a-passo</i></b>:</div>
       <div style="display:flex;flex-direction:column;gap:1px;margin-bottom:24px">
         <div style="display:grid;grid-template-columns:56px 1fr;background:#FAF9F5">
-          <div style="background:#6B5D4F;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">1</div>
+          <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">1</div>
           <div style="padding:12px 16px">
             <div style="font-size:10px;letter-spacing:1px;color:#999;font-weight:700">ANTES DO PEDIDO</div>
-            <div style="font-family:'EB Garamond',Garamond,serif;font-size:16px;color:#B68235;margin-bottom:4px">${isPos ? 'Visita <i>Técnica</i> (Realizada! ✅)' : 'Visita <i>Técnica</i>'}</div>
-            <div style="font-size:11.5px;color:#444;line-height:1.6">${isPos
+            <div style="font-family:Garamond,'EB Garamond',serif;font-size:16px;color:#BF8F00;margin-bottom:4px">${isPos ? 'Visita <i>Técnica</i> (Realizada! ✅)' : 'Visita <i>Técnica</i>'}</div>
+            <div style="font-size:11.5px;color:#7A7268;line-height:1.6">${isPos
               ? 'Nosso técnico esteve no seu espaço e conferiu as <strong>medidas ideais</strong>, apresentou os <strong>mostruários</strong> com os <strong>materiais disponíveis</strong> e tirou todas as dúvidas.<br>Após a visita já realizada, essa aqui é a nossa proposta <strong>exclusiva</strong> para você, <strong>mais assertiva e alinhada</strong> com a realidade do seu ambiente e suas preferências!'
               : 'Nosso técnico vai até você para conferir as <strong>medidas ideais</strong>, apresentar os <strong>mostruários</strong> com os <strong>materiais disponíveis</strong> e <strong>tirar todas as suas dúvidas</strong>.<br><strong>Após a visita</strong>, conseguimos fornecer um orçamento <strong>mais assertivo e alinhado</strong> com a realidade do seu ambiente e suas preferências!'}</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:56px 1fr;background:#FAF9F5">
-          <div style="background:#6B5D4F;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">2</div>
+          <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">2</div>
           <div style="padding:12px 16px">
             <div style="font-size:10px;letter-spacing:1px;color:#999;font-weight:700">FORMALIZAÇÃO</div>
-            <div style="font-family:'EB Garamond',Garamond,serif;font-size:16px;color:#B68235;margin-bottom:4px">Ordem de Serviço <i>&</i> Pagamento</div>
-            <div style="font-size:11.5px;color:#444;line-height:1.6">Montamos sua <strong>Ordem de Serviço</strong> com todos os dados e o <strong>detalhamento completo</strong> das soluções definidas por ambiente. Enviamos para sua conferência e confirmação, junto com a forma de pagamento desejada.<br>PIX: 50% de entrada + 50% restantes até 1 dia útil antes da instalação. Cartão: 100% do valor na entrada.</div>
+            <div style="font-family:Garamond,'EB Garamond',serif;font-size:16px;color:#BF8F00;margin-bottom:4px">Ordem de Serviço <i>&</i> Pagamento</div>
+            <div style="font-size:11.5px;color:#7A7268;line-height:1.6">Montamos sua <strong>Ordem de Serviço</strong> com todos os dados e o <strong>detalhamento completo</strong> das soluções definidas por ambiente. Enviamos para sua conferência e confirmação, junto com a forma de pagamento desejada.<br>PIX: 50% de entrada + 50% restantes até 1 dia útil antes da instalação. Cartão: 100% do valor na entrada.</div>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:56px 1fr;background:#FAF9F5">
-          <div style="background:#6B5D4F;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">3</div>
+          <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">3</div>
           <div style="padding:12px 16px">
             <div style="font-size:10px;letter-spacing:1px;color:#999;font-weight:700">EXECUÇÃO</div>
-            <div style="font-family:'EB Garamond',Garamond,serif;font-size:16px;color:#B68235;margin-bottom:4px">Produção <i>&</i> Instalação</div>
-            <div style="font-size:11.5px;color:#444;line-height:1.6">Com o <strong>pagamento confirmado</strong>, seu pedido segue para produção na fábrica! O prazo é de até <strong>12 dias úteis</strong> para novas e até <strong>5 dias úteis</strong> para serviços — e já deixamos uma data pré-agendada para entrega e instalação. <strong>Entrega e instalação profissional inclusas</strong> no investimento!</div>
+            <div style="font-family:Garamond,'EB Garamond',serif;font-size:16px;color:#BF8F00;margin-bottom:4px">Produção <i>&</i> Instalação</div>
+            <div style="font-size:11.5px;color:#7A7268;line-height:1.6">Com o <strong>pagamento confirmado</strong>, seu pedido segue para produção na fábrica! O prazo é de até <strong>12 dias úteis</strong> para novas e até <strong>5 dias úteis</strong> para serviços — e já deixamos uma data pré-agendada para entrega e instalação. <strong>Entrega e instalação profissional inclusas</strong> no investimento!</div>
           </div>
         </div>
       </div>
 
       <!-- LINKS ÚTEIS -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">Links <i style="color:#B68235">úteis</i></span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Links <span style="color:#BF8F00">úteis</span></span>
       </div>
-      <div style="font-size:12px;color:#555;font-style:italic;margin-bottom:12px"><i>Explore</i> mais aqui:</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px"><b><i>Explore</i></b> mais aqui:</div>
       <div style="display:flex;gap:16px;border:1px solid #DDD;border-radius:6px;padding:16px;margin-bottom:28px">
         <div style="font-size:34px;flex-shrink:0">🧭</div>
-        <div style="font-size:12px;color:#444;line-height:1.8">
-          <div><strong>01. Catálogo completo:</strong> todos os tipos de materiais e coleções! Para acessar, clique: <a href="https://www.centraldaspersianas.com" style="color:#B68235;font-weight:700">▶️ aqui ◀️</a></div>
-          <div><strong>02. Inspirações por tipo de ambiente:</strong> opções para varanda, sala, quarto, cozinha e muito mais! Para acessar, clique: <a href="https://www.instagram.com/centraldaspersianas" style="color:#B68235;font-weight:700">▶️ aqui ◀️</a></div>
+        <div style="font-size:12px;color:#7A7268;line-height:1.8">
+          <div><strong>01. Catálogo completo:</strong> todos os tipos de materiais e coleções! Para acessar, clique: <a href="https://www.centraldaspersianas.com" style="color:#BF8F00;font-weight:700">▶️ aqui ◀️</a></div>
+          <div><strong>02. Inspirações por tipo de ambiente:</strong> opções para varanda, sala, quarto, cozinha e muito mais! Para acessar, clique: <a href="https://www.instagram.com/centraldaspersianas" style="color:#BF8F00;font-weight:700">▶️ aqui ◀️</a></div>
         </div>
       </div>
 
       <!-- SOBRE NÓS -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">Sobre nós · CENTRAL DAS PERSIANAS</span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Sobre nós · CENTRAL DAS PERSIANAS</span>
       </div>
-      <div style="font-size:12px;color:#555;margin-bottom:14px">Nossos <i>dados e contatos</i>:</div>
+      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Nossos <b><i>dados e contatos</i></b>:</div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:28px;font-size:12px">
         <tr>
-          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">RAZÃO SOCIAL:</td>
-          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">CNPJ:</td>
+          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">RAZÃO SOCIAL:</td>
+          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">CNPJ:</td>
         </tr>
         <tr>
           <td style="padding:7px 10px;border:1px solid #DDD">CENTRAL DAS PERSIANAS LTDA</td>
           <td style="padding:7px 10px;border:1px solid #DDD">11.360.869/0001-63</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">TELEFONE:</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">E-MAIL:</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">TELEFONE:</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">E-MAIL:</td>
         </tr>
         <tr>
           <td style="padding:7px 10px;border:1px solid #DDD">(81) 99551-4700 e (81) 3203-5044</td>
           <td style="padding:7px 10px;border:1px solid #DDD">contato@centraldaspersianas.com</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">ENDEREÇO:</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">INSCRIÇÃO ESTADUAL E MUNICIPAL:</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">ENDEREÇO:</td>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">INSCRIÇÃO ESTADUAL E MUNICIPAL:</td>
         </tr>
         <tr>
           <td style="padding:7px 10px;border:1px solid #DDD">R. Dom Vital, 191 - Loja C - Piedade, Jaboatão dos Guararapes - PE, CEP: 54420-190.</td>
           <td style="padding:7px 10px;border:1px solid #DDD">0390578-01 | 959.598-8</td>
         </tr>
-        <tr><td colspan="2" style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">HORÁRIOS DE ATENDIMENTO:</td></tr>
+        <tr><td colspan="2" style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">HORÁRIOS DE ATENDIMENTO:</td></tr>
         <tr><td colspan="2" style="padding:7px 10px;border:1px solid #DDD">Segunda à Sexta - 8h às 12h e 14h às 18h; Sábado - 8h às 12h.</td></tr>
       </table>
 
       <!-- OBSERVAÇÕES IMPORTANTES -->
-      <div style="background:#F0EEE9;padding:10px 14px;margin-bottom:10px">
-        <span style="font-family:'EB Garamond',Garamond,serif;font-size:19px;font-weight:700">Observações importantes · ${isPos ? 'PÓS-VISITA' : 'PRÉ-ORÇAMENTO'}</span>
+      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
+        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Observações <span style="color:#BF8F00">importantes</span> · <span style="color:#BF8F00;text-decoration:underline">${isPos ? 'PÓS-VISITA' : 'PRÉ-ORÇAMENTO'}</span></span>
       </div>
       <div style="font-weight:700;font-style:italic;text-decoration:underline;margin-bottom:12px;font-size:12.5px">LEIA COM ATENÇÃO:</div>
       <div style="display:flex;gap:14px;border:1px solid #DDD;border-radius:6px;padding:16px 18px;margin-bottom:28px">
         <div style="font-size:28px;flex-shrink:0">⚠️</div>
-        <div style="font-size:11px;line-height:1.75;color:#333">
+        <div style="font-size:11px;line-height:1.75;color:#3B3838">
           ${!isPos ? `
           <div style="font-weight:700;margin-bottom:4px">📝 MEDIDAS E ESCOPO:</div>
           <div style="margin-bottom:8px"><strong>01. Medidas e especificações provisórias/estimadas:</strong> <u>este pré-orçamento foi elaborado com base nas medidas e especificações informadas pelo cliente.</u> Os valores finais serão confirmados após a visita técnica, que pode identificar ajustes nas dimensões e especificações de instalação. Caso modelo, material ou cor ainda não tenham sido definidos, os valores podem variar conforme as escolhas realizadas na visita técnica.</div>
