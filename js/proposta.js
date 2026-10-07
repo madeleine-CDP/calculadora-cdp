@@ -86,5 +86,9 @@ function fielAoWord(html){
     ['<!-- PRODUTOS & SERVIÇOS -->', '<!-- INVESTIMENTO & VALORES -->', '<!-- A JORNADA COMPLETA -->', '<!-- OBSERVAÇÕES IMPORTANTES -->']
       .forEach(marca => { h = h.replace(marca, marca + '\n' + faixa); });
   }
+  // 3) Site e Instagram como os cartões de link do Word (clicáveis)
+  const cartao = (img, alt) => '<img src="' + new URL('assets/' + img, location.href).href + '" alt="' + alt + '" style="display:block;width:100%;max-width:340px;border-radius:8px;border:1px solid #E3E0DC">';
+  h = h.replace(/(<a href="https:\/\/centraldaspersianas\.com"[^>]*>)centraldaspersianas\.com(<\/a>)/, '$1' + cartao('proposta-site.png', 'Site da Central das Persianas') + '$2');
+  h = h.replace(/(<a href="https:\/\/instagram\.com\/centraldaspersianas"[^>]*>)@centraldaspersianas(<\/a>)/, '$1' + cartao('proposta-instagram.png', 'Instagram @centraldaspersianas') + '$2');
   return h;
 }
