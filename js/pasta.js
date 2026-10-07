@@ -215,7 +215,7 @@ function adicionarItemPasta(){
   setTimeout(() => { const a = $('item-ambiente'); if(a && window.innerWidth > 720) a.focus(); }, 50);
 }
 
-function abrirPropostaPasta(){ switchTab('proposta'); window.scrollTo({top:0}); }
+function abrirPropostaPasta(){ switchTab('proposta'); if(typeof prepararTipoProposta === 'function') prepararTipoProposta(); window.scrollTo({top:0}); }
 
 function salvarEFechar(){
   if(orcTravado() && !ORC_SUJO){ voltarParaLista(); return; }

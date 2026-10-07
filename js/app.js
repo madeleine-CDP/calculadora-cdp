@@ -2444,11 +2444,13 @@ function gerarProposta(){
       <!-- DATA / VALIDADE / TIPO -->
       <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:12.5px">
         <tr>
+          <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">📝 PROPOSTA</td>
           <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">🗓️ DATA</td>
           <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">⏳ VALIDADE</td>
           <td style="padding:7px 10px;border:1px solid #DDD;background:#F0EEE9;font-weight:700;font-size:11px">🔘 TIPO</td>
         </tr>
         <tr>
+          <td style="padding:7px 10px;border:1px solid #DDD;font-weight:700;color:#B68235">${numeroDaProposta()}</td>
           <td style="padding:7px 10px;border:1px solid #DDD">${hoje}</td>
           <td style="padding:7px 10px;border:1px solid #DDD">${validade}</td>
           <td style="padding:7px 10px;border:1px solid #DDD;color:#B68235;font-weight:700">${tipoLabel}</td>
@@ -2474,7 +2476,7 @@ function gerarProposta(){
           </tr>
         </thead>
         <tbody>
-          ${items.map((item,idx) => `
+          ${ordenarPorAmbiente(items).map((item,idx) => `
           <tr>
             <td style="padding:10px 8px;border:1px solid #DDD;font-weight:700;text-align:center;vertical-align:middle">${item.label||item.ambiente||'Item'}</td>
             <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle">${fabName(item.fab)} ${item.prod||''} ${item.fam||''}${item.col?' '+item.col:''}</td>
@@ -2732,7 +2734,7 @@ function gerarProposta(){
     </div>
   </div>`;
 
-  $('proposta-doc').innerHTML = doc;
+  $('proposta-doc').innerHTML = vestirProposta(doc);
   $('proposta-preview').style.display = 'block';
   $('proposta-preview').scrollIntoView({behavior:'smooth', block:'start'});
 }
@@ -2742,8 +2744,13 @@ function imprimirProposta(){
   if(!doc){ alert('Gere a proposta primeiro.'); return; }
   const w = window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>*{box-sizing:border-box}body{margin:0;padding:20px;background:#EEE;font-family:'Gill Sans','Gill Sans MT',Poppins,sans-serif}@media print{body{background:#FFF;padding:0}}</style>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Figtree:wght@400;500;600;700&family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>*{box-sizing:border-box}body{margin:0;padding:20px;background:#EEE;font-family:Figtree,'Gill Sans','Gill Sans MT',sans-serif}
+    @page{size:A4;margin:10mm}
+    @media print{body{background:#FFF;padding:0}#proposta-print{box-shadow:none!important;border-radius:0!important}
+      table,tr,img,[style*="border-radius:6px"],[style*="grid-template-columns"]{break-inside:avoid;page-break-inside:avoid}
+      [style*="padding:10px 14px;margin-bottom:10px"]{break-after:avoid;page-break-after:avoid}
+      *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>
     </head><body>${doc.outerHTML}</body></html>`);
   w.document.close();
   setTimeout(()=>w.print(), 800);
