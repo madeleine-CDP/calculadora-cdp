@@ -73,19 +73,17 @@ function fmtCent(v){
   return 'R$ ' + (Math.round(Number(v)||0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+let PROPOSTA_LOGO_SRC = '';
 function fielAoWord(html){
   let h = html;
   const isPos = h.includes('PÓS-VISITA</span>') || h.includes("Observações <span style=\"color:#BF8F00\">importantes</span> · <span style=\"color:#BF8F00;text-decoration:underline\">PÓS-VISITA");
   // 1) capa do Word (já traz "PRÉ ORÇAMENTO"/"ORÇAMENTO PÓS-VISITA" e "PROPOSTA EXCLUSIVA · 2026" na foto)
   const capa = new URL('assets/proposta-capa-' + (isPos ? 'pos' : 'pre') + '.jpg', location.href).href;
   h = h.replace(/(<!-- CAPA -->\s*<div[^>]*>\s*<img src=")data:image\/[a-z]+;base64,[^"]+(")/, '$1' + capa + '$2');
-  // 2) faixas com o logo entre as seções, como no Word
-  const m = h.match(/<!-- LOGO TOPO -->\s*(<div[^>]*>\s*<img[^>]*>\s*<\/div>)/);
-  if(m){
-    const faixa = m[1].replace(/margin:-32px -40px 24px -40px/, 'margin:26px 0 18px 0').replace('<div ', '<div class="pp-logo" ');
-    ['<!-- PRODUTOS & SERVIÇOS -->', '<!-- INVESTIMENTO & VALORES -->', '<!-- A JORNADA COMPLETA -->', '<!-- OBSERVAÇÕES IMPORTANTES -->']
-      .forEach(marca => { h = h.replace(marca, marca + '\n' + faixa); });
-  }
+  // 2) Logo: a capa já tem o logo, então sai a faixa do meio do documento.
+  //    No PDF o logo vira um cabeçalho pequeno no topo de cada página (menos a capa): ver imprimirProposta().
+  const m = h.match(/<!-- LOGO TOPO -->\s*<div[^>]*>\s*<img src="([^"]+)"[^>]*>\s*<\/div>/);
+  if(m){ PROPOSTA_LOGO_SRC = m[1]; h = h.replace(m[0], ''); }
   // 3) Site e Instagram como os cartões de link do Word (clicáveis)
   const cartao = (img, alt) => '<img src="' + new URL('assets/' + img, location.href).href + '" alt="' + alt + '" style="display:block;width:100%;max-width:340px;border-radius:8px;border:1px solid #E3E0DC">';
   h = h.replace(/(<a href="https:\/\/centraldaspersianas\.com"[^>]*>)centraldaspersianas\.com(<\/a>)/, '$1' + cartao('proposta-site.png', 'Site da Central das Persianas') + '$2');
