@@ -90,8 +90,11 @@ async function renderAgenda(recarregar){
   if(!s.configurado || !s.ok){
     const admin = (typeof AUTH !== 'undefined' && AUTH && (AUTH.papel === 'admin' || AUTH.papel === 'dona'));
     box.innerHTML = `<div class="ag-aviso">${ic('info',16)} <span>${!s.configurado
-      ? 'A agenda do Google ainda não está ligada ao sistema.' + (admin ? ' Falta cadastrar o robô do Google e o ID da agenda nos segredos do Supabase.' : ' A Bruna está configurando.')
-      : 'Não foi possível ler a Agenda CLIENTES CDP.' + (s.erro === 'sem_acesso' ? ' Confira se a agenda foi compartilhada com o robô' + (s.robo ? ' (' + escHtml(s.robo) + ')' : '') + '.' : ' Tente de novo em instantes.')}</span></div>`;
+      ? 'A agenda do Google ainda não está ligada ao sistema.' + (admin ? ' Falta cadastrar AGENDA_URL e AGENDA_SEGREDO nos segredos do Supabase.' : ' A Bruna está configurando.')
+      : 'Não foi possível ler a Agenda CLIENTES CDP.' + ({
+          segredo_diferente: ' O segredo do script e o do Supabase não são iguais.',
+          agenda_nao_encontrada: ' O script não achou uma agenda chamada "CLIENTES CDP" na conta da Madeleine.',
+        }[s.erro] || ' Tente de novo em instantes.')}</span></div>`;
     return;
   }
   if(recarregar || !AG_EVENTOS._chave || AG_EVENTOS._chave !== +ini + '|' + +fim){
