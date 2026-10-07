@@ -17,9 +17,9 @@ function voltarParaLista(destino){
   if(!confirmarSairOrc()) return;
   limparOrcamentoEmAndamento();
   document.body.classList.remove('cli-aberto');
-  const d = ['inicio', 'ret', 'agenda', 'gar'].includes(destino) ? destino : 'hist';
+  const d = ['inicio', 'ret', 'agenda', 'gar', 'ped'].includes(destino) ? destino : 'hist';
   irParaTab(d);
-  if(d === 'inicio') renderInicio(true); else if(d === 'ret') renderRetornos(true); else if(d === 'agenda') renderAgenda(true); else if(d === 'gar') renderGarantias(true); else renderHistory();
+  if(d === 'inicio') renderInicio(true); else if(d === 'ret') renderRetornos(true); else if(d === 'agenda') renderAgenda(true); else if(d === 'gar') renderGarantias(true); else if(d === 'ped') renderPedidos(); else renderHistory();
   window.scrollTo({top:0});
 }
 
@@ -369,7 +369,8 @@ function renderStatus(){
       <div class="pasta-fechado-acoes">
         <button type="button" class="btn-outline" onclick="informarPedidoTiny()">${ic('editar',15)} ${e.pedidoTiny ? 'Alterar nº do pedido' : 'Informar nº do pedido'}</button>
         <button type="button" class="btn-outline" onclick="reabrirOrcamento()">${ic('limpar',15)} Reabrir</button>
-      </div></div>`;
+      </div></div><div id="pasta-fechamento"></div>`;
+    if(typeof renderFechamentoPasta === 'function') renderFechamentoPasta();
   } else {
     box.innerHTML = `<div class="pasta-fechado perdido">
       <div class="pasta-fechado-tit">${ic('fechar',18)} Perdido${e.motivoPerda ? ' · ' + escHtml(e.motivoPerda) : ''}</div>

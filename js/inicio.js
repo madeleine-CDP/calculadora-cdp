@@ -104,6 +104,8 @@ async function renderInicio(atualizar){
     </div>
 
     <div class="inicio-secao">📌 Para fazer hoje</div>
+    <div id="inicio-fechamento"></div>
+    <div id="inicio-pedidos"></div>
     <div id="inicio-garantia"></div>
     ${blocoRetornosInicio()}
     <div id="inicio-confirmar"></div>
@@ -142,6 +144,8 @@ async function renderInicio(atualizar){
     </section>
 
     <div id="inicio-links"></div>`;
+  if(typeof carregarFechamentosInicio === 'function') carregarFechamentosInicio();
+  if(typeof carregarPedidosInicio === 'function') carregarPedidosInicio();
   if(typeof carregarAgendaHoje === 'function') carregarAgendaHoje();
   if(typeof carregarLinksInicio === 'function') carregarLinksInicio();
   if(typeof carregarBlocosGarantia === 'function') carregarBlocosGarantia();

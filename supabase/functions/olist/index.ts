@@ -11,6 +11,8 @@
 //   POST contato   → { id } → cadastro completo do cliente (celular, endereço) (equipe)
 //   POST pedidos   → { cpfCnpj, nome } → últimos pedidos no Tiny, com a data de entrega das OS entregues (equipe)
 //   POST posvenda  → lê as OS "Entregue" de 5 a 13 meses atrás e guarda a data real da instalação na tabela posvenda (equipe)
+//   POST os        → lê as OS em andamento (aberta → entregue nos últimos dias) e guarda em os_acompanhamento (equipe)
+//   POST os_numero → { numero } → OS do Tiny por número: valor, situação, cliente (para conferir com o orçamento) (equipe)
 //   POST renovar   → renova a autorização (agendamento a cada 3h)  (aberto; não devolve dados)
 // Só leitura no Tiny: nada é criado nem alterado lá.
 // ═══════════════════════════════════════════════════════
@@ -137,6 +139,7 @@ function cliente(c: any) {
     celular: c.celular ?? "", telefone: c.telefone ?? "", email: c.email ?? "",
     endereco: rua, bairro: e.bairro ?? "", cidade: [e.municipio, e.uf].filter(Boolean).join("/"), cep: e.cep ?? "",
     situacao: c.situacao ?? "",
+    tipoPessoa: c.tipoPessoa ?? "", inscricaoEstadual: c.inscricaoEstadual ?? "", numero: e.numero ?? "",
   };
 }
 const SITUACAO: Record<string, string> = {
@@ -212,6 +215,97 @@ async function sincronizarPosvenda() {
   return { lidos: linhas.length, faltam: novos.length - lote.length };
 }
 
+// ── OS em andamento (Fase 4 · Pedidos) ──
+// Situações do Olist: 0 aberta · 3 aprovada · 4 preparando envio · 7 pronto p/ envio · 5 enviada · 1 faturada · 6 entregue
+const ATIVAS = [0, 3, 4, 7, 5, 1];
+// nº do pedido na fábrica (D2299 / R2249): no campo "nº da ordem de compra" da OS; se vazio, procura nas observações
+function numeroFabrica(d: any) {
+  const achar = (t: unknown) => (String(t ?? "").toUpperCase().match(/\b[DR]\s?-?\d{3,5}\b/g) ?? []).map((x) => x.replace(/[\s-]/g, ""));
+  const l = [...achar(d?.numeroOrdemCompra), ...achar(d?.observacoesInternas), ...achar(d?.observacoes)];
+  return [...new Set(l)].join(" / ") || (String(d?.numeroOrdemCompra ?? "").trim() || null);
+}
+async function sincronizarOS() {
+  const hoje = new Date();
+  const desde = new Date(hoje); desde.setDate(desde.getDate() - 12);
+  const vistos = new Map<number, any>();
+  for (const sit of ATIVAS) {
+    for (let off = 0; off < 300; off += 100) {
+      const d = await tiny(`/pedidos?situacao=${sit}&limit=100&offset=${off}`);
+      const it = d?.itens ?? []; it.forEach((p: any) => vistos.set(Number(p.id), p));
+      if (it.length < 100) break;
+    }
+  }
+  // entregues recentemente (para o pedido de avaliação)
+  const ent = await tiny(`/pedidos?situacao=6&dataAtualizacao=${isoDia(desde)}&limit=100`);
+  (ent?.itens ?? []).forEach((p: any) => vistos.set(Number(p.id), p));
+
+  const ids = [...vistos.keys()];
+  const { data: jaRows } = ids.length ? await admin.from("os_acompanhamento").select("pedido_id,situacao,numero_fabrica,data_entrega").in("pedido_id", ids) : { data: [] };
+  const ja = new Map((jaRows ?? []).map((r: any) => [Number(r.pedido_id), r]));
+  const agora = new Date().toISOString();
+  const linhas: any[] = [];
+  let detalhes = 0;
+  for (const [id, p] of vistos) {
+    const sit = Number(p.situacao);
+    const antes: any = ja.get(id);
+    const c = p.cliente ?? {};
+    const linha: any = {
+      pedido_id: id, numero: String(p.numeroPedido ?? ""), cliente: c.nome ?? "", celular: c.celular || c.telefone || "",
+      valor: Number(p.valor ?? 0), situacao: sit, data_venda: soData(p.dataCriacao), data_prevista: soData(p.dataPrevista), lido_em: agora,
+      situacao_desde: antes && Number(antes.situacao) === sit ? undefined : agora,
+      numero_fabrica: antes?.numero_fabrica ?? null, data_entrega: antes?.data_entrega ?? null,
+    };
+    // detalhe só quando precisa (nº da fábrica a partir da produção; data de entrega das entregues) — limite do Olist
+    const precisa = ([4, 7, 5, 1, 6].includes(sit) && !linha.numero_fabrica) || (sit === 6 && !linha.data_entrega) || (antes && Number(antes.situacao) !== sit);
+    if (precisa && detalhes < 25) {
+      detalhes++;
+      try {
+        const d = await tiny(`/pedidos/${id}`);
+        linha.numero_fabrica = numeroFabrica(d) ?? linha.numero_fabrica;
+        linha.data_entrega = soData(d?.dataEntrega) ?? linha.data_entrega;
+        if (d?.valorTotalPedido != null) linha.valor = Number(d.valorTotalPedido);
+      } catch { /* fica para a próxima leitura */ }
+    }
+    if (linha.situacao_desde === undefined) delete linha.situacao_desde;
+    linhas.push(linha);
+  }
+  // as que saíram das listas (ex.: canceladas ou entregues há mais tempo): confere a situação real
+  const { data: abertasAntes } = await admin.from("os_acompanhamento").select("pedido_id").in("situacao", ATIVAS);
+  for (const r of abertasAntes ?? []) {
+    const id = Number(r.pedido_id);
+    if (vistos.has(id) || detalhes >= 40) continue;
+    detalhes++;
+    try {
+      const d = await tiny(`/pedidos/${id}`);
+      if (d?.situacao != null) {
+        // atualização só dos campos lidos (não apaga cliente, nº etc.)
+        const mud: any = { situacao: Number(d.situacao), situacao_desde: agora, lido_em: agora };
+        const ent = soData(d?.dataEntrega); if (ent) mud.data_entrega = ent;
+        const fab = numeroFabrica(d); if (fab) mud.numero_fabrica = fab;
+        await admin.from("os_acompanhamento").update(mud).eq("pedido_id", id);
+      }
+    } catch { /* depois */ }
+  }
+  if (linhas.length) {
+    // grava em duas levas: as que mudaram de situação (com a data) e as demais (sem mexer na data)
+    const com = linhas.filter((l) => "situacao_desde" in l), sem = linhas.filter((l) => !("situacao_desde" in l));
+    if (com.length) await admin.from("os_acompanhamento").upsert(com, { onConflict: "pedido_id" });
+    if (sem.length) await admin.from("os_acompanhamento").upsert(sem, { onConflict: "pedido_id" });
+  }
+  return { lidas: vistos.size, detalhes };
+}
+async function osPorNumero(numero: string) {
+  const n = so(numero); if (!n) return null;
+  const d = await tiny(`/pedidos?numero=${n}&limit=5`);
+  const p = (d?.itens ?? []).find((x: any) => String(x.numeroPedido) === n) ?? (d?.itens ?? [])[0];
+  if (!p) return null;
+  let det: any = null; try { det = await tiny(`/pedidos/${p.id}`); } catch { det = null; }
+  return {
+    id: p.id, numero: String(p.numeroPedido ?? ""), cliente: p.cliente?.nome ?? "", situacao: SITUACAO[String(p.situacao)] ?? String(p.situacao ?? ""),
+    valor: Number(det?.valorTotalPedido ?? p.valor ?? 0), desconto: Number(det?.valorDesconto ?? 0), numeroFabrica: det ? numeroFabrica(det) : null,
+  };
+}
+
 // ── Rotas ──
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
@@ -276,6 +370,8 @@ Deno.serve(async (req) => {
     }
     if (rota === "pedidos") return json(req, { pedidos: await pedidos(String(corpo.cpfCnpj ?? ""), String(corpo.nome ?? "")) });
     if (rota === "posvenda") return json(req, await sincronizarPosvenda());
+    if (rota === "os") return json(req, await sincronizarOS());
+    if (rota === "os_numero") return json(req, { os: await osPorNumero(String(corpo.numero ?? "")) });
 
     return json(req, { erro: "rota" }, 404);
   } catch (err) {

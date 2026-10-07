@@ -250,7 +250,7 @@ header.site-header{display:block!important;padding:0!important;gap:0!important}
 .hist-tiny{font-size:11.5px;color:var(--tinta-suave);font-weight:500;white-space:nowrap}
 
 /* ═══ C1 · Lista de orçamentos ═══ */
-body[data-tela=inicio] .cli-bar,body[data-tela=hist] .cli-bar,body[data-tela=ret] .cli-bar,body[data-tela=precos] .cli-bar,body[data-tela=agenda] .cli-bar,body[data-tela=gar] .cli-bar,body[data-tela=config] .cli-bar,body[data-tela=novo] .cli-bar,body[data-tela=orc]:not(.cli-aberto) .cli-bar{display:none!important}
+body[data-tela=inicio] .cli-bar,body[data-tela=hist] .cli-bar,body[data-tela=ret] .cli-bar,body[data-tela=precos] .cli-bar,body[data-tela=agenda] .cli-bar,body[data-tela=gar] .cli-bar,body[data-tela=config] .cli-bar,body[data-tela=ped] .cli-bar,body[data-tela=novo] .cli-bar,body[data-tela=orc]:not(.cli-aberto) .cli-bar{display:none!important}
 .hist-topo{display:flex;justify-content:space-between;align-items:flex-end;margin:4px 0 14px}
 .hist-sub{font-size:13.5px;color:var(--tinta-suave);margin-top:8px}
 .hist-busca{position:relative;margin-bottom:12px}
@@ -894,3 +894,49 @@ select.cli-in{appearance:auto}
 .aviso-desfazer{font:inherit;font-weight:700;color:#fff;background:none;border:0;text-decoration:underline;cursor:pointer;margin-left:8px}
 /* aviso com botão (ex.: "desfazer") precisa receber o toque; o resto do aviso continua "transparente" ao toque */
 #aviso-topo .aviso-desfazer{pointer-events:auto}
+
+/* ── Fechamento (checklist na pasta) ── */
+.fc-card{background:#fff;border:1px solid var(--linha,#E7E0D8);border-radius:16px;padding:14px;margin-top:12px}
+.fc-topo{display:flex;justify-content:space-between;align-items:center;font-size:16px;font-weight:800}
+.fc-topo strong{font-size:12px;font-weight:700;color:var(--tinta-suave)}
+.fc-prox{margin:6px 0 10px;font-size:14px;font-weight:600;background:#FFF6DA;border-radius:10px;padding:8px 10px}
+.fc-passos{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.fc-passo{border:1px solid #EFE9E2;border-radius:12px;padding:9px 11px;background:#FCFBF9}
+.fc-passo.atual{border-color:#E0A800;background:#fff;box-shadow:0 0 0 1px #E0A800}
+.fc-passo.ok{background:#F5FAF6;border-color:#D5E6DA}
+.fc-passo-tit{font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px}
+.fc-n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#EFE9E2;font-size:12px;font-weight:800}
+.fc-passo.ok .fc-n{background:var(--verde);color:#fff}
+.fc-passo.atual .fc-n{background:#E0A800;color:#fff}
+.fc-corpo{margin-top:8px;display:flex;flex-direction:column;gap:7px}
+.fc-sub{font-size:12.5px;color:var(--tinta-suave);line-height:1.4}
+.fc-atraso{color:var(--red);font-weight:700}
+.fc-linha{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.fc-input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--linha,#D9D1C7);border-radius:10px;min-width:0;flex:1 1 160px}
+.fc-valor{flex:0 0 120px}
+.fc-feito{font-size:13px;font-weight:600;color:var(--verde)}
+.fc-feito span{font-weight:400;color:var(--tinta-suave);font-size:12px}
+.fc-cad{display:flex;flex-wrap:wrap;gap:4px}
+.fc-cad-i{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px}
+.fc-cad-i.ok{background:var(--verde-suave);color:var(--verde)}
+.fc-cad-i.falta{background:#FBE4E2;color:var(--red)}
+.fc-os{font-size:13px;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.fc-os.ok{background:var(--verde-suave)}
+.fc-os.alerta{background:#FFF1C9}
+.fc-lembrete{margin:0;padding-left:18px;font-size:13px}
+/* ── Pedidos ── */
+.ped-aviso-tiny{font-size:12.5px;color:var(--tinta-suave);background:#F7F4EF;border-radius:10px;padding:8px 10px;margin:4px 0 8px}
+.ped-grupo{margin-top:14px}
+.ped-lista{display:flex;flex-direction:column;gap:8px}
+.ped-card{background:#fff;border:1px solid var(--linha,#E7E0D8);border-left:4px solid #8C6BB1;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.ped-card.atrasado{border-left-color:var(--red)}
+.ped-os{font-size:12px;font-weight:700;color:var(--tinta-suave);white-space:nowrap}
+.ped-vazio{padding:4px 2px}
+.ped-num{font-size:13.5px;background:#FFF6DA;border-radius:10px;padding:8px 10px;margin-bottom:8px;display:flex;flex-direction:column;gap:2px}
+.ped-conf{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.ped-conf-f{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#fff;border:1px solid var(--linha,#E7E0D8);border-radius:12px;padding:8px 11px}
+.ped-conf-f.atrasada{border-color:#E0A800;background:#FFFBEE}
+.ped-conf-f div:first-child{display:flex;flex-direction:column;min-width:0}
+.ped-conf-f span{font-size:12px;color:var(--tinta-suave)}
+.ped-conf-bt{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.ped-alerta{font-size:12.5px;font-weight:600;color:#7E2A22;background:#FBE4E2;border-radius:10px;padding:6px 9px}
