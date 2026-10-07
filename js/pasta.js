@@ -17,9 +17,9 @@ function voltarParaLista(destino){
   if(!confirmarSairOrc()) return;
   limparOrcamentoEmAndamento();
   document.body.classList.remove('cli-aberto');
-  const d = destino === 'inicio' ? 'inicio' : destino === 'ret' ? 'ret' : 'hist';
+  const d = ['inicio', 'ret', 'agenda'].includes(destino) ? destino : 'hist';
   irParaTab(d);
-  if(d === 'inicio') renderInicio(true); else if(d === 'ret') renderRetornos(true); else renderHistory();
+  if(d === 'inicio') renderInicio(true); else if(d === 'ret') renderRetornos(true); else if(d === 'agenda') renderAgenda(true); else renderHistory();
   window.scrollTo({top:0});
 }
 

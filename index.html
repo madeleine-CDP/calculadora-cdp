@@ -71,6 +71,7 @@
   <button class="tab-btn active" data-tab="inicio" onclick="switchTab('inicio')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="lbl-full">Início</span><span class="lbl-curto">Início</span></button>
   <button class="tab-btn" data-tab="hist" onclick="switchTab('hist')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span class="lbl-full">Orçamentos</span><span class="lbl-curto">Orçamentos</span></button>
   <button class="tab-btn" data-tab="ret" onclick="switchTab('ret')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.8A8 8 0 1 1 21 12z"/></svg><span class="lbl-full">Retornos</span><span class="lbl-curto">Retornos</span><span class="tab-badge" id="ret-badge" hidden></span></button>
+  <button class="tab-btn" data-tab="agenda" onclick="switchTab('agenda')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="lbl-full">Agenda</span><span class="lbl-curto">Agenda</span></button>
   <button class="tab-btn" data-tab="calc" onclick="switchTab('calc')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg><span class="lbl-full">Calculadora</span><span class="lbl-curto">Calcular</span></button>
 </nav>
 
@@ -393,6 +394,24 @@
 </div>
 </div>
 
+<div id="tab-agenda" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <div class="hist-titulo">Agenda</div>
+      <div class="hist-sub">Agenda CLIENTES CDP (Google) · <span id="ag-resumo"></span></div>
+    </div>
+  </div>
+  <div class="ag-nav">
+    <div class="hist-filtros" id="ag-modo"><button type="button" class="hist-chip on" data-m="dia" onclick="AG_MODO='dia';renderAgenda(true)">Dia</button><button type="button" class="hist-chip" data-m="semana" onclick="AG_MODO='semana';renderAgenda(true)">Semana</button></div>
+    <div class="ag-setas"><button type="button" class="ag-seta" onclick="moverAgenda(-1)" aria-label="Anterior">‹</button><button type="button" class="ag-hoje" onclick="moverAgenda(0)">Hoje</button><button type="button" class="ag-seta" onclick="moverAgenda(1)" aria-label="Próximo">›</button></div>
+  </div>
+  <div class="ag-periodo" id="ag-periodo"></div>
+  <div class="hist-filtros" id="ag-exec"></div>
+  <div id="ag-lista" class="ag-lista"></div>
+</div>
+</div>
+
 <div id="tab-precos" class="tab-panel">
 <div class="wrap">
   <div class="hist-topo">
@@ -591,6 +610,7 @@
 <script src="js/olist.js"></script>
 <script src="js/retornos.js"></script>
 <script src="js/tabelas.js"></script>
+<script src="js/agenda.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
 <div id="orc-resumo-bar" style="position:fixed;bottom:60px;left:0;right:0;background:#2B221C;color:#FFF;z-index:499;display:none">

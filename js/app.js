@@ -2236,9 +2236,10 @@ window.addEventListener('resize', () => {
 });
 
 function switchTab(t){
-  if((t === 'hist' || t === 'inicio' || t === 'ret') && orcamentoAberto()){ voltarParaLista(t); return; }
+  if((t === 'hist' || t === 'inicio' || t === 'ret' || t === 'agenda') && orcamentoAberto()){ voltarParaLista(t); return; }
   irParaTab(t);
   if(t==='hist') renderHistory();
+  if(t==='agenda') renderAgenda(true);
   if(t==='ret'){ renderRetornos(true); if(!HIST_CARREGADO) renderHistory().then(() => renderRetornos()); }
   if(t==='inicio') renderInicio(true);
   if(t==='proposta') syncPropostaFromCalc();
