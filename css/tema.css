@@ -602,3 +602,23 @@ body[data-tela=calc] .cli-bar{display:none!important}   /* dados do cliente fica
 .inicio-atalhos{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
 @media (max-width:400px){ .inicio-atalhos .btn,.inicio-atalhos .btn-outline{font-size:14.5px!important;padding:0 10px!important;gap:6px} }
 body[data-tela=inicio] .btn-novo-orc{display:none!important}
+
+/* ═══ E2 · Computador: pasta à esquerda, calculadora à direita ═══ */
+@media (min-width:1100px){
+  :root{--larg-pasta:clamp(440px,42vw,620px)}
+  body.lado-a-lado{overflow:hidden}
+  body.lado-a-lado #tab-orc{position:fixed;left:0;top:var(--topo-lado,140px);bottom:0;width:var(--larg-pasta);overflow-y:auto;border-right:1px solid var(--linha);background:var(--fundo,#F7F4F1);display:block}
+  body.lado-a-lado #tab-calc{position:fixed;right:0;left:var(--larg-pasta);top:var(--topo-lado,140px);bottom:0;overflow-y:auto;display:block}
+  body.lado-a-lado .pasta-wrap{padding-bottom:20px!important;max-width:none}
+  body.lado-a-lado #tab-calc .wrap{padding-bottom:20px!important;max-width:760px}
+  body.lado-a-lado .pasta-barra{display:flex;position:sticky;bottom:0;left:auto;right:auto}
+  body.lado-a-lado .passo-barra{display:flex;position:sticky;bottom:0;left:auto;right:auto}
+  body.lado-a-lado .passos-ver{display:none}
+  body.lado-a-lado.cli-aberto .cli-bar{display:block!important}
+  body.lado-a-lado .pasta-nome{font-size:28px}
+}
+@media (min-width:1100px){
+  body.lado-a-lado #tab-orc,body.lado-a-lado #tab-calc{display:flex!important;flex-direction:column}
+  body.lado-a-lado .pasta-wrap,body.lado-a-lado #tab-calc>.wrap{flex:1 0 auto;width:100%}
+  body.lado-a-lado #tab-calc>.wrap{margin:0 auto}
+}

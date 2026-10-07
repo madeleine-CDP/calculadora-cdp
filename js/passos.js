@@ -148,7 +148,7 @@ function renderPassos(){
 
   // barra do rodapé
   const voltar = $('passo-voltar'), avancar = $('passo-avancar');
-  voltar.innerHTML = PASSO === 1 ? ic('fechar',16) + (EDITING_ORC_ID ? ' Voltar ao orçamento' : ' Sair') : ic('limpar',16) + ' Voltar';
+  voltar.innerHTML = PASSO === 1 ? (document.body.classList.contains('lado-a-lado') ? ic('limpar',16) + ' Limpar' : ic('fechar',16) + (EDITING_ORC_ID ? ' Voltar ao orçamento' : ' Sair')) : ic('limpar',16) + ' Voltar';
   if(PASSO < 3) avancar.innerHTML = 'Continuar';
   else if(PASSO === 3) avancar.innerHTML = ic('calculadora',17) + ' Calcular';
   else avancar.innerHTML = ic('ok',17) + (EDITANDO_ITEM_ID ? ' Substituir item' : (EDITING_ORC_ID ? ' Adicionar ao orçamento' : ' Criar orçamento'));

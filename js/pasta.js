@@ -25,6 +25,7 @@ function voltarParaLista(destino){
 
 function abrirPasta(){
   pararEdicaoItem();               // voltou sem substituir → o item original fica como estava
+  if(ladoALado()) resetCalc();     // E2: no computador a calculadora ao lado já fica pronta para o próximo item
   irParaTab('orc');
   renderPasta();
   window.scrollTo({top:0});
@@ -199,10 +200,12 @@ async function mudarEtapa(etapa){
 function toggleDadosCliente(){
   const aberto = document.body.classList.toggle('cli-aberto');
   $('pasta-dados').setAttribute('aria-expanded', aberto);
+  if(document.body.classList.contains('lado-a-lado')){ ajustarLado(); return; }
   if(aberto) window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function adicionarItemPasta(){
+  if(document.body.classList.contains('lado-a-lado') && !orcTravado()){ pararEdicaoItem(); resetCalc(); irParaTab('calc'); irPasso(1, true); const amb=$('item-ambiente'); if(amb) amb.focus(); return; }
   if(orcTravado()){ alert('Este orçamento está ' + (ETAPA_NOME[orcEmEdicao().etapa]||'').toLowerCase() + '. Reabra para adicionar itens.'); return; }
   pararEdicaoItem();
   resetCalc();

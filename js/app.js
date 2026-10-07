@@ -1894,7 +1894,7 @@ function updateAmbientesDatalist(){
 
 function updateCartBar(){
   renderResumoOrc();
-  if(document.body.dataset.tela === 'orc' && typeof renderPasta === 'function') renderPasta();
+  if((document.body.dataset.tela === 'orc' || document.body.classList.contains('lado-a-lado')) && typeof renderPasta === 'function') renderPasta();
   updateAmbientesDatalist();
   const bar = $('cart-bar');
   const count = $('cart-count');
@@ -2192,17 +2192,39 @@ async function saveOrcamento(){
 // PROPOSTA COMERCIAL
 // ═══════════════════════════════════════════════════
 // Mostra a aba t ('hist', 'calc' ou 'proposta') sem depender da ordem dos botões
+// E2: no computador (tela larga) com orçamento aberto, pasta à esquerda e calculadora à direita
+function ladoALado(){ return window.innerWidth >= 1100 && !!EDITING_ORC_ID; }
+
 function irParaTab(t){
+  const lado = (t === 'orc' || t === 'calc') && ladoALado();
+  const alvo = lado ? 'calc' : t;
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
-  $('tab-'+t).classList.add('active');
+  $('tab-'+alvo).classList.add('active');
+  if(lado) $('tab-orc').classList.add('active');
   const sticky = $('sticky-actions');
-  if(sticky) sticky.style.display = (t==='calc') ? 'flex' : 'none';
-  document.body.dataset.tela = t;
-  if(t !== 'orc') document.body.classList.remove('cli-aberto');
+  if(sticky) sticky.style.display = (alvo==='calc' && !lado) ? 'flex' : 'none';
+  document.body.dataset.tela = alvo;
+  document.body.classList.toggle('lado-a-lado', lado);
+  if(alvo !== 'orc' && !lado) document.body.classList.remove('cli-aberto');
   renderResumoOrc();
-  if(t === 'calc' && typeof renderPassos === 'function') renderPassos();
+  if(alvo === 'calc' && typeof renderPassos === 'function') renderPassos();
+  if(lado && typeof renderPasta === 'function'){ renderPasta(); ajustarLado(); }
 }
+
+// Posição das duas colunas: começam logo abaixo das abas (e dos dados do cliente, se abertos)
+function ajustarLado(){
+  if(!document.body.classList.contains('lado-a-lado')) return;
+  window.scrollTo(0, 0);
+  const nav = document.querySelector('.tabs-nav'), cli = document.querySelector('.cli-bar');
+  let topo = nav ? nav.getBoundingClientRect().bottom : 120;
+  if(cli && getComputedStyle(cli).display !== 'none') topo = Math.max(topo, cli.getBoundingClientRect().bottom);
+  document.documentElement.style.setProperty('--topo-lado', Math.round(topo + 8) + 'px');
+}
+window.addEventListener('resize', () => {
+  const t = document.body.dataset.tela;
+  if((t === 'orc' || t === 'calc') && EDITING_ORC_ID) irParaTab(document.body.classList.contains('lado-a-lado') || t === 'calc' ? 'calc' : t);
+});
 
 function switchTab(t){
   if((t === 'hist' || t === 'inicio') && orcamentoAberto()){ voltarParaLista(t); return; }
