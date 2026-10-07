@@ -6,7 +6,7 @@
 // Liga o compromisso ao orçamento pelo nº CDP na descrição, pelo WhatsApp ou pelo nome do cliente.
 // Tudo vem da função "agenda" no servidor; o site nunca fala direto com o Google.
 // ═══════════════════════════════════════════════════════
-const EXECUTORES = { C: 'Cícero', M: 'Madeleine', J: 'Jones', '?': 'A definir' };
+const EXECUTORES = { C: 'Cícero', M: 'Madeleine', J: 'Jones', B: 'Bruna', '?': 'A definir' };
 const COR_GOOGLE = { 1:'#7986CB', 2:'#33B679', 3:'#8E24AA', 4:'#E67C73', 5:'#F6BF26', 6:'#F4511E', 7:'#039BE5', 8:'#616161', 9:'#3F51B5', 10:'#0B8043', 11:'#D50000' };
 let AG_MODO = 'dia', AG_DATA = new Date(), AG_EVENTOS = [], AG_STATUS = null, AG_EXEC = 'todos';
 
