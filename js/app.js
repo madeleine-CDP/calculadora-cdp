@@ -427,7 +427,7 @@ function updateChips(){
 
   // Decore: redução de peso automática
   if(STATE.fab==='dec' && STATE.prod && (STATE.prod.includes('ROLÔ') || STATE.prod.includes('ELEGANCE'))){
-    const needReducao = w > 1.80 || h > 2.00;
+    const needReducao = w >= 1.80 || h >= 2.00;   // "maior ou igual" (confirmado pela Bru em 07/10/2026, igual ao guia da Decore)
     STATE.reducao = needReducao;
     if(needReducao){
       $('reducao-chip').style.display='inline-flex';

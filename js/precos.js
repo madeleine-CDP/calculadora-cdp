@@ -2613,7 +2613,7 @@ const ACC_DECORE = [
     items:[
       {id:"d_junc",  l:"Junção (diminui espaço entre 2 cortinas)",unit:"und",p:20, note:"",
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_red",   l:"Redução de Peso / Comando Redutor (sem desconto)",unit:"und",p:75,note:"Auto: larg >1,80m OU alt >2,00m",
+      {id:"d_red",   l:"Redução de Peso / Comando Redutor (sem desconto)",unit:"und",p:75,note:"Auto: larg ≥1,80m OU alt ≥2,00m",
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION","CORTINA NUETTE"]},
       {id:"d_ph50mono",l:"Monocomando 50mm (sem desconto)",unit:"und",p:120,note:"",
        compat:["PERSIANA HORIZONTAL"]},

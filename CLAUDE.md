@@ -32,7 +32,7 @@ Estas fórmulas foram confirmadas pela Bru. Qualquer mudança exige confirmaçã
 - **Custo** = preço tabela × área × 0,88 (12%) × 0,97 (3% pedido pelo site) **+ impostos de PE** (IPI e ICMS-ST conforme `IMPOSTOS_PE` e `getTipoImposto()`).
 - **À vista** = custo × 2.
 - Itens **sem desconto** (motores, controles, monocomandos, redução de peso): lista `SEM_DESCONTO`. Ela aparece **em dois lugares** (cálculo normal e comparação entre fábricas). Ao adicionar um item sem desconto, atualize os dois.
-- Redução de peso automática na Rolô e Double Vision: largura > 1,80m OU altura > 2,00m → +R$ 75,00 por peça, sem desconto.
+- Redução de peso automática na Rolô e Double Vision: largura **≥ 1,80m** OU altura **≥ 2,00m** (maior **ou igual**, confirmado pela Bru em 07/10/2026, como no guia da Decore) → +R$ 75,00 por peça, sem desconto.
 
 ### Real Persianas
 - Tabela vigente: **Agosto/2026**. Impostos já inclusos no preço.
@@ -55,7 +55,7 @@ Estas fórmulas foram confirmadas pela Bru. Qualquer mudança exige confirmaçã
 Fonte: Guia de Processos de Atendimento (Google Drive). Função `calcSobra()`.
 
 - **Regra geral** (tradicional, rolô, vertical, tudo menos Romana), instalação fora do vão: +20cm na largura, +30cm na altura.
-- **Romana:** +35cm em cima + 20cm embaixo = **+55cm na altura** (substitui os +30cm).
+- **Romana:** +35cm em cima + 20cm embaixo = **+55cm na altura** (substitui os +30cm). (O Guia de Processos fala em +30cm em cima; a Bru confirmou em 07/10/2026 que vale o do sistema, 35cm.)
 - **Rolô com moldura** (só a Rolô): os acessórios **substituem** a sobra genérica, não somam.
   - Guias laterais (6cm ou 8cm, valor real do acessório × 2 lados) substituem a sobra de largura.
   - Bandô (+10cm) e/ou guia inferior (6 ou 8cm) substituem a sobra de altura. Se os dois estiverem marcados, soma os dois.
