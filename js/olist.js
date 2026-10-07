@@ -81,14 +81,23 @@ async function olistBuscar(termo){
 }
 
 async function olistEscolher(i){
-  const c = OLIST_RES[i]; if(!c) return;
+  let c = OLIST_RES[i]; if(!c) return;
+  const res = $('olist-res');
+  res.innerHTML = '<div class="olist-msg">Puxando o cadastro completo…</div>';
+  // a lista do Olist vem resumida (sem celular): o cadastro completo vem numa segunda consulta
+  try{ const d = await olistChamar('contato', { id: c.id }); if(d && d.cliente) c = Object.assign({}, c, Object.fromEntries(Object.entries(d.cliente).filter(([k, v]) => v))); }
+  catch(e){ /* segue com o que veio na lista */ }
   const por = (id, v) => { const el = $(id); if(el && v) el.value = v; };
   por('novo-nome', c.nome);
   const cel = c.celular || c.telefone;
   if(cel){ $('novo-tel').value = cel; if(typeof mascaraTel === 'function') mascaraTel($('novo-tel')); }
   por('novo-bairro', c.bairro);
-  por('novo-end', [c.endereco, c.cidade].filter(Boolean).join(' - '));
+  const loc = (typeof separarCidadeUf === 'function') ? separarCidadeUf(c.cidade) : { cidade: '', uf: '' };
+  if(loc.cidade){ const k = (typeof cidadeConhecida === 'function') && cidadeConhecida(loc.cidade); por('novo-cidade', k ? k.nome : loc.cidade); }
+  por('novo-uf', loc.uf);
+  por('novo-end', c.endereco);
   por('novo-cpf', c.cpfCnpj); por('novo-email', c.email);
+  if(!cel) avisoTopo('Esse cliente está sem celular no Olist. Preencha o WhatsApp à mão.');
   if(c.endereco || c.cpfCnpj || c.email){ const m = document.querySelector('#tab-novo .novo-mais'); if(m) m.open = true; }
   const chip = document.querySelector('#tab-novo [data-origem="Já é cliente"]');
   if(chip && typeof escolherOrigem === 'function' && !chip.classList.contains('on')) escolherOrigem(chip);

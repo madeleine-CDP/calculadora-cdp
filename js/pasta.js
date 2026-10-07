@@ -40,7 +40,7 @@ function renderPasta(){
   $('pasta-nome').textContent = c.nome || 'Cliente sem nome';
   $('pasta-sub').innerHTML = [
     e && e.numero ? '<strong>' + numCDP(e.numero) + '</strong>' : '<em>ainda não salvo</em>',
-    c.bairro ? escHtml(c.bairro) : '',
+    [c.bairro, [c.cidade, c.uf].filter(Boolean).join('/')].filter(Boolean).map(escHtml).join(', '),
     c.tel ? escHtml(c.tel) : '',
     c.tiny ? 'Tiny #' + escHtml(c.tiny) : ''
   ].filter(Boolean).join(' · ');
@@ -234,7 +234,7 @@ function salvarEFechar(){
 }
 
 // Mudou algo nos dados do cliente → tem alteração por salvar
-['cli-nome','cli-tel','cli-bairro','cli-tiny','cli-cpf','cli-email','cli-end','cli-contato'].forEach(id => {
+['cli-nome','cli-tel','cli-bairro','cli-cidade','cli-uf','cli-tiny','cli-cpf','cli-email','cli-end','cli-contato'].forEach(id => {
   const el = document.getElementById(id);
   if(el) el.addEventListener('input', () => { ORC_SUJO = true; if(document.body.dataset.tela === 'orc') renderPasta(); });
 });
@@ -286,7 +286,7 @@ async function evoluirOrcamento(){
         total_tabela: itens.reduce((s,i)=>s+(i.tabela||0),0),
         total_cartao: itens.reduce((s,i)=>s+(i.cartao||0),0),
         total_avista: itens.reduce((s,i)=>s+(i.avista||0),0),
-        telefone: e.telefone || null, bairro: e.bairro || null, origem: e.origem || null,
+        telefone: e.telefone || null, bairro: e.bairro || null, cidade: e.cidade || null, uf: e.uf || null, origem: e.origem || null,
         como_comecou: e.comoComecou || null, etapa: novaEtapa, anterior_id: e.id,
         criado_por: getUsuarioLogado()
       })
@@ -409,7 +409,7 @@ async function gravarOrcamentoAtual(extra){
     total_tabela: CART.reduce((s,i)=>s+(i.tabela||0),0),
     total_cartao: CART.reduce((s,i)=>s+(i.cartao||0),0),
     total_avista: CART.reduce((s,i)=>s+(i.avista||0),0),
-    telefone: c.tel || null, bairro: c.bairro || null
+    telefone: c.tel || null, bairro: c.bairro || null, cidade: c.cidade || null, uf: c.uf || null
   }, extra || {});
   return patchOrcamento(corpo);
 }
@@ -422,7 +422,7 @@ async function patchOrcamento(corpo){
   const e = orcEmEdicao();
   if(e && linha){
     Object.assign(e, { etapa: linha.etapa, pedidoTiny: linha.pedido_tiny || '', fechadoEm: linha.fechado_em || null,
-      motivoPerda: linha.motivo_perda || '', client: linha.client, telefone: linha.telefone || '', bairro: linha.bairro || '',
+      motivoPerda: linha.motivo_perda || '', client: linha.client, telefone: linha.telefone || '', bairro: linha.bairro || '', cidade: linha.cidade || '', uf: linha.uf || '',
       ref: linha.ref || '', items: linha.items, totalTabela: Number(linha.total_tabela), totalCartao: Number(linha.total_cartao), totalAvista: Number(linha.total_avista) });
   }
   return linha;

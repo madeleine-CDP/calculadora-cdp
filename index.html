@@ -81,6 +81,8 @@
       <input type="text" id="cli-nome" class="cli-in principal" placeholder="Nome do cliente" aria-label="Nome do cliente" oninput="syncCliente()">
       <input type="text" id="cli-tel" class="cli-in principal" placeholder="Telefone / WhatsApp" aria-label="Telefone / WhatsApp" oninput="syncCliente()">
       <input type="text" id="cli-bairro" class="cli-in principal" placeholder="Bairro" aria-label="Bairro" oninput="syncCliente()">
+      <input type="text" id="cli-cidade" class="cli-in principal" list="lista-cidades" placeholder="Cidade" aria-label="Cidade" oninput="syncCliente()">
+      <select id="cli-uf" class="cli-in principal sel-uf" aria-label="Estado (UF)" oninput="syncCliente()" onchange="syncCliente()"></select>
       <input type="text" id="cli-tiny" class="cli-in principal" placeholder="Nº proposta Tiny (opcional)" aria-label="Número da proposta no Tiny" oninput="syncCliente()">
     </div>
     <div class="cli-grid">
@@ -462,9 +464,16 @@
     <div class="novo-linha">
       <label class="novo-campo"><span>WhatsApp <b>*</b></span>
         <input type="tel" id="novo-tel" inputmode="tel" autocomplete="off" placeholder="(81) 9 0000-0000" oninput="mascaraTel(this); limparAvisoRepetido()"></label>
-      <label class="novo-campo"><span>Bairro</span>
-        <input type="text" id="novo-bairro" autocomplete="off" placeholder="Ex.: Boa Viagem"></label>
     </div>
+    <div class="novo-linha novo-local">
+      <label class="novo-campo"><span>Bairro <b>*</b></span>
+        <input type="text" id="novo-bairro" autocomplete="off" placeholder="Ex.: Boa Viagem"></label>
+      <label class="novo-campo"><span>Cidade <b>*</b></span>
+        <input type="text" id="novo-cidade" list="lista-cidades" autocomplete="off" placeholder="Ex.: Recife"></label>
+      <label class="novo-campo novo-uf"><span>UF <b>*</b></span>
+        <select id="novo-uf" class="sel-uf" aria-label="Estado"></select></label>
+    </div>
+    <datalist id="lista-cidades"></datalist>
     <details class="novo-mais">
       <summary>+ Endereço, CPF/CNPJ e e-mail <span>(opcional)</span></summary>
       <label class="novo-campo"><span>Endereço completo</span><input type="text" id="novo-end" autocomplete="off"></label>
@@ -548,6 +557,7 @@
 <script src="js/inicio.js"></script>
 <script src="js/proposta.js"></script>
 <script src="js/combinacoes.js"></script>
+<script src="js/cidades.js"></script>
 <script src="js/olist.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->

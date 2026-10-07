@@ -225,7 +225,7 @@ header.site-header{display:block!important;padding:0!important;gap:0!important}
   .btn-novo-orc{grid-column:1 / -1;justify-content:center;margin:0 0 2px!important}
   .tab-btn{justify-content:center;padding:0 8px!important;font-size:13.5px!important;gap:6px!important}
   .lbl-full{display:none}.lbl-curto{display:inline}
-  .cli-grid .cli-in.principal:nth-child(4){grid-column:span 2}
+  .cli-grid .cli-in.principal:nth-child(6){grid-column:span 2}
   .cli-grid .cli-in-sec:nth-child(3){grid-column:span 2}
   .hist-titulo{font-size:28px}
 }
@@ -667,3 +667,13 @@ body[data-tela=inicio] .btn-novo-orc{display:none!important}
 .olist-ped-lista>div{display:grid;grid-template-columns:auto auto 1fr auto;gap:8px;align-items:baseline}
 .olist-ped-lista em{font-style:normal;color:var(--tx3);font-size:11.5px;text-align:right}
 @media (max-width:420px){.olist-ped-lista>div{grid-template-columns:auto 1fr auto}.olist-ped-lista>div span:nth-child(2){display:none}.olist-ped-lista>div span:nth-child(3){justify-self:end}}
+
+/* ── Bairro · Cidade · UF (Novo orçamento e barra do cliente) ── */
+.novo-local{grid-template-columns:1fr 1fr 92px}
+.novo-campo select{min-height:50px;border-radius:14px;border:1px solid var(--linha);padding:0 10px;font-size:16px;background:#fff;color:var(--tinta);width:100%}
+.novo-campo select:focus{outline:none;border-color:var(--vinho);box-shadow:0 0 0 3px var(--vinho-suave)}
+select.cli-in{appearance:auto}
+@media (max-width:640px){
+  .novo-linha.novo-local{grid-template-columns:1fr 92px;gap:0 12px}
+  .novo-local>label:first-child{grid-column:1/-1}
+}

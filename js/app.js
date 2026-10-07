@@ -891,6 +891,8 @@ async function sbFetchHistory(){
     etapa: r.etapa || 'orcamento',
     telefone: r.telefone || '',
     bairro: r.bairro || '',
+    cidade: r.cidade || '',
+    uf: r.uf || '',
     origem: r.origem || null,
     comoComecou: r.como_comecou || null,
     anteriorId: r.anterior_id || null,
@@ -909,7 +911,7 @@ async function sbInsertOrcamento(entry){
     body: JSON.stringify({
       ref: entry.ref || '', client: entry.client, date: entry.date, items: entry.items,
       total_tabela: entry.totalTabela, total_cartao: entry.totalCartao, total_avista: entry.totalAvista,
-      telefone: entry.telefone || null, bairro: entry.bairro || null,
+      telefone: entry.telefone || null, bairro: entry.bairro || null, cidade: entry.cidade || null, uf: entry.uf || null,
       criado_por: getUsuarioLogado()
     })
   });
@@ -926,7 +928,7 @@ async function sbUpdateOrcamento(id, entry){
     body: JSON.stringify({
       ref: entry.ref || '', client: entry.client, date: entry.date, items: entry.items,
       total_tabela: entry.totalTabela, total_cartao: entry.totalCartao, total_avista: entry.totalAvista,
-      telefone: entry.telefone || null, bairro: entry.bairro || null
+      telefone: entry.telefone || null, bairro: entry.bairro || null, cidade: entry.cidade || null, uf: entry.uf || null
     })
   });
   if(!res.ok) throw new Error('Falha ao atualizar: ' + res.status + ' ' + (await res.text()));
@@ -1061,6 +1063,8 @@ function reopenOrc(id){
     $('cli-tiny').value = e.ref || '';
     if(e.telefone) $('cli-tel').value = e.telefone;
     if(e.bairro) $('cli-bairro').value = e.bairro;
+    if($('cli-cidade')) $('cli-cidade').value = e.cidade || '';
+    if($('cli-uf')) $('cli-uf').value = e.uf || '';
     syncCliente();
     ORC_SUJO = false;
     updateCartBar();
@@ -1977,6 +1981,7 @@ function novoOrcamento(){
   if(!confirmarSairOrc()) return;
   limparOrcamentoEmAndamento();
   ['novo-nome','novo-tel','novo-bairro','novo-end','novo-cpf','novo-email'].forEach(id => { const el=$(id); if(el) el.value=''; });
+  if($('novo-cidade')) $('novo-cidade').value = 'Recife'; if($('novo-uf')) $('novo-uf').value = 'PE';
   document.querySelectorAll('#tab-novo .novo-opcao').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-checked','false'); });
   document.querySelectorAll('#tab-novo [data-origem]').forEach(b => { b.classList.remove('on'); b.setAttribute('aria-checked','false'); });
   const mais = document.querySelector('#tab-novo .novo-mais'); if(mais) mais.open = false;
@@ -2002,7 +2007,7 @@ function limparOrcamentoEmAndamento(){
   EDITING_ORC_ID = null;
   ORC_SUJO = false;
   updateCartBar();
-  ['cli-nome','cli-tel','cli-bairro','cli-tiny','cli-cpf','cli-email','cli-end','cli-contato'].forEach(id=>{
+  ['cli-nome','cli-tel','cli-bairro','cli-cidade','cli-uf','cli-tiny','cli-cpf','cli-email','cli-end','cli-contato'].forEach(id=>{
     const el = $(id); if(el) el.value = '';
   });
   syncCliente();
@@ -2057,15 +2062,19 @@ async function criarOrcamento(){
   const nome = $('novo-nome').value.trim();
   const tel = $('novo-tel').value.trim();
   const bairro = $('novo-bairro').value.trim();
+  const cidade = $('novo-cidade') ? $('novo-cidade').value.trim() : '';
+  const uf = $('novo-uf') ? $('novo-uf').value : '';
   const comecoBtn = document.querySelector('#tab-novo .novo-opcao.on');
   const origemBtn = document.querySelector('#tab-novo [data-origem].on');
   const faltas = [];
   if(!nome) faltas.push('o nome do cliente');
   if(tel.replace(/\D/g,'').length < 10) faltas.push('o WhatsApp com DDD');
+  if(!bairro) faltas.push('o bairro');
+  if(!cidade || !uf) faltas.push('a cidade/UF');
   if(!comecoBtn) faltas.push('como começa o atendimento');
   if(faltas.length){
     erro.textContent = 'Falta preencher ' + faltas.join(', ').replace(/, ([^,]*)$/, ' e $1') + '.';
-    const alvo = !nome ? $('novo-nome') : (tel.replace(/\D/g,'').length < 10 ? $('novo-tel') : null);
+    const alvo = !nome ? $('novo-nome') : (tel.replace(/\D/g,'').length < 10 ? $('novo-tel') : (!bairro ? $('novo-bairro') : (!cidade ? $('novo-cidade') : (!uf ? $('novo-uf') : null))));
     if(alvo) alvo.focus();
     return;
   }
@@ -2087,7 +2096,7 @@ async function criarOrcamento(){
       body: JSON.stringify({
         ref: '', client: nome, date: new Date().toLocaleDateString('pt-BR'), items: [],
         total_tabela: 0, total_cartao: 0, total_avista: 0,
-        telefone: tel, bairro: bairro || null,
+        telefone: tel, bairro: bairro || null, cidade: cidade || null, uf: uf || null,
         origem: origemBtn ? origemBtn.dataset.origem : null,
         como_comecou: comeco,
         etapa: comeco === 'pre_orcamento' ? 'pre_orcamento' : 'visita',
@@ -2111,8 +2120,9 @@ async function criarOrcamento(){
   HISTORY_CACHE = HISTORY_CACHE.filter(e => e.id !== linha.id);
   HISTORY_CACHE.unshift({ id: linha.id, ref: '', client: nome, date: linha.date, items: [],
     totalTabela: 0, totalCartao: 0, totalAvista: 0, criadoPor: linha.criado_por || null,
-    numero: linha.numero, etapa: linha.etapa, telefone: tel, bairro: bairro });
+    numero: linha.numero, etapa: linha.etapa, telefone: tel, bairro: bairro, cidade, uf });
   $('cli-nome').value = nome; $('cli-tel').value = tel; $('cli-bairro').value = bairro;
+  if($('cli-cidade')) $('cli-cidade').value = cidade; if($('cli-uf')) $('cli-uf').value = uf;
   $('cli-end').value = $('novo-end').value.trim(); $('cli-cpf').value = $('novo-cpf').value.trim(); $('cli-email').value = $('novo-email').value.trim();
   syncCliente();
   updateCartBar();
@@ -2150,7 +2160,7 @@ async function saveOrcamento(){
 
   const entry = {
     ref, client,
-    telefone: STATE.cliente.tel, bairro: STATE.cliente.bairro,
+    telefone: STATE.cliente.tel, bairro: STATE.cliente.bairro, cidade: STATE.cliente.cidade, uf: STATE.cliente.uf,
     date: new Date().toLocaleDateString('pt-BR'),
     items: CART.map(item => ({...item})),
     totalTabela: CART.reduce((s,i)=>s+i.tabela,0),
@@ -2316,6 +2326,8 @@ function syncCliente(){
     nome: $('cli-nome').value.trim(),
     tel: $('cli-tel').value.trim(),
     bairro: $('cli-bairro').value.trim(),
+    cidade: ($('cli-cidade') ? $('cli-cidade').value.trim() : ''),
+    uf: ($('cli-uf') ? $('cli-uf').value : ''),
     tiny: $('cli-tiny').value.trim(),
     cpf: $('cli-cpf').value.trim(),
     email: $('cli-email').value.trim(),
@@ -2346,7 +2358,7 @@ function gerarProposta(){
   const cpf    = STATE.cliente.cpf || '—';
   const tel    = STATE.cliente.tel || '—';
   const email  = STATE.cliente.email || '—';
-  const end    = (STATE.cliente.end || STATE.cliente.bairro || '—');
+  const end    = (typeof enderecoCompleto === 'function' ? enderecoCompleto(STATE.cliente) : (STATE.cliente.end || STATE.cliente.bairro)) || '—';
   const contato= STATE.cliente.contato || '—';
   const site   = 'centraldaspersianas.com';
   const insta  = '@centraldaspersianas';

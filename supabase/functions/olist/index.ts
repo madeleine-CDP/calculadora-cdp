@@ -8,6 +8,7 @@
 //   POST iniciar   → devolve o link para autorizar no Olist        (Bruna / Madeleine)
 //   GET  callback  → o Olist volta aqui depois da autorização      (navegador)
 //   POST buscar    → { termo } → clientes por nome, celular ou CPF (equipe)
+//   POST contato   → { id } → cadastro completo do cliente (celular, endereço) (equipe)
 //   POST pedidos   → { cpfCnpj, nome } → últimos pedidos no Tiny    (equipe)
 //   POST renovar   → renova a autorização (agendamento a cada 3h)  (aberto; não devolve dados)
 // Só leitura no Tiny: nada é criado nem alterado lá.
@@ -98,9 +99,21 @@ async function tiny(caminho: string, tentativa = 0): Promise<any> {
   const tk = await tokenValido();
   const r = await fetch(API + caminho, { headers: { Authorization: "Bearer " + tk, Accept: "application/json" } });
   if (r.status === 401 && tentativa === 0) { await renovar(); return tiny(caminho, 1); }
-  if (r.status === 404) return { itens: [] };
-  if (!r.ok) throw new Error("olist_api " + r.status);
-  return r.json();
+  const rotaTiny = caminho.split("?")[0];
+  if (r.status === 404) { console.log("tiny 404", rotaTiny); return { itens: [] }; }
+  if (!r.ok) {
+    const t = await r.text().catch(() => "");
+    console.error("tiny erro", r.status, rotaTiny, t.slice(0, 300));
+    // o Olist às vezes demora na busca por nome ("levou muito tempo"): tenta mais 1 vez
+    if (r.status === 400 && /muito tempo/i.test(t) && tentativa === 0) {
+      await new Promise((ok) => setTimeout(ok, 800));
+      return tiny(caminho, 1);
+    }
+    throw new Error("olist_api " + r.status);
+  }
+  const d = await r.json();
+  console.log("tiny ok", rotaTiny, (d?.itens ?? []).length);
+  return d;
 }
 
 // ── Formatação ──
@@ -142,11 +155,13 @@ async function buscar(termo: string) {
     consultas.push("nome=" + encodeURIComponent(t));
   }
   const vistos = new Map<number, ReturnType<typeof cliente>>();
-  const resultados = await Promise.allSettled(consultas.map((q) => tiny(`/contatos?${q}&limit=10&orderBy=desc`)));
+  const resultados = await Promise.allSettled(consultas.map((q) => tiny(`/contatos?${q}&limit=10`)));
   for (const r of resultados) {
-    if (r.status !== "fulfilled") { if (String(r.reason).includes("desconectado")) throw r.reason; continue; }
+    if (r.status !== "fulfilled") { console.error("busca falhou", String(r.reason)); if (String(r.reason).includes("desconectado")) throw r.reason; continue; }
     for (const c of r.value?.itens ?? []) if (c?.id && c.situacao !== "E" && !vistos.has(c.id)) vistos.set(c.id, cliente(c));
   }
+  // todas as consultas falharam → avisa "indisponível" em vez de "nenhum cliente"
+  if (consultas.length && resultados.every((r) => r.status !== "fulfilled")) throw new Error("olist_api todas");
   return [...vistos.values()].slice(0, 10);
 }
 
@@ -214,6 +229,13 @@ Deno.serve(async (req) => {
     }
 
     if (rota === "buscar") return json(req, { clientes: await buscar(String(corpo.termo ?? "")) });
+    if (rota === "contato") {
+      // a lista do Olist vem resumida (às vezes sem celular/endereço): o cadastro completo vem daqui
+      const id = Number(corpo.id);
+      if (!Number.isInteger(id) || id <= 0) return json(req, { erro: "id" }, 400);
+      const d = await tiny(`/contatos/${id}`);
+      return json(req, { cliente: d?.id ? cliente(d) : null });
+    }
     if (rota === "pedidos") return json(req, { pedidos: await pedidos(String(corpo.cpfCnpj ?? ""), String(corpo.nome ?? "")) });
 
     return json(req, { erro: "rota" }, 404);
