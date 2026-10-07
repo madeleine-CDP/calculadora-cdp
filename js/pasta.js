@@ -70,6 +70,7 @@ function renderPasta(){
         const sub = itens.reduce((s,i)=>s+(i.avista||0),0);
         return `<div class="pasta-amb">
           <div class="pasta-amb-topo"><span>${ic('local',15)} ${escHtml(amb)} <em>· ${itens.length} ${itens.length>1?'itens':'item'}</em></span><span>${fmt(sub)}</span></div>
+          <label class="amb-opcional"><input type="checkbox" ${itens.some(i => i.ambienteOpcional) ? 'checked' : ''} ${orcTravado() ? 'disabled' : ''} onchange="mudarAmbOpcional('${escHtml(chaveAmb(amb))}', this.checked)"> Ambiente opcional <span>(o cliente pode não fazer)</span></label>
           ${itens.map((item, n) => cardItemPasta(item, n)).join('')}
         </div>`;
       }).join('');
@@ -94,7 +95,8 @@ function renderPasta(){
       <div><span>${ic('etiqueta',15)} Tabela</span><strong>${fmt(tTa)}</strong></div>
       <div><span>${ic('cartao',15)} Cartão</span><strong>${fmt(tCa)}</strong></div>
     </div>
-    <div class="pasta-total-av"><span>${ic('dinheiro',16)} Total à vista / PIX</span><strong>${fmt(tAv)}</strong></div>`;
+    <div class="pasta-total-av"><span>${ic('dinheiro',16)} Total à vista / PIX</span><strong>${fmt(tAv)}</strong></div>
+    ${(() => { const f = faixaTotais(CART); return f ? `<div class="pasta-faixa">${ic('info',15)} Com as opções: de <strong>${fmt(f.min)}</strong> a <strong>${fmt(f.max)}</strong> à vista · ${f.n} combinações. A soma acima inclui todas as alternativas.</div>` : ''; })()}`;
 }
 
 // ── Descritivo completo de um item (só lê o que o cálculo já guardou) ──
@@ -144,7 +146,11 @@ function cardItemPasta(item, n){
   const fora = item.foraDoPadrao || f.foraDoPadrao;
   return `<div class="pasta-item">
     <div class="pasta-item-cab">
-      <div class="pasta-item-nome"><span class="pasta-fab fab-${item.fab}">${escHtml(fabName(item.fab))}</span>${escHtml(item.label)}</div>
+      <div class="pasta-item-nome"><span class="pasta-fab fab-${item.fab}">${escHtml(fabName(item.fab))}</span>${escHtml(item.label)}${item.opcao ? '<span class="pasta-opcao-selo">Opção ' + item.opcao + '</span>' : ''}</div>
+      <label class="pasta-opcao" title="Alternativa dentro do ambiente: itens com a mesma letra somam juntos">Opção
+        <select onchange="mudarOpcaoItem(${item.id}, this.value)" ${orcTravado() ? 'disabled' : ''}>
+          <option value="">—</option>${LETRAS_OPCAO.map(l => `<option value="${l}"${item.opcao === l ? ' selected' : ''}>${l}</option>`).join('')}
+        </select></label>
       <span class="pasta-botoes">
         <button type="button" onclick="editarItemCarrinho(${item.id})" title="Editar" aria-label="Editar ${escHtml(item.label)}">${ic('editar',16)}</button>
         <button type="button" onclick="duplicarItemCarrinho(${item.id})" title="Duplicar" aria-label="Duplicar ${escHtml(item.label)}">${ic('copiar',16)}</button>
@@ -183,8 +189,8 @@ async function mudarEtapa(etapa){
   if(!EDITING_ORC_ID || !e) return;
   const antes = e.etapa;
   try{
-    const res = await fetch(SB_URL + '/rest/v1/orcamentos?id=eq.' + EDITING_ORC_ID, {
-      method: 'PATCH', headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+    const res = await sbFetch('/rest/v1/orcamentos?id=eq.' + EDITING_ORC_ID, {
+      method: 'PATCH', headers: { 'Prefer': 'return=representation' },
       body: JSON.stringify({ etapa })
     });
     if(!res.ok) throw new Error(res.status);
@@ -273,8 +279,8 @@ async function evoluirOrcamento(){
   const itens = (e.items || []).map((it, i) => ({ ...it, id: Date.now() + i }));
   let linha;
   try{
-    const res = await fetch(SB_URL + '/rest/v1/orcamentos', {
-      method: 'POST', headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+    const res = await sbFetch('/rest/v1/orcamentos', {
+      method: 'POST', headers: { 'Prefer': 'return=representation' },
       body: JSON.stringify({
         ref: '', client: e.client, date: new Date().toLocaleDateString('pt-BR'), items: itens,
         total_tabela: itens.reduce((s,i)=>s+(i.tabela||0),0),
@@ -408,8 +414,8 @@ async function gravarOrcamentoAtual(extra){
   return patchOrcamento(corpo);
 }
 async function patchOrcamento(corpo){
-  const res = await fetch(SB_URL + '/rest/v1/orcamentos?id=eq.' + EDITING_ORC_ID, {
-    method: 'PATCH', headers: { ...SB_HEADERS, 'Prefer': 'return=representation' }, body: JSON.stringify(corpo)
+  const res = await sbFetch('/rest/v1/orcamentos?id=eq.' + EDITING_ORC_ID, {
+    method: 'PATCH', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(corpo)
   });
   if(!res.ok){ const t = await res.text(); throw new Error(t.includes('está fechado') ? 'fechado' : res.status + ' ' + t); }
   const j = await res.json(); const linha = Array.isArray(j) ? j[0] : j;

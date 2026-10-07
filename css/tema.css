@@ -42,14 +42,14 @@ button,input,select,textarea{font-family:var(--sans)!important}
 #login-screen label{font-size:13px!important;text-transform:none!important;letter-spacing:0!important;color:var(--tinta-suave)!important;font-weight:600!important}
 #login-screen input{border-radius:12px!important;border:1px solid var(--linha)!important;padding:13px 14px!important;font-size:16px!important}
 #login-screen input:focus{outline:none;border-color:var(--vinho)!important;box-shadow:0 0 0 3px rgba(90,21,36,.12)}
-#login-btn{border-radius:999px!important;padding:14px!important;font-size:15px!important;font-weight:600!important;box-shadow:0 6px 18px rgba(90,21,36,.22)}
+#login-btn,#senha-btn{border-radius:999px!important;padding:14px!important;font-size:15px!important;font-weight:600!important;box-shadow:0 6px 18px rgba(90,21,36,.22)}
 
 /* ─── Cabeçalho ─── */
 .site-header{background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--linha);position:sticky;top:0;z-index:200}
 .site-header-in{max-width:1160px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px}
 .site-header img{height:30px;width:auto;display:block}
 .site-header .usuario{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--tinta-suave)}
-.site-header .usuario-nome{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--fundo);color:var(--tinta);font-weight:600}
+.site-header .usuario-nome{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--fundo);color:var(--tinta);font-weight:600;border:none;font-family:inherit;font-size:inherit;cursor:pointer}
 .btn-sair{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--linha);background:#fff;color:var(--tinta-suave);font-size:13px;font-weight:500;cursor:pointer}
 .btn-sair:hover{border-color:var(--vinho);color:var(--vinho)}
 
@@ -203,7 +203,8 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--vinho)}
 @media (max-width:560px){
   .site-header-in{padding:10px 16px}
   .site-header img{height:26px}
-  .site-header .usuario-nome{display:none}
+  .site-header .usuario-nome #usuario-logado{display:none}
+  .site-header .usuario-nome{padding:7px}
   .card{padding:18px!important}
   .tab-btn{padding:0 14px!important}
   .cli-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -622,3 +623,27 @@ body[data-tela=inicio] .btn-novo-orc{display:none!important}
   body.lado-a-lado .pasta-wrap,body.lado-a-lado #tab-calc>.wrap{flex:1 0 auto;width:100%}
   body.lado-a-lado #tab-calc>.wrap{margin:0 auto}
 }
+
+/* ═══ Opções e combinações ═══ */
+.pasta-item-cab{flex-wrap:wrap}
+.pasta-opcao{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--tinta-suave);font-weight:600}
+.pasta-opcao select{min-height:34px;border-radius:999px!important;padding:0 28px 0 12px!important;font-size:13.5px;font-weight:700}
+.pasta-opcao-selo{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:#EFE9F5;color:#5B3F7A;font-size:11.5px;font-weight:700}
+.amb-opcional{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--tinta);margin:8px 0 2px;cursor:pointer}
+.amb-opcional input{width:18px;height:18px;accent-color:var(--vinho)}
+.amb-opcional span{color:var(--tinta-suave)}
+.pasta-faixa{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding:10px 12px;border-radius:12px;background:#F6F2FA;color:#4A2F68;font-size:13px;line-height:1.45}
+.pasta-faixa .ic{flex:none;margin-top:2px}
+.combos-config{border:1px solid var(--linha);border-radius:16px;padding:14px;margin-bottom:16px;background:#fff}
+.combos-tit{font-weight:700;font-size:15px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.combos-tit span{font-weight:500;font-size:12.5px;color:var(--tinta-suave)}
+.combos-dica{font-size:12.5px;color:var(--tinta-suave);margin:4px 0 10px}
+.combos-lista{display:flex;flex-direction:column;gap:6px;max-height:360px;overflow:auto}
+.combo-linha{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"ck rot val" "ck nome nome";gap:4px 10px;align-items:center;padding:10px 12px;border:1px solid var(--linha);border-radius:12px;cursor:pointer}
+.combo-linha.on{border-color:var(--vinho);background:var(--vinho-suave)}
+.combo-linha input[type=checkbox]{grid-area:ck;width:18px;height:18px;accent-color:var(--vinho)}
+.combo-rot{grid-area:rot;font-size:13.5px;font-weight:600}
+.combo-val{grid-area:val;font-weight:700;white-space:nowrap}
+.combo-nome{grid-area:nome;min-height:34px;border-radius:10px;border:1px solid var(--linha);padding:0 10px;font-size:13.5px}
+.combos-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.combos-acoes .btn-outline{padding:8px 14px!important}
