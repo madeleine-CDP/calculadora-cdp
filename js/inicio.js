@@ -100,6 +100,7 @@ async function renderInicio(atualizar){
       <button type="button" class="btn" onclick="novoOrcamento()">${ic('mais',18)} Novo orçamento</button>
       <button type="button" class="btn-outline" onclick="switchTab('calc')">${ic('calculadora',18)} Cálculo rápido</button>
       <button type="button" class="btn-outline" onclick="novoRetorno()">${ic('chat',18)} Lançar retorno</button>
+      ${(typeof tpEhGestora === 'function' && tpEhGestora()) ? `<button type="button" class="btn-outline inicio-tp" onclick="abrirTabelasPreco()">${ic('etiqueta',18)} Tabelas de preço</button>` : ''}
     </div>
 
     <section class="inicio-bloco">
