@@ -2744,8 +2744,8 @@ function imprimirProposta(){
   if(!doc){ alert('Gere a proposta primeiro.'); return; }
   const w = window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Figtree:wght@400;500;600;700&family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>*{box-sizing:border-box}body{margin:0;padding:20px;background:#EEE;font-family:Figtree,'Gill Sans','Gill Sans MT',sans-serif}
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>*{box-sizing:border-box}body{margin:0;padding:20px;background:#EEE;font-family:'Gill Sans','Gill Sans MT',Poppins,sans-serif}
     @page{size:A4;margin:10mm}
     @media print{body{background:#FFF;padding:0}#proposta-print{box-shadow:none!important;border-radius:0!important}
       table,tr,img,[style*="border-radius:6px"],[style*="grid-template-columns"]{break-inside:avoid;page-break-inside:avoid}

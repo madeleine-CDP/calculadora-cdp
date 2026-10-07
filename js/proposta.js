@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-// PROPOSTA · VISUAL NOVO
+// PROPOSTA · utilidades (nº CDP, ordem por ambiente, tipo pela etapa)
 // "Veste" o documento gerado por gerarProposta() com as cores e fontes da marca
 // e troca os emojis por ícones de traço. NÃO muda nenhum texto nem valor.
 // ═══════════════════════════════════════════════════════
@@ -26,7 +26,12 @@ const PROPOSTA_TROCAS = [
   ['border:1px solid #DDD', 'border:1px solid #DED8D3']
 ];
 
+// A Bru pediu a proposta FIEL ao modelo do Word (cores, fontes e emojis originais).
+// Por isso o "vestir" está desligado: devolve o documento como ele é.
+// As trocas acima ficam guardadas caso um dia se queira o visual novo.
+const PROPOSTA_VISUAL_NOVO = false;
 function vestirProposta(html){
+  if(!PROPOSTA_VISUAL_NOVO) return html;
   let h = html;
   PROPOSTA_TROCAS.forEach(([de, para]) => { h = h.split(de).join(para); });
   // ícones grandes dos blocos de condição (eram emojis em 22px)
