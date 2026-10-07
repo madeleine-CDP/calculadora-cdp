@@ -42,7 +42,7 @@ button,input,select,textarea{font-family:var(--sans)!important}
 #login-screen label{font-size:13px!important;text-transform:none!important;letter-spacing:0!important;color:var(--tinta-suave)!important;font-weight:600!important}
 #login-screen input{border-radius:12px!important;border:1px solid var(--linha)!important;padding:13px 14px!important;font-size:16px!important}
 #login-screen input:focus{outline:none;border-color:var(--vinho)!important;box-shadow:0 0 0 3px rgba(90,21,36,.12)}
-#login-btn{border-radius:999px!important;padding:14px!important;font-size:15px!important;font-weight:600!important;box-shadow:0 6px 18px rgba(90,21,36,.22)}
+#login-btn,#senha-btn{border-radius:999px!important;padding:14px!important;font-size:15px!important;font-weight:600!important;box-shadow:0 6px 18px rgba(90,21,36,.22)}
 
 /* ─── Cabeçalho ─── */
 .site-header{background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--linha);position:sticky;top:0;z-index:200}
