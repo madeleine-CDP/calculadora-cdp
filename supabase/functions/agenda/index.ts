@@ -47,6 +47,15 @@ async function pessoaDaEquipe(req: Request) {
 
 // Chama a ponte (Apps Script). O Google responde com um redirecionamento, que o fetch segue sozinho.
 async function ponte(corpo: Record<string, unknown>) {
+  try { return await ponte1(corpo); }
+  catch (e) {
+    // O Google às vezes falha uma vez (ex.: logo depois de uma nova implantação): tenta de novo
+    if ((e as Error).message !== "ponte_indisponivel") throw e;
+    await new Promise((r) => setTimeout(r, 800));
+    return await ponte1(corpo);
+  }
+}
+async function ponte1(corpo: Record<string, unknown>) {
   const r = await fetch(AGENDA_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },

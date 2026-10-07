@@ -23,19 +23,27 @@ async function agendaChamar(rota, corpo){
 }
 
 // "[A CONFIRMAR] C/J - Instalação - Maria Souza (Boa Viagem)" → partes
+// Palavras que abrem um "tipo" de compromisso (para títulos fora do padrão completo)
+const AG_TIPOS = /^(visita|instala|manuten|entrega|retir|lavagem|buscar|levar|concluir|verificar|desinstal|passar|medi)/i;
 function lerTitulo(t){
   let s = String(t || '').trim();
-  const aConfirmar = /\[\s*a\s*confirmar\s*\]/i.test(s);
-  s = s.replace(/\[\s*a\s*confirmar\s*\]/ig, '').trim();
-  const partes = s.split(/\s+[-–—]\s+/);
+  // Observações entre colchetes em qualquer lugar: [A CONFIRMAR], [REAGENDAR], [ÀS 9H ...]
+  const tags = [];
+  s = s.replace(/\[([^\]]*)\]/g, (_, x) => { x = x.trim(); if(x) tags.push(x); return ' '; }).replace(/\s{2,}/g, ' ').trim();
+  const aConfirmar = tags.some(x => /^a\s*confirmar$/i.test(x));
+  const reagendar = tags.some(x => /^reagendar$/i.test(x));
+  const obs = tags.filter(x => !/^(a\s*confirmar|reagendar)$/i.test(x));
   let execs = [], tipo = '', cliente = s, bairro = '';
-  if(partes.length >= 3 && /^[CMJ?](\s*[\/+,]\s*[CMJ?])*$/i.test(partes[0].trim())){
-    execs = partes[0].toUpperCase().split(/\s*[\/+,]\s*/).filter(Boolean);
-    tipo = partes[1].trim();
-    cliente = partes.slice(2).join(' - ').trim();
-  } else if(partes.length >= 2 && /^[CMJ?](\s*[\/+,]\s*[CMJ?])*$/i.test(partes[0].trim())){
-    execs = partes[0].toUpperCase().split(/\s*[\/+,]\s*/).filter(Boolean);
-    cliente = partes.slice(1).join(' - ').trim();
+  // Executor no começo: "C - ", "M- ", "C/M - ", "M-Fulano" (traço com ou sem espaço)
+  const m0 = s.match(/^([CMJB?](?:\s*[\/+,]\s*[CMJB?])*)\s*[-–—]\s*(.*)$/i);
+  if(m0){
+    execs = m0[1].toUpperCase().split(/\s*[\/+,]\s*/).filter(Boolean);
+    const partes = m0[2].split(/\s*[-–—]\s+|\s+[-–—]\s*/).map(x => x.trim()).filter(Boolean);
+    if(partes.length >= 2){ tipo = partes[0]; cliente = partes.slice(1).join(' - '); }
+    else if(partes[0] && AG_TIPOS.test(partes[0])){ tipo = partes[0]; cliente = ''; }
+    else { cliente = partes[0] || ''; }
+  } else if(/^feriado\b/i.test(s)){
+    tipo = 'Feriado'; cliente = s.replace(/^feriado\s*[-–—:]?\s*/i, '');
   }
   if(!execs.length){   // ex.: "Entrega Jones" (evento-par do SOP)
     if(/\bjones\b/i.test(s)) execs.push('J'); if(/c[íi]cero/i.test(s)) execs.push('C'); if(/madeleine/i.test(s)) execs.push('M');
@@ -43,7 +51,7 @@ function lerTitulo(t){
   }
   const m = cliente.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
   if(m){ cliente = m[1].trim(); bairro = m[2].trim(); }
-  return { aConfirmar, execs, tipo, cliente, bairro };
+  return { aConfirmar, reagendar, obs, execs, tipo, cliente, bairro };
 }
 function itensDaDescricao(d){
   const m = String(d || '').match(/itens\s*:\s*([^\n]+)/i);
@@ -133,7 +141,9 @@ function cardEvento(ev){
         ${(p.execs.length ? p.execs : ['?']).map(x => `<span class="ag-exec" title="${escHtml(EXECUTORES[x] || x)}">${escHtml(EXECUTORES[x] || x)}</span>`).join('')}
         ${p.tipo ? `<span class="ag-tipo">${escHtml(p.tipo)}</span>` : ''}
         ${p.aConfirmar ? '<span class="ag-conf">A confirmar</span>' : ''}
+        ${p.reagendar ? '<span class="ag-conf">Reagendar</span>' : ''}
       </div>
+      ${(p.obs || []).length ? `<div class="ag-obs">${p.obs.map(escHtml).join(' · ')}</div>` : ''}
       <strong>${escHtml(p.cliente || ev.titulo || '(sem título)')}</strong>
       <div class="ag-meta">${[p.bairro, ev.local && ev.local !== p.bairro ? ev.local : ''].filter(Boolean).map(escHtml).join(' · ')}</div>
       ${itens ? `<div class="ag-itens"><b>Itens:</b> ${escHtml(itens)}</div>` : ''}
