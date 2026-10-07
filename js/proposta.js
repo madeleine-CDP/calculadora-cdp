@@ -82,7 +82,7 @@ function fielAoWord(html){
   // 2) faixas com o logo entre as seções, como no Word
   const m = h.match(/<!-- LOGO TOPO -->\s*(<div[^>]*>\s*<img[^>]*>\s*<\/div>)/);
   if(m){
-    const faixa = m[1].replace(/margin:-32px -40px 24px -40px/, 'margin:26px 0 18px 0');
+    const faixa = m[1].replace(/margin:-32px -40px 24px -40px/, 'margin:26px 0 18px 0').replace('<div ', '<div class="pp-logo" ');
     ['<!-- PRODUTOS & SERVIÇOS -->', '<!-- INVESTIMENTO & VALORES -->', '<!-- A JORNADA COMPLETA -->', '<!-- OBSERVAÇÕES IMPORTANTES -->']
       .forEach(marca => { h = h.replace(marca, marca + '\n' + faixa); });
   }

@@ -152,22 +152,21 @@ function ambientesListaProposta(itens){
 
 // Quadro "Valor total da proposta": uma linha (como hoje) ou uma linha por combinação
 function quadroTotaisProposta(itens, somaTabela, somaCartao, somaAvista){
-  const cab = `<tr>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px">🏷️PREÇO TABELA</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#EBF2F9">💳PREÇO CARTÃO</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#E8F3E1">💵PREÇO À VISTA</td>
-            </tr>`;
-  const linha = (t, rot) => `${rot ? `<tr><td colspan="3" style="padding:6px 10px;border:1px solid #DDD;background:#F2F2F2;font-size:10.5px;font-weight:700;color:#5B3E3B;text-align:left">${rot}</td></tr>` : ''}
+  const GILL = "'Gill Sans MT','Gill Sans',Poppins,sans-serif";
+  const th = (em, nome, bg) => `<td style="padding:6px;text-align:center;border:1px solid #DDD;background:${bg};font-family:${GILL};font-size:13.5px;color:#7A7268;line-height:1.25"><div style="font-size:13.5px">${em}</div>PREÇO<br><b>${nome}</b></td>`;
+  const cab = `<tr>${th('🏷️','TABELA','#FFFFFF')}${th('💳','CARTÃO','#EBF2F9')}${th('💵','À VISTA','#E8F3E1')}</tr>`;
+  const val = 'padding:12px 8px;text-align:center;border:1px solid #DDD;font-family:Poppins,sans-serif;font-size:15px;white-space:nowrap';
+  const linha = (t, rot) => `${rot ? `<tr><td colspan="3" style="padding:6px 10px;border:1px solid #DDD;background:#F2F2F2;font-family:Poppins,sans-serif;font-size:10.5px;font-weight:700;color:#5B3E3B;text-align:left">${rot}</td></tr>` : ''}
             <tr>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;color:#C0392B;text-decoration:line-through;white-space:nowrap">${fmtCent(t.tabela)}</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-weight:700;background:#EBF2F9;white-space:nowrap">${fmtCent(t.cartao)}</td>
-              <td style="padding:8px;text-align:center;border:1px solid #DDD;font-weight:700;background:#E8F3E1;white-space:nowrap">${fmtCent(t.avista)}</td>
+              <td style="${val};color:#7A7268;text-decoration:line-through">${fmtCent(t.tabela)}</td>
+              <td style="${val};font-weight:700;color:#3B3838;background:#EBF2F9">${fmtCent(t.cartao)}</td>
+              <td style="${val};font-weight:700;color:#3B3838;background:#E8F3E1">${fmtCent(t.avista)}</td>
             </tr>`;
   if(!temAlternativas(itens)){
-    return `<table style="width:100%;border-collapse:collapse;font-size:12px">${cab}${linha({ tabela: somaTabela, cartao: somaCartao, avista: somaAvista })}</table>`;
+    return `<table style="width:100%;border-collapse:collapse">${cab}${linha({ tabela: somaTabela, cartao: somaCartao, avista: somaAvista })}</table>`;
   }
   const combos = combosEscolhidos(itens);
-  return `<table style="width:100%;border-collapse:collapse;font-size:12px">${cab}${combos.map((c, n) => {
+  return `<table style="width:100%;border-collapse:collapse">${cab}${combos.map((c, n) => {
       const nome = (COMBOS_NOMES[c.chave] || '').trim();
       const rot = (nome ? escHtml(nome.toUpperCase()) + ' · ' : 'OPÇÃO DE TOTAL ' + (n + 1) + ' · ') + escHtml(c.rotulo.toUpperCase());
       return linha(c.totais, rot);

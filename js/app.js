@@ -2378,6 +2378,28 @@ function gerarProposta(){
   const somaAvista = items.reduce((s,i)=>s+(i.avista||0),0);
   const ambientesLista = [...new Set(items.map(i=>(i.label||i.ambiente||'Item').toUpperCase()))].join(', ');
 
+  // Estilos copiados do modelo do Word (fontes, cores, negritos). Tamanho em px ≈ pt do Word × 0,85.
+  const F_GAR = "Garamond,'EB Garamond',serif", F_GILL = "'Gill Sans MT','Gill Sans',Poppins,sans-serif", F_POP = "Poppins,sans-serif", F_MONT = "Montserrat,Poppins,sans-serif";
+  const C_TIT = 'background:#F2F2F2;padding:6px 10px;margin-bottom:6px;border-bottom:1.5px solid #7A7268';
+  const C_TIT_TXT = `font-family:${F_GAR};font-size:25px;font-weight:700;color:#5B3E3B`;
+  const C_SUB = `font-family:${F_GAR};font-size:19px;color:#7A7268;margin-bottom:14px`;
+  const C_ROT = `padding:6px 10px;border:1px solid #DDD;background:#F2F2F2;font-family:${F_GILL};font-weight:700;font-size:13px;color:#7A7268`;
+  const C_ROT_C = C_ROT + ';text-align:center;font-size:14px';
+  const C_VAL = `padding:7px 10px;border:1px solid #DDD;font-family:${F_GAR};font-size:13.5px;color:#3B3838;text-align:justify`;
+  const C_DADO = `padding:8px 10px;border:1px solid #DDD;text-align:center;font-family:${F_POP};font-weight:700;font-size:13px;color:#404040`;
+  const C_TH = `padding:8px 6px;text-align:center;vertical-align:middle;border:1px solid #DDD;background:#F2F2F2;font-family:${F_GILL};font-weight:700;font-size:12px;color:#7A7268`;
+  const C_CAIXA = 'display:grid;grid-template-columns:110px 1fr;border:1px solid #CFC9C2';
+  const C_CAIXA_IC = 'background:#F2F2F2;display:flex;align-items:center;justify-content:center;font-size:34px;border-right:1px solid #CFC9C2';
+  const C_CAIXA_TXT = `font-family:${F_POP};font-size:10.5px;color:#7A7268;line-height:1.9;padding:10px 14px`;
+  const C_BOTAO = `flex:1;min-width:150px;text-align:center;border:1px solid #CFC9C2;color:#7A7268;text-decoration:none;padding:10px 12px;font-family:${F_GILL};font-weight:700;font-size:13.5px`;
+  const C_PASSO = 'display:grid;grid-template-columns:90px 1fr;gap:6px';
+  const C_PASSO_N = 'background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:19px';
+  const C_PASSO_ROT = `background:#F2F2F2;font-family:${F_GAR};font-weight:700;font-size:11px;color:#7A7268;padding:1px 4px`;
+  const C_PASSO_TIT = `font-family:${F_POP};font-size:15px;color:#BF8F00;margin:2px 0`;
+  const C_PASSO_TXT = `font-family:${F_POP};font-size:10.5px;color:#3B3838;line-height:1.65`;
+  const C_OBS_SEC = `font-family:${F_POP};font-weight:700;font-size:12px;color:#7A7268;margin-top:4px`;
+  const C_OBS = 'padding:4px 0 6px;border-bottom:1px solid #EEE;margin-bottom:4px';
+
   const doc = `
   <div id="proposta-print" style="background:#fff;font-family:Poppins,'Gill Sans MT','Gill Sans',sans-serif;color:#3B3838;max-width:900px;margin:0 auto;box-shadow:0 2px 40px rgba(0,0,0,.12);border-radius:8px;overflow:hidden">
 
@@ -2394,330 +2416,298 @@ function gerarProposta(){
       </div>
 
       <!-- NOSSA PROPOSTA -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">NOSSA <i>PROPOSTA</i></span>
+      <div style="background:#F2F2F2;border-left:3px solid #7A7268;padding:12px 14px;margin-bottom:22px">
+        <div style="font-family:${F_MONT};font-size:14.5px;font-weight:700;color:#5B3E3B;margin-bottom:6px">NOSSA <i>PROPOSTA</i></div>
+        <div style="font-family:${F_GAR};font-size:13.5px;line-height:1.5;color:#382624;text-align:justify;text-indent:8px">Um ambiente bem planejado se destaca pelos <i>detalhes</i>. <b>Cortinas e persianas transformam espaços, equilibrando iluminação, conforto e sofisticação.</b></div>
+        <div style="font-family:${F_GAR};font-size:13.5px;line-height:1.5;color:#382624;text-align:justify;text-indent:8px">Na <b>Central das Persianas</b>, oferecemos <i>soluções sob medida</i> com uma variedade de modelos e coleções que valorizam cada ambiente. Nesta <i>proposta única</i>, apresentamos opções pensadas especialmente para o <b>seu espaço</b>, considerando suas preferências e especificações.</div>
       </div>
-      <div style="font-size:12.5px;line-height:1.7;color:#7A7268;margin-bottom:8px">Um ambiente bem planejado se destaca pelos <i>detalhes</i>. <strong>Cortinas e persianas transformam espaços, equilibrando iluminação, conforto e sofisticação.</strong></div>
-      <div style="font-size:12.5px;line-height:1.7;color:#7A7268;margin-bottom:20px">Na <strong>Central das Persianas</strong>, oferecemos <i>soluções sob medida</i> com uma variedade de modelos e coleções que valorizam cada ambiente. Nesta <i>proposta única</i>, apresentamos opções pensadas especialmente para o <strong>seu espaço</strong>, considerando suas preferências e especificações.</div>
 
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:24px;margin-bottom:6px">Olá, <span style="color:#BF8F00;font-weight:700;font-style:italic">${nome}</span></div>
-      <div style="font-size:12.5px;color:#7A7268;margin-bottom:20px">Preparamos esta proposta pensando especialmente no <strong>seu espaço</strong> e nas suas <strong>preferências</strong>!</div>
+      <div style="background:#F2F2F2;border-bottom:1.5px solid #7A7268;padding:6px 12px;margin-bottom:6px;font-family:${F_GAR};font-size:25px;color:#5B3E3B">Olá, <span style="color:#BF8F00;font-weight:700;font-style:italic">${nome}</span></div>
+      <div style="font-family:${F_GAR};font-size:17px;color:#7A7268;margin-bottom:20px">Preparamos esta proposta pensando especialmente no <b><i>seu espaço</i></b> e <b><i>nas suas preferências</i></b>!</div>
 
       <!-- DADOS DO CLIENTE -->
-      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12.5px">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
         <tr>
-          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">⭐ CLIENTE:</td>
-          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">🪪 CPF/CNPJ:</td>
+          <td style="${C_ROT};width:50%">⭐ CLIENTE:</td>
+          <td style="${C_ROT};width:50%">🪪 CPF/CNPJ:</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD">${nome}</td>
-          <td style="padding:7px 10px;border:1px solid #DDD">${cpf}</td>
+          <td style="${C_VAL}">${nome}</td>
+          <td style="${C_VAL}">${cpf}</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">☎️ TELEFONE:</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">✉️ E-MAIL:</td>
+          <td style="${C_ROT}">☎️ TELEFONE:</td>
+          <td style="${C_ROT}">✉️ E-MAIL:</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD">${tel}</td>
-          <td style="padding:7px 10px;border:1px solid #DDD">${email}</td>
+          <td style="${C_VAL}">${tel}</td>
+          <td style="${C_VAL}">${email}</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">📍 ENDEREÇO:</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;color:#3B3838;font-size:11px">👤 CONTATO:</td>
+          <td style="${C_ROT}">📍 ENDEREÇO:</td>
+          <td style="${C_ROT}">👤 CONTATO:</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD">${end}</td>
-          <td style="padding:7px 10px;border:1px solid #DDD">${contato}</td>
+          <td style="${C_VAL}">${end}</td>
+          <td style="${C_VAL}">${contato}</td>
         </tr>
       </table>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:24px;font-size:12px">
         <div style="border:1px solid #DDD;border-right:none">
-          <div style="background:#F2F2F2;padding:7px 10px;font-weight:700;font-size:11px">💻 SITE:</div>
+          <div style="${C_ROT};background:#EDEDED;border:none">💻 SITE:</div>
           <div style="padding:10px">${site==='—' ? '<span style="color:#999">—</span>' : `<a href="${site.startsWith('http')?site:'https://'+site}" style="color:#5A1524;text-decoration:none;font-weight:700">${site}</a>`}</div>
         </div>
         <div style="border:1px solid #DDD">
-          <div style="background:#F2F2F2;padding:7px 10px;font-weight:700;font-size:11px">📱 INSTAGRAM:</div>
+          <div style="${C_ROT};background:#EDEDED;border:none">📲 INSTAGRAM:</div>
           <div style="padding:10px">${insta==='—' ? '<span style="color:#999">—</span>' : `<a href="https://instagram.com/${insta.replace('@','')}" style="color:#5A1524;text-decoration:none;font-weight:700">${insta}</a>`}</div>
         </div>
       </div>
 
       <!-- DATA / VALIDADE / TIPO -->
-      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:12.5px">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">📝 PROPOSTA</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">🗓️ DATA</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">⏳ VALIDADE</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">🔘 TIPO</td>
+          <td style="${C_ROT_C}">📝 PROPOSTA</td>
+          <td style="${C_ROT_C}">🗓️ DATA</td>
+          <td style="${C_ROT_C}">⏳ VALIDADE</td>
+          <td style="${C_ROT_C}">🔘 TIPO</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;font-weight:700;color:#BF8F00">${numeroDaProposta()}</td>
-          <td style="padding:7px 10px;border:1px solid #DDD">${hoje}</td>
-          <td style="padding:7px 10px;border:1px solid #DDD">${validade}</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;color:#BF8F00;font-weight:700">${tipoLabel}</td>
+          <td style="${C_DADO}">${numeroDaProposta()}</td>
+          <td style="${C_DADO}">${hoje}</td>
+          <td style="${C_DADO}">${validade}</td>
+          <td style="${C_DADO};color:#BF8F00">${isPos ? 'PÓS-VISITA' : tipo}${isPos && dataVisita ? `<div style="font-size:9.5px;font-weight:700;color:#BF8F00">(visita técnica realizada em ${dataVisita})</div>` : ''}</td>
         </tr>
       </table>
 
       <!-- PRODUTOS & SERVIÇOS -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Produtos <span style="color:#BF8F00;font-weight:400">&amp;</span> Serviços</span>
-      </div>
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Nossa <b><i>proposta</i></b> para <b><i>sofisticar</i></b> o seu ambiente:</div>
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">Produtos <span style="color:#BF8F00;font-weight:400">&amp;</span> Serviços</span></div>
+      <div class="pp-sub" style="${C_SUB}">Nossa <b><i>proposta</i></b> para <b><i>sofisticar o seu ambiente</i></b>:</div>
 
-      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:11.5px">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-family:${F_POP};color:#3B3838">
         <thead>
-          <tr style="background:#F2F2F2">
-            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">AMBIENTE</th>
-            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">MODELO E<br>COLEÇÃO</th>
-            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">DETALHAMENTO</th>
-            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">QUANTIDADE</th>
-            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px">🏷️PREÇO<br>TABELA</th>
-            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#EBF2F9">💳PREÇO<br>CARTÃO</th>
-            <th style="padding:10px 8px;text-align:center;border:1px solid #DDD;font-size:10px;background:#E8F3E1">💵PREÇO<br>À VISTA</th>
+          <tr>
+            <th style="${C_TH}">AMBIENTE</th>
+            <th style="${C_TH}">MODELO E<br>COLEÇÃO</th>
+            <th style="${C_TH}">DETALHAMENTO</th>
+            <th style="${C_TH};font-size:10px">QUANTIDADE</th>
+            <th style="${C_TH}"><div style="font-size:15px;font-weight:400">🏷️</div><span style="font-weight:400;font-size:11px">PREÇO</span><br>TABELA</th>
+            <th style="${C_TH}"><div style="font-size:15px;font-weight:400">💳</div><span style="font-weight:400;font-size:11px">PREÇO</span><br>CARTÃO</th>
+            <th style="${C_TH}"><div style="font-size:15px;font-weight:400">💵</div><span style="font-weight:400;font-size:11px">PREÇO</span><br>À VISTA</th>
           </tr>
         </thead>
         <tbody>
           ${ordenarPorAmbiente(items).map((item,idx) => `
           <tr>
-            <td style="padding:10px 8px;border:1px solid #DDD;font-weight:700;text-align:center;vertical-align:middle;font-size:10px;text-transform:uppercase">${rotuloItemProposta(item)}</td>
-            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle">${fabName(item.fab)} ${item.prod||''} ${item.fam||''}${item.col?' '+item.col:''}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;font-weight:700;text-align:center;vertical-align:middle;font-size:9.5px;text-transform:uppercase">${rotuloItemProposta(item)}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;text-align:left;vertical-align:middle;font-size:10.5px;text-transform:uppercase">${fabName(item.fab)} ${item.prod||''} ${item.fam||''}${item.col?' '+item.col:''}</td>
             <td style="padding:8px 8px;border:1px solid #DDD;line-height:1.45;text-align:left;vertical-align:middle;font-size:9.5px;text-transform:uppercase">${item.detail||detail||'—'}${item.foraDoPadrao?`<br><span style="color:#B54708;font-size:10.5px">⚠️ Medida fora do padrão de fabricação — provavelmente fora da garantia de fábrica.</span>`:''}</td>
-            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle">${item.qty||1}</td>
-            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle;color:#C0392B;text-decoration:line-through;white-space:nowrap">${fmtCent(item.tabela)}</td>
-            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;font-weight:700;vertical-align:middle;background:#EBF2F9;white-space:nowrap">${fmtCent(item.cartao)}</td>
-            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;font-weight:700;vertical-align:middle;background:#E8F3E1;white-space:nowrap">${fmtCent(item.avista)}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle;font-size:11.5px">${item.qty||1}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle;font-size:11.5px;text-decoration:line-through;white-space:nowrap">${fmtCent(item.tabela)}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle;font-size:11.5px;font-weight:700;background:#EBF2F9;white-space:nowrap">${fmtCent(item.cartao)}</td>
+            <td style="padding:10px 8px;border:1px solid #DDD;text-align:center;vertical-align:middle;font-size:11.5px;font-weight:700;background:#E8F3E1;white-space:nowrap">${fmtCent(item.avista)}</td>
           </tr>`).join('')}
         </tbody>
       </table>
 
       <!-- CONDIÇÕES -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Condições especiais</span>
-      </div>
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Descontos abaixo <b><i>já aplicados</i></b>!</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div style="border:1px solid #DDD;border-radius:6px;overflow:hidden">
-          <div style="background:#F2F2F2;padding:8px;text-align:center;font-weight:700;font-size:12px">À VISTA · PIX</div>
-          <div style="display:flex;align-items:center;gap:12px;padding:14px">
-            <div style="font-size:22px">💵</div>
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">Condições especiais</span></div>
+      <div class="pp-sub" style="${C_SUB}">Descontos abaixo <b><i>já aplicados</i></b><i>!</i></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:10px;font-family:${F_POP};color:#7A7268">
+        <div style="border:1px solid #CFC9C2">
+          <div style="background:#F2F2F2;padding:6px;text-align:center;font-family:${F_GILL};font-weight:700;font-size:15px;color:#7A7268;border-bottom:1px solid #CFC9C2">À VISTA · PIX</div>
+          <div style="display:grid;grid-template-columns:90px 1fr">
+            <div style="background:#F2F2F2;display:flex;align-items:center;justify-content:center;font-size:34px;border-right:1px solid #CFC9C2">💵</div>
             <div>
-              <div style="font-size:26px;font-weight:700;color:#3B3838">15%</div>
-              <div style="font-size:10.5px;color:#666;line-height:1.5">50% de entrada + 50% 1 dia antes da instalação<br>Banco do Brasil (001) · Agência 1837-6 · CC 121800-0<br>PIX CNPJ: 11.360.869/0001-63</div>
+              <div style="background:#E2EFD9;text-align:center;font-size:21px;font-weight:700;padding:4px">15%</div>
+              <div style="font-size:10.5px;line-height:1.6;padding:6px 8px"><b>50% de entrada +<br>50% 1 dia antes da instalação</b><div style="margin-top:6px">Banco do Brasil (001) · Agência 1837-6 · CC 121800-0</div><div style="margin-top:6px">PIX CNPJ: 11.360.869/0001-63</div></div>
             </div>
           </div>
         </div>
-        <div style="border:1px solid #DDD;border-radius:6px;overflow:hidden">
-          <div style="background:#F2F2F2;padding:8px;text-align:center;font-weight:700;font-size:12px">CARTÃO DE CRÉDITO</div>
-          <div style="display:flex;align-items:center;gap:12px;padding:14px">
-            <div style="font-size:22px">💳</div>
+        <div style="border:1px solid #CFC9C2">
+          <div style="background:#F2F2F2;padding:6px;text-align:center;font-family:${F_GILL};font-weight:700;font-size:15px;color:#7A7268;border-bottom:1px solid #CFC9C2">CARTÃO DE CRÉDITO</div>
+          <div style="display:grid;grid-template-columns:90px 1fr">
+            <div style="background:#F2F2F2;display:flex;align-items:center;justify-content:center;font-size:34px;border-right:1px solid #CFC9C2">💳</div>
             <div>
-              <div style="font-size:26px;font-weight:700;color:#3B3838">5%</div>
-              <div style="font-size:10.5px;color:#666;line-height:1.5">100% do valor na entrada<br>Em até 8x sem juros.<br>Bandeiras: Visa, Master, Elo, Amex.</div>
+              <div style="background:#DEEAF6;text-align:center;font-size:21px;font-weight:700;padding:4px">5%</div>
+              <div style="font-size:10.5px;line-height:1.6;padding:6px 8px"><b>100% do valor na entrada</b><div style="margin-top:6px">Em até 8x sem juros.</div><div style="margin-top:6px">Bandeiras: Visa, Master, Elo, Amex.</div></div>
             </div>
           </div>
         </div>
       </div>
-      <div style="border:1px solid #F0D08A;background:#FFF1C9;border-radius:6px;padding:10px 14px;font-size:11px;color:#7A5A00;margin-bottom:28px">⚠️ <u>OBS.:</u> Os descontos já foram aplicados sobre o valor inicial de tabela e estão refletidos nos preços apresentados acima.</div>
+      <div style="background:#F2F2F2;border:1px solid #CFC9C2;padding:8px 12px;text-align:center;font-family:${F_POP};font-size:10.5px;font-weight:700;font-style:italic;color:#7A7268;margin-bottom:28px">⚠️ <u>OBS.: Os descontos já foram aplicados sobre o valor inicial de tabela e estão refletidos nos preços apresentados acima.</u></div>
 
       <!-- INVESTIMENTO & VALORES -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Investimento <span style="color:#BF8F00;font-weight:400">&amp;</span> Valores</span>
-      </div>
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">O investimento inclui todos os <b><i>benefícios</i></b>:</div>
-      <div style="display:flex;gap:16px;border:1px solid #DDD;border-radius:6px;padding:16px;margin-bottom:20px">
-        <div style="font-size:34px;flex-shrink:0">🎁</div>
-        <div style="font-size:12px;color:#7A7268;line-height:1.9">
-          <div><strong>01. Consultoria</strong> especializada e personalizada — para definirmos juntos a melhor opção para o seu ambiente;</div>
-          <div><strong>02. Visita técnica</strong> gratuita e sem compromisso;</div>
-          <div><strong>03. Soluções em cortinas e persianas</strong> sob medida e serviços especializados;</div>
-          <div><strong>04. Entrega e instalação</strong> profissional;</div>
-          <div><strong>05. Cobertura</strong> em garantia.</div>
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">Investimento <span style="color:#BF8F00;font-weight:400">&amp;</span> Valores</span></div>
+      <div class="pp-sub" style="${C_SUB}">O investimento inclui todos os <b><i>benefícios</i></b>:</div>
+      <div class="pp-caixa" style="${C_CAIXA};margin-bottom:28px">
+        <div style="${C_CAIXA_IC}">🎁</div>
+        <div style="${C_CAIXA_TXT}">
+          <div><b>01. Consultoria</b> especializada e personalizada — para definirmos juntos a melhor opção para o seu ambiente;</div>
+          <div><b>02. Visita técnica</b> gratuita e sem compromisso;</div>
+          <div><b>03. Soluções em cortinas e persianas</b> sob medida e serviços especializados;</div>
+          <div><b>04. Entrega e instalação</b> profissional;</div>
+          <div><b>05. Cobertura</b> em garantia.</div>
         </div>
       </div>
 
       <!-- VALOR TOTAL DA PROPOSTA -->
-      <div style="display:grid;grid-template-columns:150px 1fr;border:1px solid #7A7268;border-radius:6px;overflow:hidden;margin-bottom:24px">
-        <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-family:Garamond,'EB Garamond',serif;font-size:17px;font-weight:700">VALOR TOTAL DA PROPOSTA</div>
+      <div class="pp-total" style="display:grid;grid-template-columns:110px 1fr;border:1px solid #7A7268;margin-bottom:28px">
+        <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;font-family:${F_GILL};font-size:16px;line-height:1.3"><div>VALOR<br><b>TOTAL DA PROPOSTA</b></div></div>
         <div>
-          <div style="background:#7A7268;color:#FFF;padding:8px 14px;font-size:11px;font-weight:700;text-align:center">AMBIENTES E OPÇÕES: ${ambientesListaProposta(items)}</div>
+          <div style="background:#7A7268;color:#FFF;padding:8px 10px;font-family:${F_POP};text-align:left"><div style="font-size:12px;font-weight:700">AMBIENTES E OPÇÕES:</div><div style="font-size:11px">${ambientesListaProposta(items)}</div></div>
           ${quadroTotaisProposta(items, somaTabela, somaCartao, somaAvista)}
         </div>
       </div>
 
       <!-- CTA -->
-      <div style="background:#F2F2F2;padding:10px 14px;margin-bottom:6px">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Vamos <i style="color:#BF8F00">transformar</i> o seu ambiente?</span>
-      </div>
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Escolha abaixo como prefere continuar:</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px">
-        <a href="https://wa.me/${WA}?text=${waMsgFechar}" style="flex:1;min-width:160px;text-align:center;background:#E8F3E1;border:1px solid #BFE0BA;color:#2E7D52;text-decoration:none;padding:14px 12px;border-radius:6px;font-weight:700;font-size:12.5px">✅ FECHAR A COMPRA!</a>
-        ${!isPos ? `<a href="https://wa.me/${WA}?text=${waMsgAgendar}" style="flex:1;min-width:160px;text-align:center;background:#EBF2F9;border:1px solid #B9CDE8;color:#2C4D7A;text-decoration:none;padding:14px 12px;border-radius:6px;font-weight:700;font-size:12.5px">🗓️ AGENDAR VISITA TÉCNICA!</a>` : ''}
-        <a href="https://wa.me/${WA}?text=${waMsgDuvidas}" style="flex:1;min-width:160px;text-align:center;background:#F2F2F2;border:1px solid #DDD;color:#7A7268;text-decoration:none;padding:14px 12px;border-radius:6px;font-weight:700;font-size:12.5px">💬 TIRAR DÚVIDAS!</a>
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">Vamos <span style="color:#BF8F00">transformar</span> o seu ambiente?</span></div>
+      <div class="pp-sub" style="${C_SUB}"><b><i>Escolha abaixo como prefere continuar:</i></b></div>
+      <div style="display:flex;gap:22px;flex-wrap:wrap;margin-bottom:28px">
+        <a href="https://wa.me/${WA}?text=${waMsgFechar}" style="${C_BOTAO};background:#E8F3E1"><div style="font-size:21px">✅</div><u>FECHAR A COMPRA!</u></a>
+        ${!isPos ? `<a href="https://wa.me/${WA}?text=${waMsgAgendar}" style="${C_BOTAO};background:#EBF2F9"><div style="font-size:21px">🗓️</div><u>AGENDAR VISITA TÉCNICA!</u></a>` : ''}
+        <a href="https://wa.me/${WA}?text=${waMsgDuvidas}" style="${C_BOTAO};background:#F2F2F2"><div style="font-size:21px">💬</div><u>TIRAR DÚVIDAS!</u></a>
       </div>
 
       <!-- ENTREGA & INSTALAÇÃO -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Entrega <span style="color:#BF8F00;font-weight:400">&amp;</span> Instalação</span>
-      </div>
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Nossos <b><i>prazos</i></b> para <b><i>sofisticar</i></b> o seu ambiente:</div>
-      <div style="display:flex;gap:16px;border:1px solid #DDD;border-radius:6px;padding:16px;margin-bottom:20px">
-        <div style="font-size:34px;flex-shrink:0">🚚</div>
-        <div style="font-size:12px;color:#7A7268;line-height:1.9">
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">Entrega <span style="color:#BF8F00;font-weight:400">&amp;</span> Instalação</span></div>
+      <div class="pp-sub" style="${C_SUB}">Nossos <b><i>prazos</i></b> para <b><i>sofisticar o seu ambiente</i></b>:</div>
+      <div class="pp-caixa" style="${C_CAIXA};margin-bottom:28px">
+        <div style="${C_CAIXA_IC}">🚚</div>
+        <div style="${C_CAIXA_TXT}">
           <div style="font-weight:700">ENTREGA E INSTALAÇÃO INCLUSAS!</div>
-          <div><strong>01. Novas cortinas e persianas:</strong> em até 12 dias úteis!</div>
-          <div><strong>02. Serviços:</strong> em até 5 dias úteis!</div>
+          <div><b>01. Novas cortinas e persianas:</b> em até 12 dias úteis!</div>
+          <div><b>02. Serviços:</b> em até 5 dias úteis!</div>
         </div>
       </div>
 
       <!-- COBERTURA & GARANTIA -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Cobertura <span style="color:#BF8F00;font-weight:400">&amp;</span> Garantia</span>
-      </div>
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Nossas <b><i>coberturas</i></b> de garantia:</div>
-      <div style="display:flex;gap:16px;border:1px solid #DDD;border-radius:6px;padding:16px;margin-bottom:28px">
-        <div style="font-size:34px;flex-shrink:0">💎</div>
-        <div style="font-size:12px;color:#7A7268;line-height:1.9">
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">Cobertura <span style="color:#BF8F00;font-weight:400">&amp;</span> Garantia</span></div>
+      <div class="pp-sub" style="${C_SUB}">Nossas <b><i>coberturas de garantia</i></b>:</div>
+      <div class="pp-caixa" style="${C_CAIXA};margin-bottom:28px">
+        <div style="${C_CAIXA_IC}">💎</div>
+        <div style="${C_CAIXA_TXT}">
           <div style="font-weight:700">GARANTIAS INCLUSAS!</div>
-          <div><strong>01. Novas cortinas e persianas:</strong> 1 ano (contra defeitos de fabricação)!</div>
-          <div><strong>02. Serviços:</strong> 3 meses!</div>
+          <div><b>01. Novas cortinas e persianas:</b> 1 ano (contra defeitos de fabricação)!</div>
+          <div><b>02. Serviços:</b> 3 meses!</div>
         </div>
       </div>
 
       <!-- A JORNADA COMPLETA -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">A <span style="color:#BF8F00">jornada</span> completa · Do início à <span style="color:#BF8F00">transformação</span></span>
-      </div>
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Como funciona <b><i>o passo-a-passo</i></b>:</div>
-      <div style="display:flex;flex-direction:column;gap:1px;margin-bottom:24px">
-        <div style="display:grid;grid-template-columns:56px 1fr;background:#FAF9F5">
-          <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">1</div>
-          <div style="padding:12px 16px">
-            <div style="font-size:10px;letter-spacing:1px;color:#999;font-weight:700">ANTES DO PEDIDO</div>
-            <div style="font-family:Garamond,'EB Garamond',serif;font-size:16px;color:#BF8F00;margin-bottom:4px">${isPos ? 'Visita <i>Técnica</i> (Realizada! ✅)' : 'Visita <i>Técnica</i>'}</div>
-            <div style="font-size:11.5px;color:#7A7268;line-height:1.6">${isPos
-              ? 'Nosso técnico esteve no seu espaço e conferiu as <strong>medidas ideais</strong>, apresentou os <strong>mostruários</strong> com os <strong>materiais disponíveis</strong> e tirou todas as dúvidas.<br>Após a visita já realizada, essa aqui é a nossa proposta <strong>exclusiva</strong> para você, <strong>mais assertiva e alinhada</strong> com a realidade do seu ambiente e suas preferências!'
-              : 'Nosso técnico vai até você para conferir as <strong>medidas ideais</strong>, apresentar os <strong>mostruários</strong> com os <strong>materiais disponíveis</strong> e <strong>tirar todas as suas dúvidas</strong>.<br><strong>Após a visita</strong>, conseguimos fornecer um orçamento <strong>mais assertivo e alinhado</strong> com a realidade do seu ambiente e suas preferências!'}</div>
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">A <span style="color:#BF8F00">jornada</span> completa · Do início à <span style="color:#BF8F00">transformação</span></span></div>
+      <div class="pp-sub" style="${C_SUB}">Como funciona <b><i>o passo-a-passo</i></b>:</div>
+      <div style="display:flex;flex-direction:column;gap:18px;margin-bottom:28px;font-family:${F_POP}">
+        <div class="pp-bloco" style="${C_PASSO}">
+          <div style="${C_PASSO_N}">1️⃣</div>
+          <div>
+            <div style="${C_PASSO_ROT}">ANTES DO PEDIDO</div>
+            <div style="${C_PASSO_TIT}">${isPos ? 'Visita Técnica (Realizada! ✅)' : 'Visita Técnica'}</div>
+            ${isPos
+              ? `<div style="${C_PASSO_TXT}"><b>Nosso técnico esteve no seu espaço</b> e conferiu as <b>medidas ideais</b>, apresentou os <b>mostruários</b> com os <b>materiais disponíveis</b> e <b>tirou todas as dúvidas</b>.</div>
+            <div style="${C_PASSO_TXT};background:#E2EFD9"><b>Após a visita já realizada</b>, essa aqui é a nossa <b>proposta exclusiva</b> para você, <b>mais assertiva e alinhada</b> com a realidade do seu ambiente e suas preferências!</div>`
+              : `<div style="${C_PASSO_TXT}"><b>Nosso técnico vai até você</b> para conferir as <b>medidas ideais</b>, apresentar os <b>mostruários</b> com os <b>materiais disponíveis</b> e <b>tirar todas as suas dúvidas</b>.</div>
+            <div style="${C_PASSO_TXT};background:#FFF1C9"><b>Após a visita</b>, conseguimos fornecer um orçamento <b>mais assertivo e alinhado</b> com a realidade do seu ambiente e suas preferências!</div>`}
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:56px 1fr;background:#FAF9F5">
-          <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">2</div>
-          <div style="padding:12px 16px">
-            <div style="font-size:10px;letter-spacing:1px;color:#999;font-weight:700">FORMALIZAÇÃO</div>
-            <div style="font-family:Garamond,'EB Garamond',serif;font-size:16px;color:#BF8F00;margin-bottom:4px">Ordem de Serviço <i>&</i> Pagamento</div>
-            <div style="font-size:11.5px;color:#7A7268;line-height:1.6">Montamos sua <strong>Ordem de Serviço</strong> com todos os dados e o <strong>detalhamento completo</strong> das soluções definidas por ambiente. Enviamos para sua conferência e confirmação, junto com a forma de pagamento desejada.<br>PIX: 50% de entrada + 50% restantes até 1 dia útil antes da instalação. Cartão: 100% do valor na entrada.</div>
+        <div class="pp-bloco" style="${C_PASSO}">
+          <div style="${C_PASSO_N}">2️⃣</div>
+          <div>
+            <div style="${C_PASSO_ROT}">FORMALIZAÇÃO</div>
+            <div style="${C_PASSO_TIT}">Ordem de Serviço &amp; <i>Pagamento</i></div>
+            <div style="${C_PASSO_TXT}">Montamos sua <b>Ordem de Serviço</b> com todos os <b>dados</b> e o <b>detalhamento completo</b> das soluções definidas por ambiente. Enviamos para sua <b>conferência e confirmação</b>, junto com a forma de pagamento desejada.</div>
+            <div style="${C_PASSO_TXT}">PIX: 50% de entrada + 50% restantes até 1 dia útil antes da instalação<br>Cartão: 100% do valor na entrada</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:56px 1fr;background:#FAF9F5">
-          <div style="background:#7A7268;color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">3</div>
-          <div style="padding:12px 16px">
-            <div style="font-size:10px;letter-spacing:1px;color:#999;font-weight:700">EXECUÇÃO</div>
-            <div style="font-family:Garamond,'EB Garamond',serif;font-size:16px;color:#BF8F00;margin-bottom:4px">Produção <i>&</i> Instalação</div>
-            <div style="font-size:11.5px;color:#7A7268;line-height:1.6">Com o <strong>pagamento confirmado</strong>, seu pedido segue para produção na fábrica! O prazo é de até <strong>12 dias úteis</strong> para novas e até <strong>5 dias úteis</strong> para serviços — e já deixamos uma data pré-agendada para entrega e instalação. <strong>Entrega e instalação profissional inclusas</strong> no investimento!</div>
+        <div class="pp-bloco" style="${C_PASSO}">
+          <div style="${C_PASSO_N}">3️⃣</div>
+          <div>
+            <div style="${C_PASSO_ROT}">EXECUÇÃO</div>
+            <div style="${C_PASSO_TIT}">Produção &amp; <i>Instalação</i></div>
+            <div style="${C_PASSO_TXT}">Com o <b>pagamento confirmado</b>, seu pedido <b>segue para produção</b> na fábrica! <b>O prazo é de até 12 dias úteis para novas e até 5 dias úteis para serviços</b> — e já deixamos uma data pré-agendada para entrega e instalação.</div>
+            <div style="${C_PASSO_TXT}"><b>Entrega e instalação profissional inclusas no investimento!</b></div>
           </div>
         </div>
       </div>
 
       <!-- LINKS ÚTEIS -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Links <span style="color:#BF8F00">úteis</span></span>
-      </div>
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px"><b><i>Explore</i></b> mais aqui:</div>
-      <div style="display:flex;gap:16px;border:1px solid #DDD;border-radius:6px;padding:16px;margin-bottom:28px">
-        <div style="font-size:34px;flex-shrink:0">🧭</div>
-        <div style="font-size:12px;color:#7A7268;line-height:1.8">
-          <div><strong>01. Catálogo completo:</strong> todos os tipos de materiais e coleções! Para acessar, clique: <a href="https://www.centraldaspersianas.com" style="color:#BF8F00;font-weight:700">▶️ aqui ◀️</a></div>
-          <div><strong>02. Inspirações por tipo de ambiente:</strong> opções para varanda, sala, quarto, cozinha e muito mais! Para acessar, clique: <a href="https://www.instagram.com/centraldaspersianas" style="color:#BF8F00;font-weight:700">▶️ aqui ◀️</a></div>
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">Links <span style="color:#BF8F00">úteis</span></span></div>
+      <div class="pp-sub" style="${C_SUB}"><b><i>Explore</i></b> mais aqui:</div>
+      <div class="pp-caixa" style="${C_CAIXA};margin-bottom:28px">
+        <div style="${C_CAIXA_IC}">🧭</div>
+        <div style="${C_CAIXA_TXT}">
+          <div><b>01. Catálogo completo:</b> todos os tipos de materiais e coleções!</div>
+          <div style="margin-bottom:8px">Para acessar, clique: <a href="https://www.centraldaspersianas.com" style="color:#BF8F00;font-weight:700;text-decoration:none">▶️ aqui ◀️</a></div>
+          <div><b>02. Inspirações por tipo de ambiente:</b> opções para varanda, sala, quarto, cozinha e muito mais!</div>
+          <div>Para acessar, clique: <a href="https://www.instagram.com/centraldaspersianas" style="color:#BF8F00;font-weight:700;text-decoration:none">▶️ aqui ◀️</a></div>
         </div>
       </div>
 
       <!-- SOBRE NÓS -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Sobre nós · CENTRAL DAS PERSIANAS</span>
-      </div>
-      <div style="font-family:Garamond,'EB Garamond',serif;font-size:19px;color:#7A7268;margin-bottom:14px">Nossos <b><i>dados e contatos</i></b>:</div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:28px;font-size:12px">
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">Sobre nós · CENTRAL DAS PERSIANAS</span></div>
+      <div class="pp-sub" style="${C_SUB}">Nossos <b><i>dados e contatos</i></b><i>:</i></div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
         <tr>
-          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">RAZÃO SOCIAL:</td>
-          <td style="width:50%;padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">CNPJ:</td>
+          <td style="${C_ROT};width:50%">RAZÃO SOCIAL:</td>
+          <td style="${C_ROT};width:50%">CNPJ:</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD">CENTRAL DAS PERSIANAS LTDA</td>
-          <td style="padding:7px 10px;border:1px solid #DDD">11.360.869/0001-63</td>
+          <td style="${C_VAL}">CENTRAL DAS PERSIANAS LTDA</td>
+          <td style="${C_VAL}">11.360.869/0001-63</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">TELEFONE:</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">E-MAIL:</td>
+          <td style="${C_ROT}">TELEFONE:</td>
+          <td style="${C_ROT}">E-MAIL:</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD">(81) 99551-4700 e (81) 3203-5044</td>
-          <td style="padding:7px 10px;border:1px solid #DDD">contato@centraldaspersianas.com</td>
+          <td style="${C_VAL}">(81) 99551-4700 e (81) 3203-5044</td>
+          <td style="${C_VAL}">contato@centraldaspersianas.com</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">ENDEREÇO:</td>
-          <td style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">INSCRIÇÃO ESTADUAL E MUNICIPAL:</td>
+          <td style="${C_ROT}">ENDEREÇO:</td>
+          <td style="${C_ROT}">INSCRIÇÃO ESTADUAL E MUNICIPAL:</td>
         </tr>
         <tr>
-          <td style="padding:7px 10px;border:1px solid #DDD">R. Dom Vital, 191 - Loja C - Piedade, Jaboatão dos Guararapes - PE, CEP: 54420-190.</td>
-          <td style="padding:7px 10px;border:1px solid #DDD">0390578-01 | 959.598-8</td>
+          <td style="${C_VAL};color:#011830">R. Dom Vital, 191 - Loja C - Piedade, Jaboatão dos Guararapes - PE, CEP: 54420-190.</td>
+          <td style="${C_VAL}">0390578-01 | 959.598-8</td>
         </tr>
-        <tr><td colspan="2" style="padding:7px 10px;border:1px solid #DDD;background:#F2F2F2;font-weight:700;font-size:11px">HORÁRIOS DE ATENDIMENTO:</td></tr>
-        <tr><td colspan="2" style="padding:7px 10px;border:1px solid #DDD">Segunda à Sexta - 8h às 12h e 14h às 18h; Sábado - 8h às 12h.</td></tr>
+        <tr><td colspan="2" style="${C_ROT}">HORÁRIOS DE ATENDIMENTO:</td></tr>
+        <tr><td colspan="2" style="${C_VAL}">Segunda à Sexta - 8h às 12h e 14h às 18h; Sábado - 8h às 12h.</td></tr>
       </table>
 
       <!-- OBSERVAÇÕES IMPORTANTES -->
-      <div style="background:#F2F2F2;padding:8px 12px;margin-bottom:6px;border-bottom:1.5px solid #CFC9C2">
-        <span style="font-family:Garamond,'EB Garamond',serif;font-size:25px;font-weight:700;color:#5B3E3B">Observações <span style="color:#BF8F00">importantes</span> · <span style="color:#BF8F00;text-decoration:underline">${isPos ? 'PÓS-VISITA' : 'PRÉ-ORÇAMENTO'}</span></span>
-      </div>
-      <div style="font-weight:700;font-style:italic;text-decoration:underline;margin-bottom:12px;font-size:12.5px">LEIA COM ATENÇÃO:</div>
-      <div style="display:flex;gap:14px;border:1px solid #DDD;border-radius:6px;padding:16px 18px;margin-bottom:28px">
-        <div style="font-size:28px;flex-shrink:0">⚠️</div>
-        <div style="font-size:11px;line-height:1.75;color:#3B3838">
+      <div class="pp-tit" style="${C_TIT}"><span style="${C_TIT_TXT}">Observações <span style="color:#BF8F00">importantes</span> · <span style="color:#BF8F00;text-decoration:underline">${isPos ? 'PÓS-VISITA' : 'PRÉ-ORÇAMENTO'}</span></span></div>
+      <div class="pp-sub" style="${C_SUB}"><b><i><u>LEIA COM ATENÇÃO</u></i></b><i><u>:</u></i></div>
+      <div class="pp-caixa pp-obs" style="${C_CAIXA};margin-bottom:28px">
+        <div style="${C_CAIXA_IC}">⚠️</div>
+        <div style="font-family:${F_POP};font-size:10.5px;line-height:1.7;color:#7A7268;text-align:justify;padding:10px 14px">
+          <div class="pp-sec" style="${C_OBS_SEC}">📐 <u>MEDIDAS E ESCOPO:</u></div>
           ${!isPos ? `
-          <div style="font-weight:700;margin-bottom:4px">📝 MEDIDAS E ESCOPO:</div>
-          <div style="margin-bottom:8px"><strong>01. Medidas e especificações provisórias/estimadas:</strong> <u>este pré-orçamento foi elaborado com base nas medidas e especificações informadas pelo cliente.</u> Os valores finais serão confirmados após a visita técnica, que pode identificar ajustes nas dimensões e especificações de instalação. Caso modelo, material ou cor ainda não tenham sido definidos, os valores podem variar conforme as escolhas realizadas na visita técnica.</div>
-          <div style="margin-bottom:8px"><strong>02. Escopo do fornecimento:</strong> os produtos e acessórios incluídos neste pré-orçamento são exclusivamente os descritos acima por ambiente. Itens não especificados — como bandô, guias laterais, guias inferiores ou demais acessórios/opcionais — <u>não fazem parte do orçamento, salvo quando expressamente mencionados neste documento.</u></div>
-          <div style="margin-bottom:8px"><strong>03. Cores e texturas:</strong> devido a variações de calibração de tela e iluminação, as cores exibidas em fotos e catálogos digitais podem diferir levemente do produto final. E por pequenas variações de fabricante/lote. Recomendamos a aprovação presencial das amostras físicas.</div>
-          <div style="margin-bottom:12px"><strong>04. Imagens de referência:</strong> <u>fotos e referências visuais são meramente ilustrativas.</u> O resultado final pode variar conforme o material, a coleção escolhida e as condições do ambiente.</div>
-
-          <div style="font-weight:700;margin-bottom:4px">💳 CONDIÇÕES COMERCIAIS:</div>
-          <div style="margin-bottom:8px"><strong>05. Condições de pagamento:</strong> <u>PIX / À VISTA:</u> 50% de entrada + 50% restantes até 1 dia útil antes da instalação. O agendamento da instalação será confirmado somente após a quitação do saldo residual. <u>CARTÃO DE CRÉDITO:</u> 100% do valor na entrada.</div>
-          <div style="margin-bottom:8px"><strong>06. Produção sob medida:</strong> todos os produtos são fabricados exclusivamente sob medida após confirmação e pagamento da entrada. <u>Após a aprovação, não é possível realizar alterações, cancelamentos ou devoluções em razão da personalização.</u></div>
-          <div style="margin-bottom:12px"><strong>07. Validade:</strong> proposta válida por 7 dias corridos a partir da data de emissão, sujeita a reajuste de tabela após esse prazo.</div>
-
-          <div style="font-weight:700;margin-bottom:4px">🚚 ENTREGA E INSTALAÇÃO:</div>
-          <div style="margin-bottom:8px"><strong>08. Prazo de fabricação, entrega e instalação:</strong> <u>o prazo inicia a contagem somente após confirmação de pagamento.</u> Eventuais ajustes de agenda de entrega e instalação serão alinhados com o cliente conforme disponibilidade da equipe técnica. Para novos produtos adquiridos na Central das Persianas, a entrega e instalação profissional estão inclusas no investimento final total.</div>
-          <div style="margin-bottom:8px"><strong>09. Condições de instalação:</strong> o local deve estar liberado, limpo e com acesso desobstruído para a equipe técnica. <u>A Central das Persianas não se responsabiliza por atrasos decorrentes de impedimentos no local.</u></div>
-          <div style="margin-bottom:8px"><strong>10. Acesso ao local:</strong> em caso de condomínio, <u>o cliente é responsável pela liberação de acesso da nossa equipe técnica junto à administração/portaria na data agendada.</u></div>
-          <div style="margin-bottom:8px"><strong>11. Pontos elétricos:</strong> <u>para modelos motorizados, os pontos elétricos devem estar prontos no local antes da instalação, sendo de responsabilidade do cliente providenciá-los.</u></div>
-          <div style="margin-bottom:8px"><strong>12. Escopo do serviço:</strong> <u>a Central das Persianas é especializada exclusivamente em cortinas, persianas e acessórios.</u> Adequações estruturais (alvenaria, marcenaria, elétrica e similares) não estão inclusas e são de responsabilidade do cliente.</div>
-          <div style="margin-bottom:8px"><strong>13. Alterações no ambiente:</strong> <u>caso haja algum projeto ou previsão de alterações estruturais, arquitetônicas, de engenharia e/ou mobiliário no ambiente antes da instalação, recomendamos que a visita técnica seja agendada também após a conclusão dessas intervenções.</u> Isso garante que as medidas e especificações coletadas reflitam a realidade final do espaço, evitando divergências no momento da instalação.</div>
-          <div style="margin-bottom:12px"><strong>14. Sequência de instalação em obras e reformas:</strong> <u>em ambientes que estejam passando ou que irão passar por obras ou reformas, a instalação das cortinas e persianas deve ser realizada como uma das últimas etapas</u> — após a conclusão de quebra-quebra, alvenaria, emassamento, pintura, limpeza e demais intervenções. A instalação prematura dos produtos poderá resultar em danos, sujidade ou necessidade de reinstalação, situações que não são cobertas pela garantia e poderão gerar custos adicionais.</div>
-
-          <div style="font-weight:700;margin-bottom:4px">🛡️ GARANTIA:</div>
-          <div><strong>15. Garantia:</strong> <u>PRODUTOS</u> - 1 ano exclusivamente para defeitos de fabricação, conforme condições do fabricante. Chamados técnicos decorrentes de mau uso, desgaste natural ou causas externas não são cobertos. Em caso de acionamento de garantia, daremos todo o suporte junto à fábrica até a devida resolução, atendimento sujeito ao prazo dado pela fábrica (sob consulta). <u>SERVIÇOS</u> – 3 meses.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>01. Medidas e especificações provisórias/estimadas:</b> <u>este pré-orçamento foi elaborado com base nas medidas e especificações informadas pelo cliente.</u> Os valores finais serão confirmados após a visita técnica, que pode identificar ajustes nas dimensões e especificações de instalação. Caso modelo, material ou cor ainda não tenham sido definidos, os valores podem variar conforme as escolhas realizadas na visita técnica.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>02. Escopo do fornecimento:</b> os produtos e acessórios incluídos neste pré-orçamento são exclusivamente os descritos acima por ambiente. Itens não especificados — como bandô, guias laterais, guias inferiores ou demais acessórios/opcionais — <u>não fazem parte do orçamento, salvo quando expressamente mencionados neste documento.</u></div>
+          <div class="pp-bloco" style="${C_OBS}"><b>03. Cores e texturas:</b> devido a variações de calibração de tela e iluminação, as cores exibidas em fotos e catálogos digitais podem diferir levemente do produto final. E por pequenas variações de fabricante/lote. <u>Recomendamos a aprovação presencial das amostras físicas.</u></div>
+          <div class="pp-bloco" style="${C_OBS}"><b>04. Imagens de referência:</b> <u>fotos e referências visuais são meramente ilustrativas.</u> O resultado final pode variar conforme o material, a coleção escolhida e as condições do ambiente.</div>
           ` : `
-          <div style="font-weight:700;margin-bottom:4px">📝 MEDIDAS E ESCOPO:</div>
-          <div style="margin-bottom:8px"><strong>01. Medidas e especificações confirmadas:</strong> este orçamento foi elaborado com base nas medidas e especificações coletadas pelo nosso técnico durante a visita realizada. <u>Alterações solicitadas após a aprovação poderão impactar diretamente em alterações de prazos e valores.</u></div>
-          <div style="margin-bottom:8px"><strong>02. Escopo do fornecimento:</strong> os produtos e acessórios incluídos nesta proposta são exclusivamente os descritos acima por ambiente. Itens não especificados — como bandô, guias laterais, guias inferiores ou demais acessórios/opcionais — <u>não fazem parte do fornecimento, salvo quando expressamente mencionados neste documento.</u></div>
-          <div style="margin-bottom:8px"><strong>03. Cores e texturas:</strong> devido a variações de calibração de tela e iluminação, as cores exibidas em fotos e catálogos digitais podem diferir levemente do produto final. E por pequenas variações de fabricante/lote. Recomendamos a aprovação presencial das amostras físicas.</div>
-          <div style="margin-bottom:12px"><strong>04. Alterações no ambiente pós-visita:</strong> este orçamento foi elaborado com base no contexto atual dos ambientes, vãos e janelas verificados durante a visita técnica, realizada na data informada acima. Caso ocorram alterações estruturais, arquitetônicas, de engenharia e/ou mobiliário após a visita — que impactem as dimensões ou condições de instalação das cortinas e persianas — recomendamos fortemente que uma nova visita técnica seja realizada após a conclusão dessas intervenções. <u>A não comunicação dessas alterações (ou existência de projeto) à Central das Persianas isenta a empresa de qualquer responsabilidade por disparidades entre o escopo apresentado e a realidade encontrada no momento da instalação, sendo os eventuais custos de adequação de responsabilidade do cliente.</u></div>
-
-          <div style="font-weight:700;margin-bottom:4px">💳 CONDIÇÕES COMERCIAIS:</div>
-          <div style="margin-bottom:8px"><strong>05. Condições de pagamento:</strong> <u>PIX / À VISTA:</u> 50% de entrada + 50% restantes até 1 dia útil antes da instalação. O agendamento da instalação será confirmado somente após a quitação do saldo residual. <u>CARTÃO DE CRÉDITO:</u> 100% do valor na entrada.</div>
-          <div style="margin-bottom:8px"><strong>06. Produção sob medida:</strong> todos os produtos são fabricados exclusivamente sob medida após confirmação e pagamento da entrada. <u>Após a aprovação, não é possível realizar alterações, cancelamentos ou devoluções em razão da personalização.</u></div>
-          <div style="margin-bottom:12px"><strong>07. Validade:</strong> proposta válida por 7 dias corridos a partir da data de emissão, sujeita a reajuste de tabela após esse prazo.</div>
-
-          <div style="font-weight:700;margin-bottom:4px">🚚 ENTREGA E INSTALAÇÃO:</div>
-          <div style="margin-bottom:8px"><strong>08. Prazo de fabricação, entrega e instalação:</strong> <u>o prazo inicia a contagem somente após confirmação de pagamento.</u> Eventuais ajustes de agenda de entrega e instalação serão alinhados com o cliente conforme disponibilidade da equipe técnica. Para novos produtos adquiridos na Central das Persianas, a entrega e instalação profissional estão inclusas no investimento final total.</div>
-          <div style="margin-bottom:8px"><strong>09. Condições de instalação:</strong> o local deve estar liberado, limpo e com acesso desobstruído para a equipe técnica. <u>A Central das Persianas não se responsabiliza por atrasos decorrentes de impedimentos no local.</u></div>
-          <div style="margin-bottom:8px"><strong>10. Acesso ao local:</strong> em caso de condomínio, <u>o cliente é responsável pela liberação de acesso da nossa equipe técnica junto à administração/portaria na data agendada.</u></div>
-          <div style="margin-bottom:8px"><strong>11. Pontos elétricos:</strong> <u>para modelos motorizados, os pontos elétricos devem estar prontos no local antes da instalação, sendo de responsabilidade do cliente providenciá-los.</u></div>
-          <div style="margin-bottom:8px"><strong>12. Escopo do serviço:</strong> <u>a Central das Persianas é especializada exclusivamente em cortinas, persianas e acessórios.</u> Adequações estruturais (alvenaria, marcenaria, elétrica e similares) não estão inclusas e são de responsabilidade do cliente.</div>
-          <div style="margin-bottom:12px"><strong>13. Sequência de instalação em obras e reformas:</strong> <u>em ambientes que estejam passando ou que irão passar por obras ou reformas, a instalação das cortinas e persianas deve ser realizada como uma das últimas etapas</u> — após a conclusão de quebra-quebra, alvenaria, emassamento, pintura, limpeza e demais intervenções. A instalação prematura dos produtos poderá resultar em danos, sujidade ou necessidade de reinstalação, situações que não são cobertas pela garantia e poderão gerar custos adicionais.</div>
-
-          <div style="font-weight:700;margin-bottom:4px">🛡️ GARANTIA:</div>
-          <div><strong>14. Garantia:</strong> <u>PRODUTOS</u> - 1 ano exclusivamente para defeitos de fabricação, conforme condições do fabricante. Chamados técnicos decorrentes de mau uso, desgaste natural ou causas externas não são cobertos. Em caso de acionamento de garantia, daremos todo o suporte junto à fábrica até a devida resolução, atendimento sujeito ao prazo dado pela fábrica (sob consulta). <u>SERVIÇOS</u> – 3 meses.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>01. Medidas e especificações confirmadas:</b> <u>este orçamento foi elaborado com base nas medidas e especificações coletadas pelo nosso técnico durante a visita realizada.</u> Alterações solicitadas após a aprovação poderão impactar diretamente em alterações de prazos e valores.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>02. Escopo do fornecimento:</b> os produtos e acessórios incluídos nesta proposta são exclusivamente os descritos acima por ambiente. Itens não especificados — como bandô, guias laterais, guias inferiores ou demais acessórios/opcionais — <u>não fazem parte do fornecimento, salvo quando expressamente mencionados neste documento.</u></div>
+          <div class="pp-bloco" style="${C_OBS}"><b>03. Cores e texturas:</b> devido a variações de calibração de tela e iluminação, as cores exibidas em fotos e catálogos digitais podem diferir levemente do produto final. E por pequenas variações de fabricante/lote. <u>Recomendamos a aprovação presencial das amostras físicas.</u></div>
+          <div class="pp-bloco" style="${C_OBS}"><b>04. Alterações no ambiente pós-visita:</b> este orçamento foi <u>elaborado com base no contexto atual dos ambientes, vãos e janelas verificados durante a visita técnica</u>, realizada na data informada acima. Caso ocorram alterações estruturais, arquitetônicas, de engenharia e/ou mobiliário após a visita — que impactem as dimensões ou condições de instalação das cortinas e persianas — <u>recomendamos fortemente que uma nova visita técnica seja realizada após a conclusão dessas intervenções</u>. A não comunicação dessas alterações (ou existência de projeto) à Central das Persianas isenta a empresa de qualquer responsabilidade por disparidades entre o escopo apresentado e a realidade encontrada no momento da instalação, sendo os eventuais custos de adequação de responsabilidade do cliente.</div>
           `}
+          <div class="pp-sec" style="${C_OBS_SEC}">💳 <u>CONDIÇÕES COMERCIAIS:</u></div>
+          <div class="pp-bloco" style="${C_OBS}"><b>05. Condições de pagamento:</b> <u>PIX / À VISTA:</u> 50% de entrada + 50% restantes até 1 dia útil antes da instalação. O agendamento da instalação será confirmado somente após a quitação do saldo residual. <u>CARTÃO DE CRÉDITO:</u> 100% do valor na entrada.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>06. Produção sob medida:</b> todos os produtos são fabricados exclusivamente sob medida após confirmação e pagamento da entrada. <u>Após a aprovação, não é possível realizar alterações, cancelamentos ou devoluções em razão da personalização.</u></div>
+          <div class="pp-bloco" style="${C_OBS}"><b>07. Validade:</b> proposta válida por 7 dias corridos a partir da data de emissão, sujeita a reajuste de tabela após esse prazo.</div>
+
+          <div class="pp-sec" style="${C_OBS_SEC}">🚚 <u>ENTREGA E INSTALAÇÃO:</u></div>
+          <div class="pp-bloco" style="${C_OBS}"><b>08. Prazo de fabricação, entrega e instalação:</b> <u>o prazo inicia a contagem somente após confirmação de pagamento</u>. Eventuais ajustes de agenda de entrega e instalação serão alinhados com o cliente conforme disponibilidade da equipe técnica. Para novos produtos adquiridos na Central das Persianas, a entrega e instalação profissional estão inclusas no investimento final total.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>09. Condições de instalação:</b> o local deve estar liberado, limpo e com acesso desobstruído para a equipe técnica. <u>A Central das Persianas não se responsabiliza por atrasos decorrentes de impedimentos no local</u>.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>10. Acesso ao local:</b> em caso de condomínio, <u>o cliente é responsável pela liberação de acesso da nossa equipe técnica junto à administração/portaria na data agendada</u>.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>11. Pontos elétricos:</b> <u>para modelos motorizados, os pontos elétricos devem estar prontos no local antes da instalação, sendo de responsabilidade do cliente providenciá-los</u>.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>12. Escopo do serviço:</b> <u>a Central das Persianas é especializada exclusivamente em cortinas, persianas e acessórios</u>. Adequações estruturais (alvenaria, marcenaria, elétrica e similares) não estão inclusas e são de responsabilidade do cliente.</div>
+          ${!isPos ? `<div class="pp-bloco" style="${C_OBS}"><b>13. Alterações no ambiente</b><b><u>:</u></b> <u>caso haja algum projeto ou previsão de alterações estruturais, arquitetônicas, de engenharia e/ou mobiliário no ambiente antes da instalação, recomendamos que a visita técnica seja agendada também após a conclusão dessas intervenções.</u> Isso garante que as medidas e especificações coletadas reflitam a realidade final do espaço, evitando divergências no momento da instalação.</div>` : ''}
+          <div class="pp-bloco" style="${C_OBS}"><b>${isPos ? '13' : '14'}. Sequência de instalação em obras e reformas:</b> <u>em ambientes que estejam passando ou que irão passar por obras ou reformas, a instalação das cortinas e persianas deve ser realizada como uma das últimas etapas</u> — após a conclusão de quebra-quebra, alvenaria, emassamento, pintura, limpeza e demais intervenções. <u>A instalação prematura dos produtos poderá resultar em danos, sujidade ou necessidade de reinstalação, situações que não são cobertas pela garantia e poderão gerar custos adicionais.</u></div>
+
+          <div class="pp-sec" style="${C_OBS_SEC}">💎 <u>GARANTIA:</u></div>
+          <div class="pp-bloco" style="${C_OBS};border-bottom:none"><b>${isPos ? '14' : '15'}. Garantia:</b> <u>PRODUTOS</u> - <u>1 ano exclusivamente para defeitos de fabricação, conforme condições do fabricante.</u> Chamados técnicos decorrentes de mau uso, desgaste natural ou causas externas não são cobertos. Em caso de acionamento de garantia, daremos todo o suporte junto à fábrica até a devida resolução, atendimento sujeito ao prazo dado pela fábrica (sob consulta). <u>SERVIÇOS</u> – <u>3 meses.</u></div>
         </div>
       </div>
 
@@ -2734,12 +2724,14 @@ function imprimirProposta(){
   if(!doc){ alert('Gere a proposta primeiro.'); return; }
   const w = window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,700&family=Montserrat:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>*{box-sizing:border-box}body{margin:0;padding:20px;background:#EEE;font-family:'Gill Sans','Gill Sans MT',Poppins,sans-serif}
     @page{size:A4;margin:10mm}
     @media print{body{background:#FFF;padding:0}#proposta-print{box-shadow:none!important;border-radius:0!important}
-      table,tr,img,[style*="border-radius:6px"],[style*="grid-template-columns"]{break-inside:avoid;page-break-inside:avoid}
-      [style*="padding:10px 14px;margin-bottom:10px"]{break-after:avoid;page-break-after:avoid}
+      tr,img,.pp-bloco,.pp-caixa,.pp-sec,.pp-total,[style*="grid-template-columns:1fr 1fr"],a{break-inside:avoid;page-break-inside:avoid}
+      .pp-tit,.pp-sub,.pp-logo,.pp-sec{break-after:avoid;page-break-after:avoid}
+      .pp-caixa.pp-obs{break-inside:auto;page-break-inside:auto;display:block!important;position:relative;padding-left:110px}
+      .pp-obs>div:first-child{position:absolute;left:0;top:0;bottom:0;width:110px;align-items:flex-start!important;padding-top:24px}
       *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>
     </head><body>${doc.outerHTML}</body></html>`);
   w.document.close();
