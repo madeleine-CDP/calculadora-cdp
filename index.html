@@ -450,6 +450,13 @@
 
   <div class="card novo-card">
     <div class="novo-secao">Cliente</div>
+    <div id="olist-aviso"></div>
+    <div id="olist-busca-wrap" class="olist-busca" hidden>
+      <label class="novo-campo"><span>Buscar no Olist</span>
+        <input type="search" id="olist-busca" autocomplete="off" placeholder="Nome, celular ou CPF do cliente" oninput="olistDigitou()"></label>
+      <div id="olist-res" role="listbox" aria-label="Clientes encontrados no Olist"></div>
+    </div>
+    <div id="olist-pedidos"></div>
     <label class="novo-campo"><span>Nome <b>*</b></span>
       <input type="text" id="novo-nome" autocomplete="off" placeholder="Ex.: Maria Souza"></label>
     <div class="novo-linha">
@@ -541,6 +548,7 @@
 <script src="js/inicio.js"></script>
 <script src="js/proposta.js"></script>
 <script src="js/combinacoes.js"></script>
+<script src="js/olist.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
 <div id="orc-resumo-bar" style="position:fixed;bottom:60px;left:0;right:0;background:#2B221C;color:#FFF;z-index:499;display:none">

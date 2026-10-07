@@ -1983,6 +1983,7 @@ function novoOrcamento(){
   $('novo-erro').textContent = '';
   const subN = document.querySelector('#tab-novo .hist-sub'); if(subN) subN.textContent = 'O número CDP é gerado sozinho ao criar.';
   limparAvisoRepetido();
+  if(typeof olistLimparNovo === 'function') olistLimparNovo();
   irParaTab('novo');
   window.scrollTo({top:0});
   setTimeout(() => { const n=$('novo-nome'); if(n && window.innerWidth > 720) n.focus(); }, 50);
@@ -2196,6 +2197,7 @@ function irParaTab(t){
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
   $('tab-'+alvo).classList.add('active');
   if(lado) $('tab-orc').classList.add('active');
+  if(t === 'novo' && typeof olistPrepararNovo === 'function') olistPrepararNovo();
   const sticky = $('sticky-actions');
   if(sticky) sticky.style.display = (alvo==='calc' && !lado) ? 'flex' : 'none';
   document.body.dataset.tela = alvo;

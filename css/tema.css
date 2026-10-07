@@ -647,3 +647,23 @@ body[data-tela=inicio] .btn-novo-orc{display:none!important}
 .combo-nome{grid-area:nome;min-height:34px;border-radius:10px;border:1px solid var(--linha);padding:0 10px;font-size:13.5px}
 .combos-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .combos-acoes .btn-outline{padding:8px 14px!important}
+
+/* ── Busca de clientes do Olist (Novo orçamento) ── */
+.olist-busca{margin-bottom:10px;padding-bottom:12px;border-bottom:1px dashed var(--linha-suave)}
+.olist-busca input[type=search]{background:var(--s3)}
+#olist-res{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.olist-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;padding:10px 12px;border:1px solid var(--linha-suave);border-radius:12px;background:#fff;cursor:pointer;font-family:inherit;color:var(--tinta)}
+.olist-item:hover,.olist-item:focus-visible{border-color:var(--vinho,#5A1524);background:var(--fundo)}
+.olist-item strong{font-size:14px}
+.olist-item span{font-size:12.5px;color:var(--tx2)}
+.olist-item em{font-style:normal;font-size:11.5px;color:var(--tx3)}
+.olist-msg{font-size:12.5px;color:var(--tx2);padding:6px 2px}
+.olist-msg.erro{color:var(--red,#C0392B)}
+.olist-aviso{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12.5px;color:var(--tx2);background:var(--fundo);border-radius:12px;padding:8px 12px;margin-bottom:10px}
+.olist-aviso .btn-outline{padding:6px 12px}
+.olist-ped{background:#EFF6EC;border:1px solid #CFE3C8;border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.olist-ped-tit{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#2E6B3A;margin-bottom:4px}
+.olist-ped-lista{display:flex;flex-direction:column;gap:4px;font-size:12.5px}
+.olist-ped-lista>div{display:grid;grid-template-columns:auto auto 1fr auto;gap:8px;align-items:baseline}
+.olist-ped-lista em{font-style:normal;color:var(--tx3);font-size:11.5px;text-align:right}
+@media (max-width:420px){.olist-ped-lista>div{grid-template-columns:auto 1fr auto}.olist-ped-lista>div span:nth-child(2){display:none}.olist-ped-lista>div span:nth-child(3){justify-self:end}}
