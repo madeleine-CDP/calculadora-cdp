@@ -40,7 +40,7 @@ function renderPasta(){
   $('pasta-nome').textContent = c.nome || 'Cliente sem nome';
   $('pasta-sub').innerHTML = [
     e && e.numero ? '<strong>' + numCDP(e.numero) + '</strong>' : '<em>ainda não salvo</em>',
-    [c.bairro, [c.cidade, c.uf].filter(Boolean).join('/')].filter(Boolean).map(escHtml).join(', '),
+    [c.bairro, [c.cidade, c.uf].filter(v => v && v !== '-').join('/')].filter(v => v && v !== '-').map(escHtml).join(', '),
     c.tel ? escHtml(c.tel) : '',
     c.tiny ? 'Tiny #' + escHtml(c.tiny) : ''
   ].filter(Boolean).join(' · ');

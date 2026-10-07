@@ -1018,7 +1018,7 @@ function filtrarHistorico(){
     const isMulti = !!e.items;
     const totalAv = isMulti ? e.totalAvista : (e.full ? e.full.avista : 0);
     const amb = ambientesDe(e);
-    const linha2 = [numCDP(e.numero), e.bairro, amb ? amb + (amb>1?' ambientes':' ambiente') : ''].filter(Boolean).map(escHtml).join(' · ');
+    const linha2 = [numCDP(e.numero), e.bairro && e.bairro !== '-' ? e.bairro : '', amb ? amb + (amb>1?' ambientes':' ambiente') : ''].filter(Boolean).map(escHtml).join(' · ');
     const etapa = e.etapa || 'orcamento';
     return `
     <div class="hist-item hist-card" onclick="reopenOrc(${e.id})">

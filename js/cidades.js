@@ -52,7 +52,10 @@ function separarCidadeUf(t){
 }
 
 // Endereço para a proposta: "Rua X, 10 - Boa Viagem - Recife/PE" (sem repetir o que já está escrito)
+// "-" = cliente não informou (o campo é obrigatório, mas às vezes o cliente não passa)
+const semInfo = v => /^[\s\-–—.]*$/.test(String(v || ''));
 function enderecoCompleto(c){
+  c = Object.fromEntries(Object.entries(c || {}).map(([k, v]) => [k, semInfo(v) ? '' : v]));
   const end = String(c.end || '').trim(), n = _normCidade(end);
   const ja = v => !!v && n.includes(_normCidade(v));
   const partes = [end];
@@ -62,10 +65,16 @@ function enderecoCompleto(c){
   return partes.filter(Boolean).join(' - ');
 }
 
+// Botão "Cliente não informou": preenche bairro, cidade e UF com "-" para poder seguir
+function localNaoInformado(){
+  [['novo-bairro','-'],['novo-cidade','-'],['novo-uf','-']].forEach(([id, v]) => { const el = document.getElementById(id); if(el) el.value = v; });
+  const e = document.getElementById('novo-erro'); if(e) e.textContent = '';
+}
+
 // Monta as opções (estados e sugestões de cidade) nos formulários
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('select.sel-uf').forEach(s => {
-    s.innerHTML = '<option value="">UF</option>' + UFS.map(u => `<option value="${u}">${u}</option>`).join('');
+    s.innerHTML = '<option value="">UF</option>' + UFS.map(u => `<option value="${u}">${u}</option>`).join('') + '<option value="-">—</option>';
   });
   const dl = document.getElementById('lista-cidades');
   if(dl) dl.innerHTML = Object.values(_MAPA_CIDADES).map(c => `<option value="${c.nome}">${c.uf}</option>`).join('');
