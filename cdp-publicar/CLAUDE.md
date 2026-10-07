@@ -1,0 +1,136 @@
+# CLAUDE.md — Calculadora de Orçamentos CDP
+
+Leia este arquivo inteiro antes de qualquer alteração.
+
+## Quem usa e como falar comigo
+
+- Dona do projeto: **Bruna (Bru)**, administradora da Central das Persianas (Recife). **Não é programadora.**
+- Explique tudo em português simples, sem jargão. Se precisar usar um termo técnico, explique em uma frase.
+- **Antes de mexer em qualquer coisa, apresente o plano** (o que vai mudar, onde, e os riscos) e espere a aprovação.
+- Faça **uma mudança por vez**. Se o pedido for grande, proponha dividir em etapas.
+- Quando algo travar ou der erro repetido, explique em linguagem de leiga o que está acontecendo e como ela pode ajudar, em vez de insistir.
+- Usuários da calculadora: Bruna, Mirelle (atendimento), Ricardo (vendas) e Madeleine (dona). Pense sempre em quem vai usar no celular, no meio do atendimento.
+
+## O que é o projeto
+
+Calculadora de orçamentos de persianas e cortinas, que está virando o **CDP Sistema**: o sistema operacional da loja (orçamentos, retornos, agenda, pedidos, OS e validação financeira). Site estático, **sem build**: os arquivos são publicados como estão.
+
+- **Plano do projeto (fases, jornada, decisões):** doc "CDP Sistema — Plano do projeto" no claude.ai — https://claude.ai/code/artifact/e1ec3be8-5b99-4263-abe4-fefec201edda. Leia antes de começar uma fase nova.
+- **⚠️ Créditos do Netlify (plano gratuito por créditos):** cada publicação na `main` custa 15 créditos; se os créditos acabarem o site SAI DO AR até a renovação. Por isso: **trabalhe na branch `dev`** (branch deploy grátis, endereço `dev--sistemacdp.netlify.app`, que usa o MESMO banco de verdade) e **só faça merge/push na `main` quando a Bru aprovar explicitamente uma publicação**, juntando várias etapas. Out/2026: ~45 créditos até a renovação (~25/10), depois das publicações de 07/10. **Como publicar:** o envio direto para a `main` a partir da sessão do Claude é recusado pelo GitHub; a publicação é feita por pull request `dev` → `main` no GitHub, logado como **madeleine-CDP** (a conta pessoal brubamo ainda não é colaboradora). Não apague a branch `dev` depois do merge.
+- **Hospedagem:** Netlify, na conta da loja (equipe CDP, madeleine@centraldaspersianas.com): `sistemacdp.netlify.app`, com subdomínio `sistemacdp.` + domínio da loja (DNS no UOL Host). Publicado automaticamente a partir da branch `main`. O antigo `calculadora-cdp.netlify.app` está na conta pessoal da Bru e será desativado depois da troca de link. `netlify.toml` manda o navegador sempre buscar a versão nova (sem cache de tabela antiga).
+- **Dados:** Supabase (projeto `cdp-calculadora`, região sa-east-1). Tabela `orcamentos` guarda os orçamentos salvos, compartilhados entre os usuários.
+- **Login (Fase 1):** contas do **Supabase Auth**, uma por pessoa (Bruna, Mirelle, Madeleine). Entra por usuário (`cdaspersianas`, `operacao@cdaspersianas`, `madeleine@cdaspersianas`, ou `bru`/`mirelle`/`madeleine`); o mapa usuário → e-mail fica em `USUARIOS_EMAIL` (`js/login.js`). A Bru cria a conta no painel do Supabase com senha provisória (o Claude nunca digita senhas); no 1º acesso a pessoa cria a própria (`perfis.senha_provisoria`). Tabela `perfis` = equipe (e-mail, usuário, nome, papel: dona/admin/atendimento/vendas). **Todo acesso ao banco passa por `sbFetch()`** (manda o token de quem está logado e renova sozinho). "Criado por" é gravado pelo banco (gatilho `orcamentos_quem_criou`). Só quem está em `perfis` vê dados (`eh_da_equipe()`). O cadastro aberto ("Allow new users to sign up") fica DESLIGADO no painel. O login antigo (`usuarios` + `verificar_login`) fica desligado, guardado até tudo estabilizar.
+- **Virada da Fase 1: FEITA em 07/10/2026** (`sql/2026-10-fase1-b-virada.sql`, que também traz o comando para desfazer). O banco só responde para quem está logado e está em `perfis`; o login antigo não funciona mais. Conta nova = a Bru cria em Authentication → Users e o Claude inclui a pessoa em `perfis` (+ apelido em `USUARIOS_EMAIL`). Segredo `SUPABASE_BACKUP_KEY` cadastrado no GitHub (conta madeleine-CDP). O projeto do Supabase está na organização pessoal da Bru ("brubamo's Org"); a loja foi adicionada como dona.
+- **Fonte da verdade:** este repositório. O antigo Artifact no claude.ai virou histórico e não deve mais ser editado.
+
+## Fábricas e fórmulas (NÃO ALTERAR SEM CONFIRMAÇÃO DA BRU)
+
+Estas fórmulas foram confirmadas pela Bru. Qualquer mudança exige confirmação explícita dela na conversa, mesmo que pareça um bug.
+
+### Decore Persianas
+- Tabela vigente: **Outubro/2026** (vigência 01/10/2026). Não existe mais tabela promocional: todos os itens usam 12% + 3%.
+- **Custo** = preço tabela × área × 0,88 (12%) × 0,97 (3% pedido pelo site) **+ impostos de PE** (IPI e ICMS-ST conforme `IMPOSTOS_PE` e `getTipoImposto()`).
+- **À vista** = custo × 2.
+- Itens **sem desconto** (motores, controles, monocomandos, redução de peso): lista `SEM_DESCONTO`. Ela aparece **em dois lugares** (cálculo normal e comparação entre fábricas). Ao adicionar um item sem desconto, atualize os dois.
+- Redução de peso automática na Rolô e Double Vision: largura **≥ 1,80m** OU altura **≥ 2,00m** (maior **ou igual**, confirmado pela Bru em 07/10/2026, como no guia da Decore) → +R$ 75,00 por peça, sem desconto.
+
+### Real Persianas
+- Tabela vigente: **Agosto/2026**. Impostos já inclusos no preço.
+- **Custo** = metragem × preço/m² × 0,80 (20%).
+- **À vista** = custo × 2 × 0,975 (desconto extra de 2,5%, só na Real).
+- Tabela e cartão são recalculados a partir desse à vista menor.
+- **Nuette** e **Persiana Horizontal 50mm PVC** só existem na Real. A calculadora já filtra por fábrica.
+
+### Cortina Tradicional em Tecido (CDP)
+- O preço da tabela **já é o valor de venda final**. **Não multiplicar por 2.**
+- Cálculo em `calcularCdpTrad()`.
+
+### Valores ao cliente (todas as fábricas)
+- **Tabela** = à vista ÷ 0,85
+- **Cartão** = tabela × 0,95
+- Os três valores são arredondados ao real inteiro. Esse comportamento é intencional.
+
+## Sobra de medida (janela → cortina)
+
+Fonte: Guia de Processos de Atendimento (Google Drive). Função `calcSobra()`.
+
+- **Regra geral** (tradicional, rolô, vertical, tudo menos Romana), instalação fora do vão: +20cm na largura, +30cm na altura.
+- **Romana:** +35cm em cima + 20cm embaixo = **+55cm na altura** (substitui os +30cm). (O Guia de Processos fala em +30cm em cima; a Bru confirmou em 07/10/2026 que vale o do sistema, 35cm.)
+- **Rolô com moldura** (só a Rolô): os acessórios **substituem** a sobra genérica, não somam.
+  - Guias laterais (6cm ou 8cm, valor real do acessório × 2 lados) substituem a sobra de largura.
+  - Bandô (+10cm) e/ou guia inferior (6 ou 8cm) substituem a sobra de altura. Se os dois estiverem marcados, soma os dois.
+- Esses acessórios são marcados uma única vez em "Acessórios & Opcionais". A sobra lê dali, sem perguntar de novo.
+
+## Mapa do código (onde fica cada coisa)
+
+Arquivos (desde a fase 0 o antigo arquivo único foi separado, sem mudar nenhuma fórmula):
+
+- `index.html`: as telas (login, lista de orçamentos, novo orçamento, pasta do orçamento, calculadora, proposta). Carrega os scripts nesta ordem: `js/login.js`, `js/icones.js`, `js/precos.js`, `js/app.js`, `js/pasta.js`, `js/passos.js`, `js/inicio.js`, `js/proposta.js`, `js/combinacoes.js`, `js/cidades.js`, `js/olist.js`, `js/retornos.js`, `js/tabelas.js`, `js/agenda.js`, `js/confirmacoes.js`, `js/garantia.js`, `js/fechamento.js`, `js/pedidos.js`, `js/config.js`, `js/pwa.js`.
+- `js/icones.js`: ícones de traço (`ic('nome')`). `js/passos.js`: calculadora em 4 passos (Ambiente, Produto, Medidas, Resultado), blocos marcados com `data-passo` no HTML; `irPasso(n)` confere cada passo e o Resultado sempre recalcula. Sem orçamento aberto (`EDITING_ORC_ID` vazio) a calculadora é o **Cálculo rápido**: `usarCalculo('novo'|'existente'|'outro')` leva os itens (`PENDENTES`) para um orçamento novo, um existente, ou soma outro item. `js/proposta.js`: utilidades da proposta (nº CDP no cabeçalho, `ordenarPorAmbiente()`, tipo pela etapa). **A proposta deve ficar fiel ao modelo do Word da loja: mesmas cores, fontes e emojis** (pedido da Bru); o restyle `vestirProposta()` fica desligado (`PROPOSTA_VISUAL_NOVO = false`). O texto da proposta continua em `gerarProposta()` no `app.js`. `js/inicio.js`: painel Início (tela inicial): em aberto por etapa, "precisa de atenção" (pré-orçamento parado 3+ dias, orçamento pós-visita parado 1+ dia útil, enviado 3+ dias; usa `updated_at`) e resumo do mês. `js/pasta.js`: a pasta do orçamento (itens por ambiente, etapa, totais, "Salvar e fechar", aviso de alteração não salva). `js/combinacoes.js`: opções para cliente indeciso. Cada item pode ter `item.opcao` (A–D, dentro do ambiente) e o ambiente pode ser opcional (`item.ambienteOpcional`). `gerarCombinacoes()` monta os totais possíveis, e a tela da proposta deixa escolher quais combinações vão para o cliente (`COMBOS_SEL`, `COMBOS_NOMES`). Fica tudo dentro dos itens, sem coluna nova no banco.
+- `css/tema.css`: visual novo (carregado depois do `app.css`). `sql/`: comandos já aplicados no banco, para histórico.
+- `js/precos.js`: **todas as tabelas de preço e regras das fábricas** (DB_*, ACC_*, IMPOSTOS_PE, TUBOS, FABRIC_W, CDP_TRAD). É aqui que se atualiza tabela nova.
+- `js/app.js`: lógica da tela, cálculo, carrinho, orçamentos salvos (Supabase) e proposta.
+- `js/olist.js` + `supabase/functions/olist/index.ts`: **busca de clientes do Olist (Tiny API v3), só leitura.** O site nunca fala direto com o Olist: chama a Edge Function `olist` (rotas `status`, `iniciar`, `callback`, `buscar`, `contato`, `pedidos`, `renovar`; a lista do Olist vem sem celular, por isso ao escolher o cliente o site pede o cadastro completo em `contato`; a busca por nome no Olist às vezes demora e a função tenta 2 vezes), que só atende quem é da equipe. A chave do aplicativo do Olist fica nos segredos das Edge Functions (`OLIST_CLIENT_ID`, `OLIST_CLIENT_SECRET`, cadastrados pela Bru). A autorização fica em `olist_conexao` (tabela trancada, só o servidor lê) e é renovada a cada 3h pelo agendamento `olist-renovar` (pg_cron), porque o "refresh token" do Olist vence em 1 dia. Conectar = Bruna ou Madeleine clicam em "Conectar ao Olist" no Novo orçamento. A função é publicada pela ferramenta do Supabase (não pela Netlify): ao mudar o arquivo, publicar de novo. SQL em `sql/2026-10-olist-a-conexao.sql`.
+- `js/cidades.js`: cidade → UF (lista de Pernambuco, vizinhas e capitais; cidade fora da lista = UF à mão), `enderecoCompleto()` monta o endereço da proposta (rua - bairro - cidade/UF). No Novo orçamento **bairro, cidade e UF são obrigatórios** (padrão Recife/PE; se o cliente não informar, o link "Cliente não informou?" preenche com "-", que some na proposta e na lista), pedido da Bru para a proposta sair completa. Colunas `cidade` e `uf` em `orcamentos` (`sql/2026-10-cidade-uf.sql`). Endereço, CPF e e-mail continuam só na tela.
+- `js/retornos.js`: **Hub de retornos** (aba Retornos, `irParaTab('ret')`). Tabela `retornos` (cliente, orçamento ligado opcional, assunto, `responsavel` = Bruna/Mirelle/Madeleine/Fábrica/Cícero, `prazo`, status aberto → aguardando → respondido; gatilho `retornos_ao_salvar` grava criado_por e respondido_em). Filtros "Depende de mim" (responsavel = nome de quem está logado), todos, aguardando, respondidos (30 dias). Na pasta: bloco "Contato com o cliente" com **Registrei contato** (grava `orcamentos.ultimo_contato`, `proximo_contato`, `qtd_contatos`) e "+ Retorno para este cliente". O Início conta o follow-up a partir do último contato, não lembra antes do próximo contato combinado, sugere Perdido depois de 3 contatos sem resposta, e mostra "Retornos para hoje" (atrasados + hoje). SQL em `sql/2026-10-retornos.sql`.
+- `js/tabelas.js`: **Tabelas de preço pela tela** (Configurações → "Tabelas de preço", só admin/dona; `irParaTab('precos')`). A base continua em `js/precos.js`; a tabela `precos_ajustes` guarda **ajustes por cima** (reajuste geral em % ou preço de uma coleção/acessório), em lotes que podem ser desfeitos (`ativo=false`). `aplicarAjustesPreco()` volta tudo à base (`PRECO_BASE`, foto dos preços do código) e aplica os ajustes ativos em ordem; versão/vigência do último lote com versão vira o `TABELAS_INFO` da fábrica. **As fórmulas não mudam** (só o preço de tabela da fábrica). `valor_base` = preço do código na hora do ajuste: **ao atualizar uma tabela inteira no código, os ajustes antigos desses itens deixam de valer sozinhos** (e é bom desativar os lotes antigos no banco). Relatório antes de salvar mostra variações e orçamentos em aberto afetados. Teste: `teste_reajuste.js` (+10% → à vista ~+10%; desfazer = idêntico). SQL em `sql/2026-10-precos-ajustes.sql`.
+- `js/agenda.js` + `supabase/functions/agenda/index.ts`: **Agenda (Fase 3)**. Etapa 3A = só leitura da Agenda CLIENTES CDP (Google, dona: madeleine@centraldaspersianas.com) por uma ponte em Google Apps Script na conta da Madeleine (`google/agenda-ponte.gs`, implantado como App da Web, propriedade `SEGREDO`); a função `agenda` do Supabase repassa o pedido usando os segredos `AGENDA_URL` e `AGENDA_SEGREDO` (o mesmo valor do `SEGREDO`). Sem Google Cloud (exigia 2FA e cobrança). Título no padrão do SOP `[A CONFIRMAR] C/M/J/? - Tipo - Cliente (Bairro)` (C = Cícero, M = Madeleine, J = Jones, B = Bruna, ? = a definir; aceita traço sem espaço e observações entre colchetes), linha `Itens:` na descrição. Liga ao orçamento por nº CDP na descrição, WhatsApp ou nome. Make (automações do SOP) NÃO está rodando. **3C feita** (`js/confirmacoes.js`): bloco "Confirmar · [dia]" no Início e controle nos cartões da Agenda, com os compromissos de cliente do próximo dia útil (sexta → sábado + segunda; dia com FERIADO na agenda é pulado). Botão "Mensagem de confirmação" abre um quadro com o WhatsApp do cliente (celular da linha "Contato:" da descrição, sem DDD = 81) e a mensagem para COPIAR (não usa link wa.me: o WhatsApp estragava os emojis); só "Já enviei" registra. Toda ação tem desfazer (confirmado/reagendar → enviado; "desfazer envio" apaga o registro, `sql/2026-10-agenda-confirmacoes-b-desfazer.sql`) com o texto do Guia de Mensagens (lembrete véspera da visita/instalação; "gratuita" só em visita que não é manutenção/lavagem). Controle em `agenda_confirmacoes` (enviado → confirmado / reagendar; quem e quando gravados pelo banco), `sql/2026-10-agenda-confirmacoes.sql`. A agenda do Google não é alterada. 3B (agendar pelo sistema) adiado de propósito até a equipe usar o sistema no dia a dia. **3D feita** (`js/garantia.js`, tela `gar` aberta pelo Início): a **data da instalação vem do Olist** (OS "Entregue", campo `dataEntrega` do detalhe da OS; status das OS é controlado no Olist, o sistema não repete). **Chamados de garantia** (tabela `garantias`): busca o cliente no Olist, escolhe a OS (a mais recente entregue vem marcada), produto novo = 1 ano / serviço = 3 meses, fora da garantia ou "Cadastro não localizado" = aviso da taxa de visita R$ 80,00 com a mensagem do Guia para copiar; prazo do 1º retorno = mesmo dia útil (até 18h; sábado 12h; depois das 17h ou domingo = 12h do próximo dia útil); acionado Decore/Real/Ateliê (vira "aguardando") ou Técnico; Resolvido / Não era defeito pedem a solução; tudo com desfazer/reabrir. **Pós-venda 6 meses** (tabela `posvenda`, preenchida pela rota `posvenda` da função `olist`: lê OS entregues criadas de 5 a 13 meses atrás, 25 detalhes por vez por causa do limite de 60/min, e guarda a data; o Início sincroniza ao abrir): bloco no Início com instalados há 6 a 9 meses sem contato, mensagem aprovada pela Bru para copiar, "Já enviei" registra e tem desfazer. SQL em `sql/2026-10-garantia-posvenda.sql`.
+- `js/fechamento.js`: **Fechamento** (Etapa 4 do Guia; aprovado pela Bru em 07/10/2026). Ao fechar o orçamento, a pasta mostra o checklist de 6 passos (tabela `fechamentos`, um registro por orçamento, só quem/quando de cada passo; dados do cliente ficam no Olist): 1 dados p/ OS (PF/PJ, mostra o que falta no cadastro do Olist, mensagem "Solicitação de dados cadastrais") · 2 OS no Tiny (lê pela rota `os_numero` e confere o valor com à vista/cartão/tabela do orçamento; grava `pedido_tiny`) · 3 OS + pagamento (PIX 50%+50% com valores e a chave em mensagem separada, ou cartão com link) · 4 aguardando (follow-up do Guia, "Cliente mandou o comprovante") · 5 **conferido no extrato: só a dona (Madeleine)**, o banco recusa os outros; prazo 4h úteis (seg–sex 8–12/14–18, sáb 8–12) · 6 mensagem "Pagamento confirmado" + lembrete de publicar a OS no grupo e mudar o Tiny para Aprovado. Tudo com desfazer. Início: "🤝 Fechamentos em andamento" e, para a Madeleine, "💳 Validar pagamentos". SQL em `sql/2026-10-fechamento-pedidos.sql`.
+- `js/pedidos.js`: **Pedidos (Fase 4)** — aba "📦 Pedidos" no lugar de "Calcular" (a calculadora segue no Início e na pasta). **O status de cada OS continua sendo mudado no Tiny**; a rota `os` da função `olist` lê as OS (situações 0, 3, 4, 7, 5, 1 e entregues dos últimos 12 dias, no máximo 25–40 detalhes por leitura) e grava em `os_acompanhamento` (`situacao_desde` = quando o sistema viu a OS naquele status; o Olist não guarda histórico). Nº da fábrica (D/R) vem do campo "nº da ordem de compra" da OS (ou das observações); **próximo nº = maior usado + 1** (sequência única D/R). Fases: aguardando pagamento · fazer pedido na fábrica (avisa se o pagamento não foi conferido no Fechamento) · em produção (conferência **uma vez por fábrica** a cada 2 dias, tabela `conferencias_fabrica`, com desfazer; atrasado se passou da data prevista) · pronto (🖐️ conferido em mãos + mensagem "Proposta de data" + compromisso achado na Agenda) · agendado (data da Agenda) · entregues (⭐ mensagem de finalização e avaliação). Início: bloco "📦 Pedidos". Leitura do Olist no máximo a cada 10 min (botão Atualizar força).
+- `js/config.js`: **Configurações** (tocar no nome no topo → tela `config`): Minha conta (trocar senha, sair) para todos; Tabelas de preço, Links úteis (editar, subir/descer, tirar com desfazer) e Conexões (Olist e Agenda, com reconectar) só para admin/dona. **Links úteis** (tabela `links_uteis`, grupos sistemas/guias/pastas/cliente, emoji, opção "copiar"): todos veem no fim do Início, só a gestora muda; fora de propósito o doc de Credenciais e o Notion (decisão da Bru). **Agenda de hoje** no Início. O **Início** é organizado por urgência: atalhos → "Para fazer hoje" (fechamentos/validar pagamentos, pedidos, garantia, retornos, confirmar amanhã, orçamentos parados) → agenda de hoje → pós-venda → "Números" (em aberto e resumo do mês) → links úteis. Títulos com emoji (pedido da Bru). SQL em `sql/2026-10-links-uteis.sql`.
+- `js/login.js`: login (Supabase Auth), sessão, `sbFetch()`, criar/trocar a própria senha (em Configurações).
+- `css/app.css`: visual antigo (base). `assets/`: logos e ícones do app.
+- `manifest.webmanifest`, `sw.js`, `js/pwa.js`: permitem instalar no celular. O `sw.js` **não** guarda cache de propósito.
+- `.github/workflows/despertador.yml` (consulta diária para o Supabase gratuito não pausar) e `backup.yml` (exporta os orçamentos toda segunda; fica em Actions → Artifacts por 90 dias). Usam os segredos do repositório `SUPABASE_URL` e `SUPABASE_ANON_KEY`; o despertador chama a função `ping()` (funciona com o banco fechado); o backup precisa de `SUPABASE_BACKUP_KEY` (chave secreta do Supabase, só no GitHub) depois da virada.
+
+Dentro do código:
+
+- `DB_DECORE`, `DB_REAL`: preços por produto, família e coleção (`p` = preço/m², `fw` = largura máxima do tecido, 99 = sem limite).
+- `ACC_DECORE`, `ACC_REAL`: acessórios e opcionais.
+- `IMPOSTOS_PE`, `getTipoImposto()`: impostos da Decore.
+- `FABRIC_W_DECORE`, `TUBOS_REAL`: larguras de tecido e tubos.
+- `STATE`: estado da tela. `calcular()` é o cálculo principal.
+- Carrinho e orçamentos: `editarItemCarrinho()` (restaura cascata, acessórios via `accSelections`, extras) e `reopenOrc()` (usa `EDITING_ORC_ID` para ATUALIZAR em vez de duplicar).
+- Fluxo de telas: `irParaTab()` troca a tela (`inicio`, `hist`, `novo`, `orc`, `calc`, `proposta`; a Proposta abre pela pasta) e marca `body[data-tela]`. Lista = `renderHistory()`/`filtrarHistorico()`; novo orçamento = `criarOrcamento()` (já grava no banco e ganha número CDP); pasta = `abrirPasta()`/`renderPasta()`; salvar = `saveOrcamento()` (sempre fecha e volta à lista). `ORC_SUJO` = há alteração não salva. Fechar/perdido/reabrir = `fecharOrcamento()`, `perdidoOrcamento()`, `reabrirOrcamento()` em `js/pasta.js`; fechado e perdido ficam travados (o banco recusa mudar itens/valores de fechado). Evoluir = `evoluirOrcamento()` (novo orçamento com `anterior_id`). Cada item guarda `tabelaVer` (tabela usada no cálculo). No computador (≥1100px) com orçamento aberto, `irParaTab()` liga `body.lado-a-lado`: pasta fixa à esquerda e calculadora à direita (`ladoALado()`, `ajustarLado()`); no celular nada muda.
+
+## Zonas proibidas sem aprovação explícita
+
+- Estrutura do banco no Supabase (criar, apagar ou renomear tabelas e colunas). Se precisar, escreva o comando SQL, explique o que ele faz, ensaie num Postgres local e só aplique com o ok da Bru (ou ela executa). Guarde o comando em `sql/`. A ferramenta de migração do Supabase cancela comandos que contêm "drop": prefira `create or replace` / `set default`.
+- Login, usuários e senhas.
+- Qualquer fórmula da seção "Fábricas e fórmulas".
+- **Nunca** coloque no repositório a chave `service_role` do Supabase, senhas ou dados de clientes. A chave pública (anon) que já está no HTML pode ficar.
+
+## Como testar (obrigatório antes de propor aprovação)
+
+1. Rode o `index.html` num navegador simulado (jsdom, carregando os scripts locais de `js/`) e confirme **zero erros de JavaScript**.
+2. Para qualquer mudança de preço ou fórmula, compare **antes x depois** chamando `calcular()` com casos reais (pelo menos: uma Rolô, uma Romana, uma Vertical, uma Horizontal, um Double Vision, e uma Cortina Tradicional CDP). Mostre à Bru uma tabela com os valores à vista antes e depois.
+3. Teste também **reabrir um orçamento salvo antigo** e editar um item. Orçamentos anteriores podem não ter todos os campos novos (ex.: acessórios salvos só existem a partir da v40).
+4. Teste a tela em largura de celular (~360px).
+
+## Atualização de tabela de fábrica (roteiro)
+
+Quando chegar tabela nova (Real ou Decore):
+1. Use a aba oficial da planilha (na Decore, a aba "Tabela", não a "Tabela Base").
+2. Gere um relatório: itens com custo alterado (com %), itens novos, itens removidos, regras que mudaram (medidas mínimas e máximas, prazos, acessórios).
+3. Aponte inconsistências antes de aplicar.
+4. Atualize a versão e a data da tabela em `TABELAS_INFO` (`js/precos.js`). Se havia reajustes feitos pela tela para essa fábrica, desative os lotes antigos em `precos_ajustes` (a tabela nova já os incorpora). Ela aparece sozinha no botão da fábrica e no aviso abaixo dos valores. A CDP ainda não tem data registrada: peça à Bru.
+5. Lembre a Bru: orçamentos em aberto dos itens que subiram devem ser recalculados antes de gerar a OS.
+
+## Regras do negócio que o sistema precisa respeitar
+
+- **Jornada:** contato → pré-orçamento (ou visita direta) → visita técnica → orçamento final → fechamento → OS + pagamento validado → pedido e produção → instalação → garantia/pós-venda. Só entra no sistema quem pede orçamento.
+- **Comprovante ≠ pagamento:** nada vai para a produção sem a validação financeira registrada (Madeleine é a única com acesso ao banco). SLA de 4h úteis para validar.
+- **Alçada de desconto:** Bru e Mirelle até 3–5%, caso a caso; acima disso, aprovação da Madeleine.
+- **Olist Tiny é a fonte da verdade** de cadastro do cliente, pedido de venda, OS, parcelas e nota fiscal. O sistema não duplica isso: guarda o nº do pedido de venda do Tiny. A proposta/orçamento NÃO é lançada no Tiny. Integração pela API v3 oficial do Olist (plano da loja: Evoluir): leitura de clientes depois do login fechado (fim da fase 1); criação de cliente e pedido de venda na fase 6. Chaves do Olist só no servidor, nunca no navegador.
+- **Follow-up do pré-orçamento:** até 3 lembretes, a cada 3 dias; depois sugere "Perdido · sem retorno".
+- **Orçamento pós-visita:** enviar em 1 dia útil (limite 2).
+- **Garantia:** 1 ano para produtos novos, 3 meses para serviços; primeiro retorno no mesmo dia útil; visita que não é defeito (ou fora da garantia) cobra taxa.
+- **Agenda:** a Agenda CLIENTES CDP (Google) continua sendo a dos técnicos; o sistema lê e sincroniza.
+- Custos dos itens são calculados no sistema (tabelas em `js/precos.js`); os portais Decore e Real ficam só para fazer os pedidos.
+
+## Pendências (ordem combinada)
+
+0. Seguir as fases do plano do projeto (link no topo). Fase 0 = este repositório organizado, app instalável, despertador e backup, subdomínio.
+
+1. Atualizar a tabela de Tecido Ateliê com os preços novos e o custo da Vidal.
+2. Módulo de Serviços (manutenção, lavagem, instalação). Depende da planilha de preços que a Bru vai preencher com a Madeleine.

@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CDP — Cálculos</title>
+<meta name="theme-color" content="#2B221C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Figtree:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Poppins:ital,wght@0,400;0,500;0,700;1,400;1,700&family=Montserrat:ital,wght@0,700;1,700&display=swap">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/tema.css">
+</head>
+<body>
+<!-- ═══════════ TELA DE LOGIN ═══════════ -->
+<div id="login-screen" style="position:fixed;inset:0;background:#2B221C;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'Gill Sans','Gill Sans MT',Poppins,sans-serif">
+  <div style="background:#FFF;border-radius:8px;padding:36px 32px;width:90%;max-width:360px;box-shadow:0 10px 40px rgba(0,0,0,.3)">
+    <div style="text-align:center;margin-bottom:24px">
+      <img src="assets/logo-11663b57.png" alt="Central das Persianas" style="height:46px;width:auto;display:block;margin:0 auto">
+      <div style="font-size:11px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-top:2px">CDP Sistema · Acesso</div>
+    </div>
+    <div id="login-form">
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px">Usuário</label>
+      <input type="text" id="login-user" autocomplete="username" autocapitalize="none" spellcheck="false" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px">Senha</label>
+      <input type="password" id="login-pass" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button onclick="doLogin()" id="login-btn" style="width:100%;padding:12px;background:#5A1524;color:#FFF;border:none;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Entrar</button>
+    <div id="login-erro" style="color:#C0392B;font-size:12.5px;margin-top:10px;text-align:center;display:none">Usuário ou senha incorretos.</div>
+    <div style="font-size:11.5px;color:#888;margin-top:14px;text-align:center;line-height:1.5">Esqueceu a senha? Peça para a Bru redefinir.</div>
+    </div>
+    <div id="senha-form" hidden>
+      <div id="senha-titulo" style="font-size:16px;font-weight:700;color:#5A1524;margin-bottom:6px">Crie a sua senha</div>
+      <div id="senha-dica" style="font-size:12.5px;color:#666;line-height:1.5;margin-bottom:14px"></div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px" for="senha-nova">Nova senha</label>
+        <input type="password" id="senha-nova" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px" for="senha-conf">Repita a nova senha</label>
+        <input type="password" id="senha-conf" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #DDD;border-radius:4px;font-size:14px;margin-top:4px;font-family:inherit" onkeydown="if(event.key==='Enter')salvarNovaSenha()">
+      </div>
+      <div style="font-size:11.5px;color:#888;margin:-8px 0 14px">Mínimo de 8 caracteres.</div>
+      <button onclick="salvarNovaSenha()" id="senha-btn" style="width:100%;padding:12px;background:#5A1524;color:#FFF;border:none;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Salvar senha</button>
+      <button onclick="cancelarTrocaSenha()" id="senha-cancelar" style="width:100%;padding:10px;background:none;color:#666;border:none;font-size:13px;cursor:pointer;font-family:inherit;margin-top:6px">Cancelar</button>
+      <div id="senha-erro" style="color:#C0392B;font-size:12.5px;margin-top:10px;text-align:center;display:none"></div>
+    </div>
+  </div>
+</div>
+<script src="js/login.js"></script>
+
+<header class="site-header">
+  <div class="site-header-in">
+    <img src="assets/logo-11663b57.png" alt="Central das Persianas">
+    <div class="usuario">
+      <button type="button" class="usuario-nome" onclick="abrirConfig()" title="Configurações e minha conta"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span id="usuario-logado"></span></button>
+      <button class="btn-sair" onclick="logout()"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs-nav">
+  <button class="btn-novo-orc" onclick="novoOrcamento()" title="Limpa o item/orçamento em andamento e os dados do cliente pra começar do zero"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Novo orçamento</button>
+  <div class="tabs-nav-divider"></div>
+  <button class="tab-btn active" data-tab="inicio" onclick="switchTab('inicio')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="lbl-full">Início</span><span class="lbl-curto">Início</span></button>
+  <button class="tab-btn" data-tab="hist" onclick="switchTab('hist')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span class="lbl-full">Orçamentos</span><span class="lbl-curto">Orçamentos</span></button>
+  <button class="tab-btn" data-tab="ret" onclick="switchTab('ret')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.8A8 8 0 1 1 21 12z"/></svg><span class="lbl-full">Retornos</span><span class="lbl-curto">Retornos</span><span class="tab-badge" id="ret-badge" hidden></span></button>
+  <button class="tab-btn" data-tab="agenda" onclick="switchTab('agenda')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="lbl-full">Agenda</span><span class="lbl-curto">Agenda</span></button>
+  <button class="tab-btn" data-tab="ped" onclick="switchTab('ped')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span class="lbl-full">Pedidos</span><span class="lbl-curto">Pedidos</span></button>
+</nav>
+
+<!-- ═══════════ CLIENTE ═══════════ -->
+<div class="cli-bar">
+  <div class="cli-bar-in">
+    <div class="cli-bar-titulo"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Cliente</div>
+    <div class="cli-grid">
+      <input type="text" id="cli-nome" class="cli-in principal" placeholder="Nome do cliente" aria-label="Nome do cliente" oninput="syncCliente()">
+      <input type="text" id="cli-tel" class="cli-in principal" placeholder="Telefone / WhatsApp" aria-label="Telefone / WhatsApp" oninput="syncCliente()">
+      <input type="text" id="cli-bairro" class="cli-in principal" placeholder="Bairro" aria-label="Bairro" oninput="syncCliente()">
+      <input type="text" id="cli-cidade" class="cli-in principal" list="lista-cidades" placeholder="Cidade" aria-label="Cidade" oninput="syncCliente()">
+      <select id="cli-uf" class="cli-in principal sel-uf" aria-label="Estado (UF)" oninput="syncCliente()" onchange="syncCliente()"></select>
+      <input type="text" id="cli-tiny" class="cli-in principal" placeholder="Nº proposta Tiny (opcional)" aria-label="Número da proposta no Tiny" oninput="syncCliente()">
+    </div>
+    <div class="cli-grid">
+      <input type="text" id="cli-cpf" class="cli-in cli-in-sec" placeholder="CPF/CNPJ" aria-label="CPF/CNPJ" oninput="syncCliente()">
+      <input type="text" id="cli-email" class="cli-in cli-in-sec" placeholder="E-mail" aria-label="E-mail" oninput="syncCliente()">
+      <input type="text" id="cli-end" class="cli-in cli-in-sec" placeholder="Endereço completo" aria-label="Endereço completo" oninput="syncCliente()">
+      <input type="text" id="cli-contato" class="cli-in cli-in-sec" placeholder="Contato (se diferente)" aria-label="Contato (se diferente)" oninput="syncCliente()">
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ TAB: CALCULADORA ═══════════ -->
+<div id="tab-calc" class="tab-panel" data-passo-atual="1">
+<div class="wrap">
+
+<!-- D1 · CABEÇALHO DOS PASSOS -->
+<div class="passos-topo">
+  <div class="passos-contexto" id="passos-contexto"></div>
+  <ol class="passos" id="passos">
+    <li data-p="1"><button type="button" onclick="irPasso(1)"><span>1</span>Ambiente</button></li>
+    <li data-p="2"><button type="button" onclick="irPasso(2)"><span>2</span>Produto</button></li>
+    <li data-p="3"><button type="button" onclick="irPasso(3)"><span>3</span>Medidas</button></li>
+    <li data-p="4"><button type="button" onclick="irPasso(4)"><span>4</span>Resultado</button></li>
+  </ol>
+  <div class="passo-amb" id="passo-amb"></div>
+</div>
+
+
+<!-- AMBIENTE -->
+<div class="card" id="ambiente-card" data-passo="1" style="border-color:var(--gold)">
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Ambiente deste item</div>
+  <div class="card-sub">Todo cálculo pertence a um ambiente — preencha antes de calcular (ex: Quarto Casal, Sala)</div>
+  <input type="text" id="item-ambiente" list="ambientes-datalist" placeholder="Ex: Quarto Casal" oninput="STATE.ambiente=this.value" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);font-size:13.5px;font-family:inherit;margin-top:6px">
+  <datalist id="ambientes-datalist"></datalist>
+</div>
+
+<!-- FÁBRICA -->
+<div class="card" data-passo="2">
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>Fábrica</div>
+  <div class="card-sub">Selecione o fornecedor para este cálculo</div>
+  <div class="fab-row">
+    <div class="fab-btn" id="fb-real" onclick="selectFab('real')">
+      <div class="fab-btn-name">Real Persianas</div>
+      <div class="fab-btn-sub">Desconto 20% · impostos inclusos</div>
+    </div>
+    <div class="fab-btn" id="fb-dec" onclick="selectFab('dec')">
+      <div class="fab-btn-name">Decore Persianas</div>
+      <div class="fab-btn-sub">Desconto 12% + 3% · + impostos PE</div>
+    </div>
+    <div class="fab-btn" id="fb-cdp" onclick="selectFab('cdp')">
+      <div class="fab-btn-name">CDP — Cortina Tradicional</div>
+      <div class="fab-btn-sub">Produção própria · tecido por metro linear</div>
+    </div>
+    <div class="fab-btn" id="fb-servico" onclick="selectFab('servico')" style="opacity:.7">
+      <div class="fab-btn-name"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>Serviços</div>
+      <div class="fab-btn-sub">Em construção — aguardando tabela de preços</div>
+    </div>
+  </div>
+  <!-- DESCONTO EDITÁVEL -->
+  <div class="disc-row" id="disc-row" style="display:none">
+    <span class="disc-label">Desconto aplicado:</span>
+    <div id="disc-real" class="disc-field" style="display:none">
+      <span>Real:</span>
+      <input type="number" id="disc-real-val" value="20" min="0" max="100" step="0.5" onchange="recalcDisc()">
+      <span>%</span>
+    </div>
+    <div id="disc-dec-normal" class="disc-field" style="display:none">
+      <span>Decore 1º desc:</span>
+      <input type="number" id="disc-dec-norm-val" value="12" min="0" max="100" step="0.5" onchange="recalcDisc()">
+      <span>%</span>
+    </div>
+    <div id="disc-dec-normal2" class="disc-field" style="display:none">
+      <span>Decore 2º desc:</span>
+      <input type="number" id="disc-dec-norm2-val" value="3" min="0" max="100" step="0.5" onchange="recalcDisc()">
+      <span>%</span>
+    </div>
+    <div id="disc-dec-promo" class="disc-field" style="display:none">
+      <span>Decore promo:</span>
+      <input type="number" id="disc-dec-promo-val" value="3" min="0" max="100" step="0.5" onchange="recalcDisc()">
+      <span>%</span>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUTO -->
+<div class="card" id="prod-card-wrap" data-passo="2">
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg></span>Produto</div>
+  <div class="card-sub">Categoria → Produto → Família → Coleção</div>
+  <div class="fg">
+    <div class="fl"><label>Categoria</label>
+      <select id="s-cat" onchange="onCat()" disabled><option value="">— Selecione —</option><option>CORTINAS</option><option>PERSIANAS</option></select></div>
+    <div class="fl"><label>Produto</label>
+      <select id="s-prod" onchange="onProd()" disabled><option value="">— Selecione —</option></select></div>
+    <div class="fl"><label>Família / Tipo</label>
+      <select id="s-fam" onchange="onFam()" disabled><option value="">— Selecione —</option></select></div>
+    <div class="fl"><label>Coleção</label>
+      <select id="s-col" onchange="onCol()" disabled><option value="">— Selecione —</option></select></div>
+  </div>
+  <div id="comando-chip" class="chip chip-blue" style="display:none"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span id="comando-txt"></span></div>
+  <div id="reducao-chip" class="chip chip-orange" style="display:none"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span id="reducao-txt"></span></div>
+  <div class="obs-box" id="obs-box"><h4><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Informações importantes</h4><ul id="obs-list"></ul></div>
+</div>
+
+<!-- CORTINA TRADICIONAL CDP -->
+<div class="card" id="cdp-trad-card" data-passo="2" style="display:none">
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg></span>Cortina tradicional · produção CDP</div>
+  <div class="card-sub">Tecido por metro linear, a partir da largura (única ou dupla camada)</div>
+  <div class="fg">
+    <div class="fl"><label>Tipo</label>
+      <select id="cdp-tipo" onchange="onCdpTipo()">
+        <option value="">— Selecione —</option>
+        <option value="unica">Única (1 camada)</option>
+        <option value="dupla">Dupla (2 camadas)</option>
+      </select></div>
+    <div class="fl"><label id="cdp-cam1-label">Camada 1</label>
+      <select id="cdp-cam1" onchange="onCdpCamada()" disabled><option value="">— Selecione o tipo primeiro —</option></select></div>
+    <div class="fl" id="cdp-cam2-wrap" style="display:none"><label>Camada 2 (Forro ou Blackout)</label>
+      <select id="cdp-cam2" onchange="onCdpCamada()"><option value="">— Selecione —</option></select></div>
+  </div>
+  <div class="fg" style="margin-top:10px">
+    <div class="fl"><label style="display:flex;align-items:center;gap:6px;text-transform:none;font-weight:500;font-size:12.5px">
+      <input type="checkbox" id="cdp-ilhos" onchange="onCdpCamada()" style="width:auto"> Ilhós (trilho varão/tubo) — acréscimo de 20%
+    </label></div>
+    <div class="fl"><label style="display:flex;align-items:center;gap:6px;text-transform:none;font-weight:500;font-size:12.5px">
+      <input type="checkbox" id="cdp-curvo" onchange="onCdpCurvo()" style="width:auto"> Tem trilho curvo? (valor com fornecedor externo)
+    </label></div>
+    <div class="fl" id="cdp-curvo-valor-wrap" style="display:none">
+      <label>Valor final do trilho curvo (R$)</label>
+      <input type="number" id="cdp-curvo-valor" step="0.01" placeholder="Ex: 350.00" onchange="onCdpCamada()">
+    </div>
+  </div>
+  <div class="obs-box on">
+    <h4><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Informações importantes</h4>
+    <ul>
+      <li class="obs-li">Cálculo: largura (m) × valor do metro linear de cada camada. Produção própria — sem desconto de fábrica.</li>
+      <li class="obs-li">Altura padrão de fabricação: até 2,70m. Acima disso, é cálculo personalizado com o ateliê — confirme com a Bru antes de fechar.</li>
+      <li class="obs-li">Casos que exigem cálculo à parte, fora desta calculadora: prega wave com fita, trilho curvo.</li>
+      <li class="obs-li">Atenção: preços de tecido nesta versão vêm da planilha de referência da CDP e ainda precisam ser confirmados — trate como estimativa até a Bru validar.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- JANELA vs CORTINA PRONTA -->
+<div class="card" data-passo="3" style="border-color:var(--gold)">
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l4 4L21 7l-4-4z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/></svg></span>O que você tem em mãos?</div>
+  <div class="card-sub">Se o cliente mandou medida de janela/vão, o sistema já soma a sobra certa (Guia de Processos)</div>
+  <div class="fg">
+    <div class="fl"><label>Tipo de medida</label>
+      <select id="tipo-medida" onchange="onTipoMedida()">
+        <option value="cortina">Medida da cortina/persiana pronta</option>
+        <option value="janela">Medida da janela/vão (calcular sobra)</option>
+      </select>
+    </div>
+  </div>
+  <div id="janela-wrap" style="display:none;margin-top:8px">
+    <div class="fg">
+      <div class="fl"><label>Largura da janela (m)</label><input type="number" id="jan-w" step="0.01" oninput="calcSobra()"></div>
+      <div class="fl"><label>Altura da janela (m)</label><input type="number" id="jan-h" step="0.01" oninput="calcSobra()"></div>
+      <div class="fl"><label>Instalação</label>
+        <select id="jan-instalacao" onchange="calcSobra()">
+          <option value="fora">Fora do vão (com sobra)</option>
+          <option value="dentro">Dentro do vão (igual à medida da janela)</option>
+        </select>
+      </div>
+    </div>
+    <div id="jan-bk-nota" style="display:none;font-size:11px;color:var(--tx2);background:var(--s3);border-radius:var(--r2);padding:8px 10px;margin-top:4px">
+      <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> Cortina Rolô: marque Bandô / Guia Inferior / Guias Laterais lá embaixo em <b>Acessórios & Opcionais</b> — a sobra usa a medida real da guia (6cm, 8cm etc.) no lugar da sobra genérica, sem precisar responder de novo.
+    </div>
+    <div id="jan-sugestao" style="font-size:12.5px;color:var(--grn);font-weight:700;margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- MEDIDAS -->
+<div class="card" data-passo="3">
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l4 4L21 7l-4-4z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/></svg></span>Medidas</div>
+  <div class="card-sub" id="medidas-sub">Medida final da cortina/persiana (já com sobra, se aplicável)</div>
+  <div class="fg">
+    <div class="fl"><label>Largura (m)</label>
+      <input type="number" id="i-w" placeholder="Ex: 1.50" min="0.30" max="6.00" step="0.01" oninput="onMedidas()"></div>
+    <div class="fl"><label>Altura (m)</label>
+      <input type="number" id="i-h" placeholder="Ex: 2.20" min="0.30" max="8.00" step="0.01" oninput="onMedidas()"></div>
+    <div class="fl"><label>Qtd. Peças</label>
+      <input type="number" id="i-qty" placeholder="1" min="1" max="100" step="1" oninput="onMedidas()"></div>
+  </div>
+  <div class="alert" id="alert-med"></div>
+  <div id="compat-sugest" style="display:none;margin-top:8px"></div>
+</div>
+
+<!-- DETALHAMENTO (preenchido automaticamente) -->
+<div class="card" data-passo="3">
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>Detalhamento do item</div>
+  <div class="card-sub">Preenchido sozinho conforme o modelo e a medida — edite os "A DEFINIR" antes de adicionar ao orçamento</div>
+  <textarea id="item-detalhamento" rows="3" oninput="this.dataset.editedManually='1'" style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);color:var(--tx);padding:8px 10px;font-family:'Gill Sans','Gill Sans MT',Poppins,sans-serif;font-size:12.5px;outline:none;resize:vertical"></textarea>
+</div>
+
+<!-- ACESSÓRIOS -->
+<div class="card acc-wrap" id="acc-wrap" data-passo="3">
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>Acessórios e opcionais</div>
+  <div class="card-sub">Itens específicos para este produto — preço atualizado conforme cor selecionada</div>
+  <div id="acc-content"></div>
+</div>
+
+<!-- SERVIÇOS / PEÇAS ADICIONAIS -->
+<div class="card" data-passo="3">
+  <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span>Serviços e peças adicionais</div>
+  <div class="card-sub">Para itens fora de tabela — ex: troca de peça específica, serviço extra, taxa de deslocamento</div>
+  <div id="extras-list" style="margin-top:8px"></div>
+  <div class="fg" style="margin-top:8px">
+    <div class="fl" style="flex:2"><label>Descrição</label>
+      <input type="text" id="extra-desc" placeholder="Ex: Troca de comando de acionamento"></div>
+    <div class="fl"><label>Valor (R$)</label>
+      <input type="number" id="extra-valor" step="0.01" placeholder="0,00"></div>
+    <div class="fl" style="flex:0 0 auto"><label style="opacity:0">.</label>
+      <button class="btn btn-sm" onclick="addExtra()" style="white-space:nowrap">+ Incluir</button></div>
+  </div>
+</div>
+
+<!-- BOTÕES AÇÃO (também fixos no rodapé, ver sticky-actions) -->
+
+<!-- RESULTADO -->
+<div class="result-wrap" id="result-wrap" data-passo="4">
+  <div class="card" id="rcard-wrap">
+    <div class="card-title" id="rcard-title">Resultado</div>
+    <!-- PREÇOS DE VENDA -->
+    <div style="margin-top:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Preços de Venda</div>
+      <div class="sell-grid" id="sell-grid"></div>
+    </div>
+
+    <!-- CUSTO (recolhido: informação interna) -->
+    <details class="custo-det">
+      <summary>Ver custo de fabricação e detalhes do cálculo</summary>
+      <div id="rcard-body"></div>
+    </details>
+
+    <!-- CARRINHO DO ORÇAMENTO -->
+    <div id="cart-bar" style="display:none;background:rgba(200,150,14,.08);border:1px solid rgba(200,150,14,.25);border-radius:var(--r2);padding:10px 14px;margin-top:12px">
+      <div id="cart-editing-banner" style="display:none;font-size:11px;color:var(--warn);background:rgba(182,130,53,.1);border:1px solid rgba(182,130,53,.3);border-radius:var(--r2);padding:5px 9px;margin-bottom:8px"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <span style="font-size:14px;font-weight:700;color:var(--tx);display:inline-flex;align-items:center;gap:8px"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Orçamento em andamento</span>
+          <span id="cart-count" style="font-size:12px;color:var(--tx2);margin-left:8px"></span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-outline" style="font-size:12px;padding:6px 14px" onclick="viewCart()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Ver itens</button>
+          <button class="btn btn-sm" id="btn-save-orc" onclick="saveOrcamento()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h11l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 1-2z"/><path d="M8 3v5h7M8 21v-7h8v7"/></svg>Salvar orçamento</button>
+        </div>
+      </div>
+      <!-- ITENS DO CARRINHO -->
+      <div id="cart-items" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="addToCart()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Adicionar ao orçamento</button>
+      <button class="btn-compare" id="btn-compare" onclick="toggleCompare()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M4 12h16M4 17h7"/><circle cx="18" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg>Comparar com outra fábrica</button>
+    </div>
+  </div>
+
+  <!-- COMPARAÇÃO -->
+  <div class="cmp-section" id="cmp-section">
+    <div class="cmp-divider"><div class="cmp-divider-line"></div><div class="cmp-divider-txt"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M4 12h16M4 17h7"/><circle cx="18" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg>Comparação com outra fábrica</div><div class="cmp-divider-line"></div></div>
+    <div class="fair-warn" id="fair-warn"></div>
+    <div id="cmp-config"></div>
+    <div class="btn-row">
+      <button class="btn btn-sm" onclick="runCompare()">Calcular Comparação</button>
+    </div>
+    <div class="cbar-wrap" id="cbar-wrap" style="display:none">
+      <div style="font-size:10.5px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Comparativo Visual</div>
+      <div class="cbar-inner">
+        <div class="cbar-side"><div class="cbar-name r">Real</div><div class="cbar-track"><div class="cbar-fill r" id="cbar-r" style="width:0%"></div></div><div class="cbar-val r" id="cval-r">—</div></div>
+        <div class="cdiff" id="cdiff"><strong>—</strong><span>diferença</span></div>
+        <div class="cbar-side"><div class="cbar-name d">Decore</div><div class="cbar-track"><div class="cbar-fill d" id="cbar-d" style="width:0%"></div></div><div class="cbar-val d" id="cval-d">—</div></div>
+      </div>
+    </div>
+    <div class="cmp-grid" id="cmp-results" style="display:none"></div>
+  </div>
+</div>
+
+<div class="passo-erro" id="passo-erro" role="alert"></div>
+<div class="passo-outro" data-passo="4" id="passo-orc-resumo"></div>
+</div><!-- wrap -->
+
+<!-- D1 · BARRA DOS PASSOS (rodapé fixo) -->
+<div class="passo-barra" id="passo-barra">
+  <button type="button" class="btn-outline" id="passo-voltar" onclick="passoVoltar()"></button>
+  <button type="button" class="btn" id="passo-avancar" onclick="passoAvancar()"></button>
+</div>
+</div><!-- tab-calc -->
+
+<!-- ═══════════ TAB: HISTÓRICO ═══════════ -->
+<!-- ═══════════ INÍCIO (E1): painel do dia ═══════════ -->
+<div id="tab-inicio" class="tab-panel active">
+<div class="wrap inicio-wrap" id="inicio-conteudo"><div class="hist-empty">Carregando…</div></div>
+</div>
+
+<div id="tab-ret" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <div class="hist-titulo">Retornos</div>
+      <div class="hist-sub" id="ret-contagem">Carregando…</div>
+    </div>
+    <button type="button" class="btn ret-btn-novo" onclick="novoRetorno()">+ Novo retorno</button>
+  </div>
+  <div class="hist-filtros" id="ret-filtros" role="tablist" aria-label="Filtrar retornos"></div>
+  <div id="ret-lista" class="ret-lista"></div>
+</div>
+</div>
+
+<div id="tab-agenda" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <div class="hist-titulo">Agenda</div>
+      <div class="hist-sub">Agenda CLIENTES CDP (Google) · <span id="ag-resumo"></span></div>
+    </div>
+  </div>
+  <div class="ag-nav">
+    <div class="hist-filtros" id="ag-modo"><button type="button" class="hist-chip on" data-m="dia" onclick="AG_MODO='dia';renderAgenda(true)">Dia</button><button type="button" class="hist-chip" data-m="semana" onclick="AG_MODO='semana';renderAgenda(true)">Semana</button></div>
+    <div class="ag-setas"><button type="button" class="ag-seta" onclick="moverAgenda(-1)" aria-label="Anterior">‹</button><button type="button" class="ag-hoje" onclick="moverAgenda(0)">Hoje</button><button type="button" class="ag-seta" onclick="moverAgenda(1)" aria-label="Próximo">›</button></div>
+  </div>
+  <div class="ag-periodo" id="ag-periodo"></div>
+  <div class="hist-filtros" id="ag-exec"></div>
+  <div id="ag-lista" class="ag-lista"></div>
+</div>
+</div>
+
+<div id="tab-gar" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <button type="button" class="novo-voltar" onclick="switchTab('inicio')"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Início</button>
+      <div class="hist-titulo">Garantia</div>
+      <div class="hist-sub" id="gar-contagem">Carregando…</div>
+    </div>
+    <button type="button" class="btn ret-btn-novo" onclick="novaGarantia()">+ Novo chamado</button>
+  </div>
+  <div class="hist-filtros" id="gar-filtros" role="tablist" aria-label="Filtrar chamados"></div>
+  <div id="gar-lista" class="gar-lista"></div>
+</div>
+</div>
+
+<div id="tab-ped" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <div class="hist-titulo">📦 Pedidos</div>
+      <div class="hist-sub" id="ped-sub">Carregando…</div>
+    </div>
+    <button type="button" class="btn-outline ret-btn-novo" onclick="renderPedidos(true)">🔄 Atualizar</button>
+  </div>
+  <div class="ped-aviso-tiny">O status de cada OS continua sendo mudado <b>no Tiny</b>; aqui o sistema lê e mostra o que fazer em cada fase.</div>
+  <div class="hist-filtros" id="ped-filtros" role="tablist" aria-label="Filtrar por fase"></div>
+  <div id="ped-lista"></div>
+</div>
+</div>
+
+<div id="tab-config" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <button type="button" class="novo-voltar" onclick="switchTab('inicio')"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Início</button>
+      <div class="hist-titulo">⚙️ Configurações</div>
+    </div>
+  </div>
+  <div id="cfg-conteudo"></div>
+</div>
+</div>
+
+<div id="tab-precos" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <button type="button" class="novo-voltar" onclick="abrirConfig()"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Configurações</button>
+      <div class="hist-titulo">Tabelas de preço</div>
+      <div class="hist-sub">Reajuste das fábricas sem mexer no código. As fórmulas continuam as mesmas.</div>
+    </div>
+  </div>
+  <div id="tp-conteudo"></div>
+</div>
+</div>
+
+<div id="tab-hist" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <div class="hist-titulo">Orçamentos</div>
+      <div class="hist-sub" id="hist-contagem">Carregando…</div>
+    </div>
+  </div>
+  <div class="hist-busca">
+    <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input type="search" id="hist-busca" placeholder="Buscar cliente, bairro ou nº" oninput="filtrarHistorico()" autocomplete="off" aria-label="Buscar orçamento">
+  </div>
+  <div class="hist-filtros" id="hist-filtros" role="tablist" aria-label="Filtrar por etapa"></div>
+  <div id="hist-list"></div>
+</div>
+</div>
+
+
+<!-- ═══════════ PASTA DO ORÇAMENTO (C3b): cliente, itens por ambiente, totais ═══════════ -->
+<div id="tab-orc" class="tab-panel">
+<div class="wrap pasta-wrap">
+  <button type="button" class="novo-voltar" onclick="voltarParaLista()"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Orçamentos</button>
+  <div class="pasta-topo">
+    <div class="pasta-nome" id="pasta-nome"></div>
+    <div class="pasta-sub" id="pasta-sub"></div>
+    <div class="pasta-controles">
+      <label class="pasta-etapa"><span>Etapa</span><select id="pasta-etapa" onchange="mudarEtapa(this.value)"></select></label>
+      <button type="button" class="btn-outline pasta-dados" id="pasta-dados" onclick="toggleDadosCliente()" aria-expanded="false"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Dados do cliente</button>
+    </div>
+  </div>
+
+  <div id="pasta-status"></div>
+  <div id="pasta-evol"></div>
+
+  <div class="card pasta-card">
+    <div class="pasta-sec"><span>Itens</span><span class="pasta-sec-n" id="pasta-n"></span></div>
+    <div id="pasta-lista"></div>
+    <button type="button" class="pasta-add" onclick="adicionarItemPasta()"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Adicionar item a este orçamento</button>
+  </div>
+
+  <div class="card pasta-card pasta-totais" id="pasta-totais"></div>
+  <div id="pasta-contato"></div>
+  <div id="pasta-encerrar"></div>
+  <div class="card pasta-card pasta-jornada" id="pasta-jornada"></div>
+</div>
+<div class="pasta-barra">
+  <button type="button" class="btn-outline" onclick="abrirPropostaPasta()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg>Proposta</button>
+  <button type="button" class="btn" id="pasta-salvar" onclick="salvarEFechar()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Salvar e fechar</button>
+</div>
+</div>
+
+
+<!-- Janela de confirmação usada na pasta (fechar, perdido, nº do pedido) -->
+<div id="modal" class="modal" hidden>
+  <div class="modal-fundo" onclick="fecharModal()"></div>
+  <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal-titulo" id="modal-titulo"></div>
+    <div class="modal-corpo" id="modal-corpo"></div>
+    <div class="modal-erro" id="modal-erro" role="alert"></div>
+    <div class="modal-botoes">
+      <button type="button" class="btn-outline" onclick="fecharModal()">Cancelar</button>
+      <button type="button" class="btn" id="modal-ok"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ NOVO ORÇAMENTO (C2): começa pelo cliente ═══════════ -->
+<div id="tab-novo" class="tab-panel">
+<div class="wrap novo-wrap">
+  <button type="button" class="novo-voltar" onclick="cancelarNovo()"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Orçamentos</button>
+  <div class="hist-titulo">Novo orçamento</div>
+  <div class="hist-sub">O número CDP é gerado sozinho ao criar.</div>
+
+  <div class="card novo-card">
+    <div class="novo-secao">Cliente</div>
+    <div id="olist-aviso"></div>
+    <div id="olist-busca-wrap" class="olist-busca" hidden>
+      <label class="novo-campo"><span>Buscar no Olist</span>
+        <input type="search" id="olist-busca" autocomplete="off" placeholder="Nome, celular ou CPF do cliente" oninput="olistDigitou()"></label>
+      <div id="olist-res" role="listbox" aria-label="Clientes encontrados no Olist"></div>
+    </div>
+    <div id="olist-pedidos"></div>
+    <label class="novo-campo"><span>Nome <b>*</b></span>
+      <input type="text" id="novo-nome" autocomplete="off" placeholder="Ex.: Maria Souza"></label>
+    <div class="novo-linha">
+      <label class="novo-campo"><span>WhatsApp <b>*</b></span>
+        <input type="tel" id="novo-tel" inputmode="tel" autocomplete="off" placeholder="(81) 9 0000-0000" oninput="mascaraTel(this); limparAvisoRepetido()"></label>
+    </div>
+    <div class="novo-linha novo-local">
+      <label class="novo-campo"><span>Bairro <b>*</b></span>
+        <input type="text" id="novo-bairro" autocomplete="off" placeholder="Ex.: Boa Viagem"></label>
+      <label class="novo-campo"><span>Cidade <b>*</b></span>
+        <input type="text" id="novo-cidade" list="lista-cidades" autocomplete="off" placeholder="Ex.: Recife"></label>
+      <label class="novo-campo novo-uf"><span>UF <b>*</b></span>
+        <select id="novo-uf" class="sel-uf" aria-label="Estado"></select></label>
+    </div>
+    <button type="button" class="novo-sem-local" onclick="localNaoInformado()">Cliente não informou? Preencher com "-"</button>
+    <datalist id="lista-cidades"></datalist>
+    <details class="novo-mais">
+      <summary>+ Endereço, CPF/CNPJ e e-mail <span>(opcional)</span></summary>
+      <label class="novo-campo"><span>Endereço completo</span><input type="text" id="novo-end" autocomplete="off"></label>
+      <div class="novo-linha">
+        <label class="novo-campo"><span>CPF/CNPJ</span><input type="text" id="novo-cpf" inputmode="numeric" autocomplete="off"></label>
+        <label class="novo-campo"><span>E-mail</span><input type="email" id="novo-email" autocomplete="off"></label>
+      </div>
+      <div class="novo-obs">Esses três ficam só na tela para a proposta. O cadastro oficial do cliente continua no Tiny.</div>
+    </details>
+  </div>
+
+  <div class="card novo-card">
+    <div class="novo-secao">Como começa este atendimento? <b>*</b></div>
+    <div class="novo-opcoes" role="radiogroup" aria-label="Como começa este atendimento">
+      <button type="button" class="novo-opcao" role="radio" aria-checked="false" data-comeco="pre_orcamento" onclick="escolherComeco(this)">
+        <strong>Pré-orçamento</strong><span>Com as medidas que o cliente mandou</span></button>
+      <button type="button" class="novo-opcao" role="radio" aria-checked="false" data-comeco="visita_direta" onclick="escolherComeco(this)">
+        <strong>Visita direta</strong><span>Agendar a medição na casa do cliente</span></button>
+    </div>
+  </div>
+
+  <div class="card novo-card">
+    <div class="novo-secao">Como nos conheceu?</div>
+    <div class="novo-chips" role="radiogroup" aria-label="Como nos conheceu">
+      <button type="button" class="hist-chip" data-origem="Instagram" onclick="escolherOrigem(this)">Instagram</button>
+      <button type="button" class="hist-chip" data-origem="Indicação" onclick="escolherOrigem(this)">Indicação</button>
+      <button type="button" class="hist-chip" data-origem="Google" onclick="escolherOrigem(this)">Google</button>
+      <button type="button" class="hist-chip" data-origem="Já é cliente" onclick="escolherOrigem(this)">Já é cliente</button>
+      <button type="button" class="hist-chip" data-origem="Outro" onclick="escolherOrigem(this)">Outro</button>
+    </div>
+  </div>
+
+  <div id="novo-repetido" role="status"></div>
+  <div class="novo-erro" id="novo-erro" role="alert"></div>
+  <button type="button" class="btn novo-criar" id="novo-criar" onclick="criarOrcamento()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Criar e adicionar itens</button>
+</div>
+</div>
+
+
+<!-- ═══════════ TAB: PROPOSTA ═══════════ -->
+<div id="tab-proposta" class="tab-panel">
+<div class="wrap">
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg></span>Gerar proposta comercial</div>
+    <div class="card-sub">Cliente já vem da barra do topo. Só falta a validade e o tipo de proposta.</div>
+    <div class="fg" style="margin-bottom:12px">
+      <div class="fl"><label>Validade da Proposta</label>
+        <select id="p-val"><option value="7 DIAS">7 dias</option><option value="15 DIAS">15 dias</option><option value="30 DIAS">30 dias</option></select></div>
+      <div class="fl"><label>Tipo</label>
+        <select id="p-tipo" onchange="onPTipo()"><option value="PRÉ-ORÇAMENTO">Pré-Orçamento</option><option value="ORÇAMENTO PÓS-VISITA">Orçamento Pós-Visita</option></select></div>
+      <div class="fl" id="p-datavisita-wrap" style="display:none"><label>Data da Visita Técnica</label><input type="date" id="p-datavisita"></div>
+    </div>
+    <input type="hidden" id="p-detail" value="">
+    <div id="p-from-calc" style="background:rgba(200,150,14,.08);border:1px solid rgba(200,150,14,.25);border-radius:var(--r2);padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--gold)">
+      <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Calcule um produto na aba <b>Calculadora</b> e os valores serão preenchidos automaticamente aqui.</span>
+    </div>
+    <div id="p-detalhes-itens" style="margin-bottom:16px"></div>
+    <div id="p-combos"></div>
+    <div class="btn-row">
+      <button class="btn" onclick="gerarProposta()"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/></svg>Gerar proposta</button>
+      <button class="btn-outline" onclick="imprimirProposta()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Imprimir / salvar PDF</button>
+    </div>
+  </div>
+
+  <!-- PROPOSTA PREVIEW -->
+  <div id="proposta-preview" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--tx2)">Pré-visualização da Proposta</div>
+      <button class="btn-outline btn-sm" onclick="imprimirProposta()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Imprimir / PDF</button>
+    </div>
+    <div id="proposta-doc"></div>
+  </div>
+</div>
+</div>
+
+<script src="js/icones.js"></script>
+<script src="js/precos.js"></script>
+<script src="js/app.js"></script>
+<script src="js/pasta.js"></script>
+<script src="js/passos.js"></script>
+<script src="js/inicio.js"></script>
+<script src="js/proposta.js"></script>
+<script src="js/combinacoes.js"></script>
+<script src="js/cidades.js"></script>
+<script src="js/olist.js"></script>
+<script src="js/retornos.js"></script>
+<script src="js/tabelas.js"></script>
+<script src="js/agenda.js"></script>
+<script src="js/confirmacoes.js"></script>
+<script src="js/garantia.js"></script>
+<script src="js/fechamento.js"></script>
+<script src="js/pedidos.js"></script>
+<script src="js/config.js"></script>
+
+<!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
+<div id="orc-resumo-bar" style="position:fixed;bottom:60px;left:0;right:0;background:#2B221C;color:#FFF;z-index:499;display:none">
+  <div onclick="abrirPasta()" role="button" tabindex="0" style="padding:8px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:12.5px">
+    <span id="orc-resumo-contador">0 itens</span>
+    <span id="orc-resumo-valores" style="font-weight:700"></span>
+    <span style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:10.5px;color:#BBB" id="orc-resumo-dica">toque para abrir o orçamento</span>
+      <span id="orc-resumo-seta">▲</span>
+    </span>
+  </div>
+  <div id="orc-resumo-painel" style="display:none;max-height:45vh;overflow-y:auto;background:#FFF;color:var(--tx);padding:10px 16px;border-top:1px solid #DDD"></div>
+</div>
+
+<!-- BARRA FIXA DE AÇÃO (Calcular/Limpar sempre visíveis) -->
+<div id="sticky-actions" style="position:fixed;bottom:0;left:0;right:0;background:#FFF;border-top:2px solid var(--gold);padding:10px 20px;display:none;gap:10px;justify-content:center;z-index:500;box-shadow:0 -4px 16px rgba(0,0,0,.08)">
+  <button class="btn" onclick="calcular()"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg>Calcular</button>
+  <button class="btn-outline" onclick="onLimparClick()" style="flex:0 0 auto"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Limpar</button>
+</div>
+<div style="height:150px"></div>
+<script src="js/pwa.js"></script>
+</body>
+</html>
