@@ -17,9 +17,9 @@ function voltarParaLista(destino){
   if(!confirmarSairOrc()) return;
   limparOrcamentoEmAndamento();
   document.body.classList.remove('cli-aberto');
-  const d = destino === 'inicio' ? 'inicio' : 'hist';
+  const d = destino === 'inicio' ? 'inicio' : destino === 'ret' ? 'ret' : 'hist';
   irParaTab(d);
-  if(d === 'inicio') renderInicio(true); else renderHistory();
+  if(d === 'inicio') renderInicio(true); else if(d === 'ret') renderRetornos(true); else renderHistory();
   window.scrollTo({top:0});
 }
 
@@ -79,6 +79,7 @@ function renderPasta(){
   renderEvolucao();
   renderJornada();
   renderStatus();
+  if(typeof renderContatoPasta === 'function') renderContatoPasta();
   renderEncerrar();
   const trav = orcTravado();
   document.body.classList.toggle('orc-travado', trav);

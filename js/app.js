@@ -896,6 +896,9 @@ async function sbFetchHistory(){
     origem: r.origem || null,
     comoComecou: r.como_comecou || null,
     anteriorId: r.anterior_id || null,
+    ultimoContato: r.ultimo_contato || null,
+    proximoContato: r.proximo_contato || null,
+    qtdContatos: r.qtd_contatos || 0,
     pedidoTiny: r.pedido_tiny || '',
     fechadoEm: r.fechado_em || null,
     motivoPerda: r.motivo_perda || '',
@@ -2233,9 +2236,10 @@ window.addEventListener('resize', () => {
 });
 
 function switchTab(t){
-  if((t === 'hist' || t === 'inicio') && orcamentoAberto()){ voltarParaLista(t); return; }
+  if((t === 'hist' || t === 'inicio' || t === 'ret') && orcamentoAberto()){ voltarParaLista(t); return; }
   irParaTab(t);
   if(t==='hist') renderHistory();
+  if(t==='ret'){ renderRetornos(true); if(!HIST_CARREGADO) renderHistory().then(() => renderRetornos()); }
   if(t==='inicio') renderInicio(true);
   if(t==='proposta') syncPropostaFromCalc();
 }
