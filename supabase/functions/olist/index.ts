@@ -248,6 +248,7 @@ async function sincronizarOS() {
   const agora = new Date().toISOString();
   const linhas: any[] = [];
   let detalhes = 0;
+  let notasBloqueadas = false;   // o aplicativo do Olist sem permissão de "notas fiscais" (403) ou limite atingido (429): não insiste nesta leitura
   for (const [id, p] of vistos) {
     const sit = Number(p.situacao);
     const antes: any = ja.get(id);
@@ -275,13 +276,15 @@ async function sincronizarOS() {
         linha.nf_checado_em = agora;
       } catch { /* fica para a próxima leitura */ }
     }
-    // nota ligada: nº e situação (de novo enquanto estiver pendente/em envio)
-    if (sit === 6 && linha.nf_id && (!linha.nf_numero || [null, 1, 4, 9].includes(linha.nf_situacao)) && detalhes < 40) {
+    // nota ligada: nº e situação (de novo enquanto estiver pendente/em envio), no máximo a cada 6h por OS
+    const notaVencida = !antes?.nf_checado_em || linha.nf_checado_em === agora || Date.now() - new Date(antes.nf_checado_em).getTime() > 6 * 3600e3;
+    if (sit === 6 && linha.nf_id && !notasBloqueadas && notaVencida && (!linha.nf_numero || [null, 1, 4, 9].includes(linha.nf_situacao)) && detalhes < 40) {
       detalhes++;
+      linha.nf_checado_em = agora;
       try {
         const n = await tiny(`/notas/${linha.nf_id}`);
         if (n) { linha.nf_numero = n.numero ? String(n.numero) : linha.nf_numero; linha.nf_situacao = n.situacao != null && n.situacao !== "" ? Number(n.situacao) : linha.nf_situacao; }
-      } catch { /* depois */ }
+      } catch (e) { if (/ 40[13]| 429/.test(String(e))) notasBloqueadas = true; }
     }
     if (linha.situacao_desde === undefined) delete linha.situacao_desde;
     linhas.push(linha);
