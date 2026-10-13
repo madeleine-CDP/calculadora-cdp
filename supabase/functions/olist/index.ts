@@ -249,6 +249,7 @@ async function sincronizarOS() {
   const linhas: any[] = [];
   let detalhes = 0;
   let notasBloqueadas = false;   // o aplicativo do Olist sem permissão de "notas fiscais" (403) ou limite atingido (429): não insiste nesta leitura
+  const enviadasPorEmail: number[] = [];   // nota achada agora e cliente com e-mail no Olist → o Olist já mandou a NF por e-mail (regra A, Bru 13/10/2026)
   for (const [id, p] of vistos) {
     const sit = Number(p.situacao);
     const antes: any = ja.get(id);
@@ -272,7 +273,10 @@ async function sincronizarOS() {
         linha.numero_fabrica = numeroFabrica(d) ?? linha.numero_fabrica;
         linha.data_entrega = soData(d?.dataEntrega) ?? linha.data_entrega;
         if (d?.valorTotalPedido != null) linha.valor = Number(d.valorTotalPedido);
-        if (d?.idNotaFiscal) linha.nf_id = Number(d.idNotaFiscal);
+        if (d?.idNotaFiscal) {
+          linha.nf_id = Number(d.idNotaFiscal);
+          if (!antes?.nf_id && String(d?.cliente?.email ?? "").includes("@")) enviadasPorEmail.push(id);
+        }
         linha.nf_checado_em = agora;
       } catch { /* fica para a próxima leitura */ }
     }
@@ -311,6 +315,10 @@ async function sincronizarOS() {
     const com = linhas.filter((l) => "situacao_desde" in l), sem = linhas.filter((l) => !("situacao_desde" in l));
     if (com.length) await admin.from("os_acompanhamento").upsert(com, { onConflict: "pedido_id" });
     if (sem.length) await admin.from("os_acompanhamento").upsert(sem, { onConflict: "pedido_id" });
+  }
+  // marca "enviada por e-mail pelo Olist" (só se ninguém marcou nada ainda; a equipe pode desfazer)
+  if (enviadasPorEmail.length) {
+    await admin.from("os_acompanhamento").update({ nf_enviada_em: agora, nf_enviada_por: "Olist (e-mail)" }).in("pedido_id", enviadasPorEmail).is("nf_enviada_em", null);
   }
   return { lidas: vistos.size, detalhes };
 }

@@ -221,7 +221,9 @@ function cardOS(o, fase){
          <div class="conf-ctrl"><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_fora_em',true)">NF de serviço emitida fora do Tiny (Tinus)</button></div>`
       : `<div class="conf-ctrl"><span class="conf-st ok">🧾 ${nfNome}</span>${o.nf_fora_em ? `<span class="conf-nota">${quando(o.nf_fora_por, o.nf_fora_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_fora_em',false)">desfazer</button>` : ''}</div>
          <div class="conf-ctrl">${o.nf_enviada_em
-           ? `<span class="conf-st ok">📤 NF enviada ao cliente</span><span class="conf-nota">${quando(o.nf_enviada_por, o.nf_enviada_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',false)">desfazer</button>`
+           ? (o.nf_enviada_por === 'Olist (e-mail)'
+              ? `<span class="conf-st ok">📧 NF enviada por e-mail pelo Olist</span><span class="conf-nota">cliente com e-mail no cadastro</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',false)">não foi enviada</button>`
+              : `<span class="conf-st ok">📤 NF enviada ao cliente</span><span class="conf-nota">${quando(o.nf_enviada_por, o.nf_enviada_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',false)">desfazer</button>`)
            : `<span class="conf-st env">📤 Enviar a NF ao cliente</span><button type="button" class="conf-btn ok" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',true)">${ic('ok',15)} Já enviei a NF</button>`}</div>`;
     const aval = o.avaliacao_em
       ? `<div class="conf-ctrl"><span class="conf-st ok">⭐ Avaliação pedida</span><span class="conf-nota">${quando(o.avaliacao_por, o.avaliacao_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'avaliacao_em',false)">desfazer</button></div>`
