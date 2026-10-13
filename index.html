@@ -59,7 +59,7 @@
   <div class="site-header-in">
     <img src="assets/logo-11663b57.png" alt="Central das Persianas">
     <div class="usuario">
-      <button type="button" class="usuario-nome" onclick="mostrarTrocaSenha(false)" title="Trocar minha senha"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span id="usuario-logado"></span></button>
+      <button type="button" class="usuario-nome" onclick="abrirConfig()" title="Configurações e minha conta"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span id="usuario-logado"></span></button>
       <button class="btn-sair" onclick="logout()"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button>
     </div>
   </div>
@@ -72,7 +72,7 @@
   <button class="tab-btn" data-tab="hist" onclick="switchTab('hist')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span class="lbl-full">Orçamentos</span><span class="lbl-curto">Orçamentos</span></button>
   <button class="tab-btn" data-tab="ret" onclick="switchTab('ret')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.8A8 8 0 1 1 21 12z"/></svg><span class="lbl-full">Retornos</span><span class="lbl-curto">Retornos</span><span class="tab-badge" id="ret-badge" hidden></span></button>
   <button class="tab-btn" data-tab="agenda" onclick="switchTab('agenda')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="lbl-full">Agenda</span><span class="lbl-curto">Agenda</span></button>
-  <button class="tab-btn" data-tab="calc" onclick="switchTab('calc')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h8"/></svg><span class="lbl-full">Calculadora</span><span class="lbl-curto">Calcular</span></button>
+  <button class="tab-btn" data-tab="ped" onclick="switchTab('ped')"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span class="lbl-full">Pedidos</span><span class="lbl-curto">Pedidos</span></button>
 </nav>
 
 <!-- ═══════════ CLIENTE ═══════════ -->
@@ -83,7 +83,7 @@
       <input type="text" id="cli-nome" class="cli-in principal" placeholder="Nome do cliente" aria-label="Nome do cliente" oninput="syncCliente()">
       <input type="text" id="cli-tel" class="cli-in principal" placeholder="Telefone / WhatsApp" aria-label="Telefone / WhatsApp" oninput="syncCliente()">
       <input type="text" id="cli-bairro" class="cli-in principal" placeholder="Bairro" aria-label="Bairro" oninput="syncCliente()">
-      <input type="text" id="cli-cidade" class="cli-in principal" list="lista-cidades" placeholder="Cidade" aria-label="Cidade" oninput="syncCliente()">
+      <input type="text" id="cli-cidade" class="cli-in principal" placeholder="Cidade" aria-label="Cidade" oninput="syncCliente()">
       <select id="cli-uf" class="cli-in principal sel-uf" aria-label="Estado (UF)" oninput="syncCliente()" onchange="syncCliente()"></select>
       <input type="text" id="cli-tiny" class="cli-in principal" placeholder="Nº proposta Tiny (opcional)" aria-label="Número da proposta no Tiny" oninput="syncCliente()">
     </div>
@@ -390,6 +390,7 @@
     <button type="button" class="btn ret-btn-novo" onclick="novoRetorno()">+ Novo retorno</button>
   </div>
   <div class="hist-filtros" id="ret-filtros" role="tablist" aria-label="Filtrar retornos"></div>
+  <div id="ret-pessoas"></div>
   <div id="ret-lista" class="ret-lista"></div>
 </div>
 </div>
@@ -412,11 +413,53 @@
 </div>
 </div>
 
-<div id="tab-precos" class="tab-panel">
+<div id="tab-gar" class="tab-panel">
 <div class="wrap">
   <div class="hist-topo">
     <div>
       <button type="button" class="novo-voltar" onclick="switchTab('inicio')"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Início</button>
+      <div class="hist-titulo">Garantia</div>
+      <div class="hist-sub" id="gar-contagem">Carregando…</div>
+    </div>
+    <button type="button" class="btn ret-btn-novo" onclick="novaGarantia()">+ Novo chamado</button>
+  </div>
+  <div class="hist-filtros" id="gar-filtros" role="tablist" aria-label="Filtrar chamados"></div>
+  <div id="gar-lista" class="gar-lista"></div>
+</div>
+</div>
+
+<div id="tab-ped" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <div class="hist-titulo">📦 Pedidos</div>
+      <div class="hist-sub" id="ped-sub">Carregando…</div>
+    </div>
+    <button type="button" class="btn-outline ret-btn-novo" onclick="renderPedidos(true)">🔄 Atualizar</button>
+  </div>
+  <div class="ped-aviso-tiny">O status de cada OS continua sendo mudado <b>no Tiny</b>; aqui o sistema lê e mostra o que fazer em cada fase.</div>
+  <div class="hist-filtros" id="ped-filtros" role="tablist" aria-label="Filtrar por fase"></div>
+  <div id="ped-lista"></div>
+</div>
+</div>
+
+<div id="tab-config" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <button type="button" class="novo-voltar" onclick="switchTab('inicio')"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Início</button>
+      <div class="hist-titulo">⚙️ Configurações</div>
+    </div>
+  </div>
+  <div id="cfg-conteudo"></div>
+</div>
+</div>
+
+<div id="tab-precos" class="tab-panel">
+<div class="wrap">
+  <div class="hist-topo">
+    <div>
+      <button type="button" class="novo-voltar" onclick="abrirConfig()"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Configurações</button>
       <div class="hist-titulo">Tabelas de preço</div>
       <div class="hist-sub">Reajuste das fábricas sem mexer no código. As fórmulas continuam as mesmas.</div>
     </div>
@@ -517,12 +560,11 @@
       <label class="novo-campo"><span>Bairro <b>*</b></span>
         <input type="text" id="novo-bairro" autocomplete="off" placeholder="Ex.: Boa Viagem"></label>
       <label class="novo-campo"><span>Cidade <b>*</b></span>
-        <input type="text" id="novo-cidade" list="lista-cidades" autocomplete="off" placeholder="Ex.: Recife"></label>
+        <input type="text" id="novo-cidade" autocomplete="off" placeholder="Ex.: Recife"></label>
       <label class="novo-campo novo-uf"><span>UF <b>*</b></span>
         <select id="novo-uf" class="sel-uf" aria-label="Estado"></select></label>
     </div>
     <button type="button" class="novo-sem-local" onclick="localNaoInformado()">Cliente não informou? Preencher com "-"</button>
-    <datalist id="lista-cidades"></datalist>
     <details class="novo-mais">
       <summary>+ Endereço, CPF/CNPJ e e-mail <span>(opcional)</span></summary>
       <label class="novo-campo"><span>Endereço completo</span><input type="text" id="novo-end" autocomplete="off"></label>
@@ -606,12 +648,17 @@
 <script src="js/inicio.js"></script>
 <script src="js/proposta.js"></script>
 <script src="js/combinacoes.js"></script>
+<script src="js/municipios.js"></script>
 <script src="js/cidades.js"></script>
 <script src="js/olist.js"></script>
 <script src="js/retornos.js"></script>
 <script src="js/tabelas.js"></script>
 <script src="js/agenda.js"></script>
 <script src="js/confirmacoes.js"></script>
+<script src="js/garantia.js"></script>
+<script src="js/fechamento.js"></script>
+<script src="js/pedidos.js"></script>
+<script src="js/config.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
 <div id="orc-resumo-bar" style="position:fixed;bottom:60px;left:0;right:0;background:#2B221C;color:#FFF;z-index:499;display:none">

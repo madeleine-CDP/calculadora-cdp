@@ -9,7 +9,10 @@
 //   GET  callback  → o Olist volta aqui depois da autorização      (navegador)
 //   POST buscar    → { termo } → clientes por nome, celular ou CPF (equipe)
 //   POST contato   → { id } → cadastro completo do cliente (celular, endereço) (equipe)
-//   POST pedidos   → { cpfCnpj, nome } → últimos pedidos no Tiny    (equipe)
+//   POST pedidos   → { cpfCnpj, nome } → últimos pedidos no Tiny, com a data de entrega das OS entregues (equipe)
+//   POST posvenda  → lê as OS "Entregue" de 5 a 13 meses atrás e guarda a data real da instalação na tabela posvenda (equipe)
+//   POST os        → lê as OS em andamento (aberta → entregue nos últimos 30 dias, com a nota fiscal) e guarda em os_acompanhamento (equipe)
+//   POST os_numero → { numero } → OS do Tiny por número: valor, situação, cliente (para conferir com o orçamento) (equipe)
 //   POST renovar   → renova a autorização (agendamento a cada 3h)  (aberto; não devolve dados)
 // Só leitura no Tiny: nada é criado nem alterado lá.
 // ═══════════════════════════════════════════════════════
@@ -136,6 +139,7 @@ function cliente(c: any) {
     celular: c.celular ?? "", telefone: c.telefone ?? "", email: c.email ?? "",
     endereco: rua, bairro: e.bairro ?? "", cidade: [e.municipio, e.uf].filter(Boolean).join("/"), cep: e.cep ?? "",
     situacao: c.situacao ?? "",
+    tipoPessoa: c.tipoPessoa ?? "", inscricaoEstadual: c.inscricaoEstadual ?? "", numero: e.numero ?? "",
   };
 }
 const SITUACAO: Record<string, string> = {
@@ -165,13 +169,169 @@ async function buscar(termo: string) {
   return [...vistos.values()].slice(0, 10);
 }
 
+const soData = (t: unknown) => { const m = String(t ?? "").match(/^\d{4}-\d{2}-\d{2}/); return m ? m[0] : null; };
+// A lista do Olist não traz a data de entrega: ela vem do detalhe de cada OS
+async function dataEntrega(id: number) {
+  const d = await tiny(`/pedidos/${id}`);
+  return soData(d?.dataEntrega) ?? soData(d?.dataPrevista);
+}
+
 async function pedidos(cpfCnpj: string, nome: string) {
   const q = so(cpfCnpj) ? "cpfCnpj=" + encodeURIComponent(cpfCnpj) : "nomeCliente=" + encodeURIComponent(nome);
   const d = await tiny(`/pedidos?${q}&orderBy=desc&limit=5`);
-  return (d?.itens ?? []).map((p: any) => ({
-    numero: p.numeroPedido, data: p.dataCriacao ?? "", valor: Number(p.valor ?? 0),
-    situacao: SITUACAO[String(p.situacao)] ?? String(p.situacao ?? ""),
+  const lista = (d?.itens ?? []).map((p: any) => ({
+    id: p.id, numero: p.numeroPedido, data: p.dataCriacao ?? "", valor: Number(p.valor ?? 0),
+    situacao: SITUACAO[String(p.situacao)] ?? String(p.situacao ?? ""), entregue: String(p.situacao) === "6", entrega: null as string | null,
   }));
+  await Promise.all(lista.filter((p: any) => p.entregue && p.id).map(async (p: any) => { try { p.entrega = await dataEntrega(p.id); } catch { /* sem data */ } }));
+  return lista;
+}
+
+// Pós-venda: guarda a data real da instalação das OS entregues (sem repetir consulta das que já foram lidas)
+const isoDia = (d: Date) => d.toISOString().slice(0, 10);
+async function sincronizarPosvenda() {
+  const hoje = new Date();
+  const ini = new Date(hoje); ini.setMonth(ini.getMonth() - 13);
+  const fim = new Date(hoje); fim.setMonth(fim.getMonth() - 5);
+  const achados: any[] = [];
+  for (let off = 0; off < 500; off += 100) {
+    const d = await tiny(`/pedidos?situacao=6&dataInicial=${isoDia(ini)}&dataFinal=${isoDia(fim)}&limit=100&offset=${off}`);
+    const it = d?.itens ?? []; achados.push(...it);
+    if (it.length < 100) break;
+  }
+  const ids = achados.map((p) => Number(p.id)).filter(Boolean);
+  const { data: ja } = ids.length ? await admin.from("posvenda").select("pedido_id").in("pedido_id", ids) : { data: [] };
+  const conhecidos = new Set((ja ?? []).map((r: any) => Number(r.pedido_id)));
+  const novos = achados.filter((p) => p.id && !conhecidos.has(Number(p.id)));
+  const lote = novos.slice(0, 25);   // no máximo 25 consultas por vez (limite do Olist: 60 por minuto)
+  const linhas = [];
+  for (const p of lote) {
+    let entrega: string | null = null;
+    try { entrega = await dataEntrega(Number(p.id)); } catch { continue; }
+    const c = p.cliente ?? {};
+    linhas.push({ pedido_id: Number(p.id), numero: String(p.numeroPedido ?? ""), cliente: c.nome ?? "", celular: c.celular || c.telefone || "", data_entrega: entrega });
+  }
+  if (linhas.length) await admin.from("posvenda").upsert(linhas, { onConflict: "pedido_id", ignoreDuplicates: true });
+  return { lidos: linhas.length, faltam: novos.length - lote.length };
+}
+
+// ── OS em andamento (Fase 4 · Pedidos) ──
+// Situações do Olist: 0 aberta · 3 aprovada · 4 preparando envio · 7 pronto p/ envio · 5 enviada · 1 faturada · 6 entregue
+const ATIVAS = [0, 3, 4, 7, 5, 1];
+// nº do pedido na fábrica (D2299 / R2249): no campo "nº da ordem de compra" da OS; se vazio, procura nas observações
+function numeroFabrica(d: any) {
+  const achar = (t: unknown) => (String(t ?? "").toUpperCase().match(/\b[DR]\s?-?\d{3,5}\b/g) ?? []).map((x) => x.replace(/[\s-]/g, ""));
+  const l = [...achar(d?.numeroOrdemCompra), ...achar(d?.observacoesInternas), ...achar(d?.observacoes)];
+  return [...new Set(l)].join(" / ") || (String(d?.numeroOrdemCompra ?? "").trim() || null);
+}
+async function sincronizarOS() {
+  const hoje = new Date();
+  const desde = new Date(hoje); desde.setDate(desde.getDate() - 30);   // entregues dos últimos 30 dias (avaliação + nota fiscal)
+  const vistos = new Map<number, any>();
+  for (const sit of ATIVAS) {
+    for (let off = 0; off < 300; off += 100) {
+      const d = await tiny(`/pedidos?situacao=${sit}&limit=100&offset=${off}`);
+      const it = d?.itens ?? []; it.forEach((p: any) => vistos.set(Number(p.id), p));
+      if (it.length < 100) break;
+    }
+  }
+  // entregues recentemente (pedido de avaliação e nota fiscal)
+  for (let off = 0; off < 300; off += 100) {
+    const ent = await tiny(`/pedidos?situacao=6&dataAtualizacao=${isoDia(desde)}&limit=100&offset=${off}`);
+    const it = ent?.itens ?? []; it.forEach((p: any) => vistos.set(Number(p.id), p));
+    if (it.length < 100) break;
+  }
+
+  const ids = [...vistos.keys()];
+  const { data: jaRows } = ids.length ? await admin.from("os_acompanhamento").select("pedido_id,situacao,numero_fabrica,data_entrega,nf_id,nf_numero,nf_situacao,nf_checado_em").in("pedido_id", ids) : { data: [] };
+  const ja = new Map((jaRows ?? []).map((r: any) => [Number(r.pedido_id), r]));
+  const agora = new Date().toISOString();
+  const linhas: any[] = [];
+  let detalhes = 0;
+  let notasBloqueadas = false;   // o aplicativo do Olist sem permissão de "notas fiscais" (403) ou limite atingido (429): não insiste nesta leitura
+  const enviadasPorEmail: number[] = [];   // nota achada agora e cliente com e-mail no Olist → o Olist já mandou a NF por e-mail (regra A, Bru 13/10/2026)
+  for (const [id, p] of vistos) {
+    const sit = Number(p.situacao);
+    const antes: any = ja.get(id);
+    const c = p.cliente ?? {};
+    const linha: any = {
+      pedido_id: id, numero: String(p.numeroPedido ?? ""), cliente: c.nome ?? "", celular: c.celular || c.telefone || "",
+      valor: Number(p.valor ?? 0), situacao: sit, data_venda: soData(p.dataCriacao), data_prevista: soData(p.dataPrevista), lido_em: agora,
+      situacao_desde: antes && Number(antes.situacao) === sit ? undefined : agora,
+      numero_fabrica: antes?.numero_fabrica ?? null, data_entrega: antes?.data_entrega ?? null,
+      // nota fiscal: mantém o que já foi lido (o upsert em lote não pode apagar)
+      nf_id: antes?.nf_id ?? null, nf_numero: antes?.nf_numero ?? null, nf_situacao: antes?.nf_situacao ?? null, nf_checado_em: antes?.nf_checado_em ?? null,
+    };
+    // entregue sem nota ligada: procura de novo no máximo a cada 6h (limite de 60 consultas/min do Olist)
+    const procurarNF = sit === 6 && !linha.nf_id && (!linha.nf_checado_em || Date.now() - new Date(linha.nf_checado_em).getTime() > 6 * 3600e3);
+    // detalhe só quando precisa (nº da fábrica a partir da produção; data de entrega das entregues) — limite do Olist
+    const precisa = ([4, 7, 5, 1, 6].includes(sit) && !linha.numero_fabrica) || (sit === 6 && !linha.data_entrega) || (antes && Number(antes.situacao) !== sit) || procurarNF;
+    if (precisa && detalhes < 25) {
+      detalhes++;
+      try {
+        const d = await tiny(`/pedidos/${id}`);
+        linha.numero_fabrica = numeroFabrica(d) ?? linha.numero_fabrica;
+        linha.data_entrega = soData(d?.dataEntrega) ?? linha.data_entrega;
+        if (d?.valorTotalPedido != null) linha.valor = Number(d.valorTotalPedido);
+        if (d?.idNotaFiscal) {
+          linha.nf_id = Number(d.idNotaFiscal);
+          if (!antes?.nf_id && String(d?.cliente?.email ?? "").includes("@")) enviadasPorEmail.push(id);
+        }
+        linha.nf_checado_em = agora;
+      } catch { /* fica para a próxima leitura */ }
+    }
+    // nota ligada: nº e situação (de novo enquanto estiver pendente/em envio), no máximo a cada 6h por OS
+    const notaVencida = !antes?.nf_checado_em || linha.nf_checado_em === agora || Date.now() - new Date(antes.nf_checado_em).getTime() > 6 * 3600e3;
+    if (sit === 6 && linha.nf_id && !notasBloqueadas && notaVencida && (!linha.nf_numero || [null, 1, 4, 9].includes(linha.nf_situacao)) && detalhes < 40) {
+      detalhes++;
+      linha.nf_checado_em = agora;
+      try {
+        const n = await tiny(`/notas/${linha.nf_id}`);
+        if (n) { linha.nf_numero = n.numero ? String(n.numero) : linha.nf_numero; linha.nf_situacao = n.situacao != null && n.situacao !== "" ? Number(n.situacao) : linha.nf_situacao; }
+      } catch (e) { if (/ 40[13]| 429/.test(String(e))) notasBloqueadas = true; }
+    }
+    if (linha.situacao_desde === undefined) delete linha.situacao_desde;
+    linhas.push(linha);
+  }
+  // as que saíram das listas (ex.: canceladas ou entregues há mais tempo): confere a situação real
+  const { data: abertasAntes } = await admin.from("os_acompanhamento").select("pedido_id").in("situacao", ATIVAS);
+  for (const r of abertasAntes ?? []) {
+    const id = Number(r.pedido_id);
+    if (vistos.has(id) || detalhes >= 40) continue;
+    detalhes++;
+    try {
+      const d = await tiny(`/pedidos/${id}`);
+      if (d?.situacao != null) {
+        // atualização só dos campos lidos (não apaga cliente, nº etc.)
+        const mud: any = { situacao: Number(d.situacao), situacao_desde: agora, lido_em: agora };
+        const ent = soData(d?.dataEntrega); if (ent) mud.data_entrega = ent;
+        const fab = numeroFabrica(d); if (fab) mud.numero_fabrica = fab;
+        await admin.from("os_acompanhamento").update(mud).eq("pedido_id", id);
+      }
+    } catch { /* depois */ }
+  }
+  if (linhas.length) {
+    // grava em duas levas: as que mudaram de situação (com a data) e as demais (sem mexer na data)
+    const com = linhas.filter((l) => "situacao_desde" in l), sem = linhas.filter((l) => !("situacao_desde" in l));
+    if (com.length) await admin.from("os_acompanhamento").upsert(com, { onConflict: "pedido_id" });
+    if (sem.length) await admin.from("os_acompanhamento").upsert(sem, { onConflict: "pedido_id" });
+  }
+  // marca "enviada por e-mail pelo Olist" (só se ninguém marcou nada ainda; a equipe pode desfazer)
+  if (enviadasPorEmail.length) {
+    await admin.from("os_acompanhamento").update({ nf_enviada_em: agora, nf_enviada_por: "Olist (e-mail)" }).in("pedido_id", enviadasPorEmail).is("nf_enviada_em", null);
+  }
+  return { lidas: vistos.size, detalhes };
+}
+async function osPorNumero(numero: string) {
+  const n = so(numero); if (!n) return null;
+  const d = await tiny(`/pedidos?numero=${n}&limit=5`);
+  const p = (d?.itens ?? []).find((x: any) => String(x.numeroPedido) === n) ?? (d?.itens ?? [])[0];
+  if (!p) return null;
+  let det: any = null; try { det = await tiny(`/pedidos/${p.id}`); } catch { det = null; }
+  return {
+    id: p.id, numero: String(p.numeroPedido ?? ""), cliente: p.cliente?.nome ?? "", situacao: SITUACAO[String(p.situacao)] ?? String(p.situacao ?? ""),
+    valor: Number(det?.valorTotalPedido ?? p.valor ?? 0), desconto: Number(det?.valorDesconto ?? 0), numeroFabrica: det ? numeroFabrica(det) : null,
+  };
 }
 
 // ── Rotas ──
@@ -237,6 +397,9 @@ Deno.serve(async (req) => {
       return json(req, { cliente: d?.id ? cliente(d) : null });
     }
     if (rota === "pedidos") return json(req, { pedidos: await pedidos(String(corpo.cpfCnpj ?? ""), String(corpo.nome ?? "")) });
+    if (rota === "posvenda") return json(req, await sincronizarPosvenda());
+    if (rota === "os") return json(req, await sincronizarOS());
+    if (rota === "os_numero") return json(req, { os: await osPorNumero(String(corpo.numero ?? "")) });
 
     return json(req, { erro: "rota" }, 404);
   } catch (err) {
