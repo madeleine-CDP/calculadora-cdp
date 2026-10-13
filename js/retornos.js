@@ -7,7 +7,7 @@
 // ═══════════════════════════════════════════════════════
 const RET_QUEM = ['Bruna', 'Mirelle', 'Madeleine', 'Fábrica', 'Cícero'];
 const RET_STATUS = { aberto: 'Aberto', aguardando: 'Aguardando interno', respondido: 'Respondido' };
-let RETORNOS = [], RET_CARREGADO = false, RET_FILTRO = 'meus';
+let RETORNOS = [], RET_CARREGADO = false, RET_FILTRO = 'meus', RET_PESSOA = '';   // RET_PESSOA = filtrar por responsável
 
 function meuNome(){ return (typeof getUsuarioLogado === 'function' && getUsuarioLogado()) || ''; }
 
@@ -69,11 +69,20 @@ async function renderRetornos(recarregar){
   const atras = abertos.filter(r => situacaoPrazo(r) === 'atrasado');
   $('ret-contagem').textContent = abertos.length ? abertos.length + ' em aberto' + (atras.length ? ' · ' + atras.length + ' atrasado' + (atras.length > 1 ? 's' : '') : '') : 'Nada pendente';
   const chip = (id, nome, n) => `<button type="button" class="hist-chip${RET_FILTRO===id?' on':''}" onclick="RET_FILTRO='${id}';renderRetornos()">${nome} <span>${n}</span></button>`;
-  $('ret-filtros').innerHTML = chip('meus','Depende de mim', meus.length) + chip('todos','Todos abertos', abertos.length) + chip('aguardando','Aguardando interno', aguard.length) + chip('feitos','Respondidos', feitos.length);
-
   let lista = RET_FILTRO === 'meus' ? meus : RET_FILTRO === 'aguardando' ? aguard : RET_FILTRO === 'feitos' ? feitos.slice().sort((a,b) => new Date(b.respondido_em) - new Date(a.respondido_em)) : abertos;
+  // filtro por responsável (gestão à vista: tocar no número de uma pessoa no Início abre aqui já filtrado)
+  let pessoas = '';
+  if(RET_FILTRO !== 'meus'){
+    const nomes = [...new Set(RET_QUEM.concat(lista.map(r => r.responsavel).filter(Boolean)))].filter(q => lista.some(r => r.responsavel === q) || q === RET_PESSOA);
+    if(RET_PESSOA && !nomes.includes(RET_PESSOA)) RET_PESSOA = '';
+    const pc = (q, nome, n) => `<button type="button" class="hist-chip ret-pessoa${RET_PESSOA === q ? ' on' : ''}" onclick="RET_PESSOA='${q}';renderRetornos()">${nome}${n != null ? ' <span>' + n + '</span>' : ''}</button>`;
+    if(nomes.length > 1 || RET_PESSOA) pessoas = `<div class="ret-pessoas"><span class="ret-pessoas-rot">Responsável:</span>${pc('', 'Todos')}${nomes.map(q => pc(q, q, lista.filter(r => r.responsavel === q).length)).join('')}</div>`;
+    if(RET_PESSOA) lista = lista.filter(r => r.responsavel === RET_PESSOA);
+  }
+  $('ret-filtros').innerHTML = chip('meus','Depende de mim', meus.length) + chip('todos','Todos abertos', abertos.length) + chip('aguardando','Aguardando interno', aguard.length) + chip('feitos','Respondidos', feitos.length);
+  const bp = $('ret-pessoas'); if(bp) bp.innerHTML = pessoas;
   if(!lista.length){
-    box.innerHTML = `<div class="ret-vazio">${ic('ok',18)} ${RET_FILTRO === 'feitos' ? 'Nenhum retorno respondido nos últimos 30 dias.' : 'Nada pendente aqui. Tudo em dia!'}</div>`;
+    box.innerHTML = `<div class="ret-vazio">${ic('ok',18)} ${RET_FILTRO === 'feitos' ? 'Nenhum retorno respondido nos últimos 30 dias' + (RET_PESSOA ? ' por ' + escHtml(RET_PESSOA) : '') + '.' : 'Nada pendente aqui. Tudo em dia!'}</div>`;
     return;
   }
   if(RET_FILTRO === 'feitos'){ box.innerHTML = lista.map(cardRetorno).join(''); return; }
@@ -242,6 +251,19 @@ function registrarContato(){
 }
 
 // ── para o Início ──
+// Gestão à vista (Início): por responsável, quantos estão atrasados, para hoje, em aberto e feitos nos últimos 7 dias
+function painelRetornos(){
+  const abertos = retornosAbertos();
+  const semana = Date.now() - 7 * 864e5;
+  const feitos = RETORNOS.filter(r => r.status === 'respondido' && r.respondido_em && new Date(r.respondido_em).getTime() >= semana);
+  const conta = l => ({ atrasados: l.filter(r => situacaoPrazo(r) === 'atrasado').length, hoje: l.filter(r => situacaoPrazo(r) === 'hoje').length, abertos: l.length });
+  const nomes = [...new Set(RET_QUEM.concat(abertos.concat(feitos).map(r => r.responsavel).filter(Boolean)))]
+    .filter(q => abertos.some(r => r.responsavel === q) || feitos.some(r => r.responsavel === q));
+  const linhas = nomes.map(q => Object.assign({ nome: q, feitos: feitos.filter(r => r.responsavel === q).length }, conta(abertos.filter(r => r.responsavel === q))));
+  return { linhas, total: Object.assign({ feitos: feitos.length }, conta(abertos)) };
+}
+function abrirRetornos(pessoa, filtro){ RET_PESSOA = pessoa || ''; RET_FILTRO = filtro || 'todos'; switchTab('ret'); }
+
 function retornosParaHoje(){
   const eu = meuNome();
   return retornosAbertos().filter(r => { const s = situacaoPrazo(r); return s === 'atrasado' || s === 'hoje'; })

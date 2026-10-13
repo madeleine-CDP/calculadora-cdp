@@ -35,6 +35,7 @@ async function gravarFechamento(orcId, campos){
   return linha;
 }
 async function fechMarcar(orcId, passo, feito, extra){
+  if(passo === 'followup' && feito) FECH_COBRANCA_ANTES[orcId] = (FECH_MAPA[orcId] || {}).followup_em || null;
   const campos = Object.assign({ [passo + '_em']: feito ? new Date().toISOString() : null }, extra || {});
   try{ await gravarFechamento(orcId, campos); }catch(e){ return; }
   [...FECH_ABERTO].filter(k => k.startsWith(orcId + ':')).forEach(k => FECH_ABERTO.delete(k));   // fecha as mensagens abertas deste orçamento
@@ -61,6 +62,32 @@ function somarHorasUteis(inicio, horas){
     d = new Date(d); d.setDate(d.getDate() + 1); d.setHours(0, 0, 0, 0);
   }
   return d;
+}
+
+// ── Lembrete de cobrança depois de enviar a OS (aprovado pela Bru em 13/10/2026) ──
+// 1ª cobrança: 1 dia útil depois de enviar a OS; depois, a cada 2 dias úteis a partir da última cobrança.
+// 5+ dias úteis sem comprovante (≈ 3º lembrete) → avisar a Madeleine. Dia útil = segunda a sexta.
+// Usa a coluna followup_em que já existe (= última cobrança); nenhuma mudança no banco.
+let FECH_COBRANCA_ANTES = {};   // para o "desfazer" voltar à cobrança anterior
+function diasUteisDepois(iso, n){ const d = new Date(iso); let k = 0; while(k < n){ d.setDate(d.getDate() + 1); const s = d.getDay(); if(s !== 0 && s !== 6) k++; } d.setHours(0, 0, 0, 0); return d; }
+function fechCobranca(f){
+  if(!f || !f.os_enviada_em || f.comprovante_em) return null;
+  const ultima = f.followup_em && new Date(f.followup_em) > new Date(f.os_enviada_em) ? f.followup_em : null;
+  const proxima = diasUteisDepois(ultima || f.os_enviada_em, ultima ? 2 : 1);
+  const dias = (typeof diasUteis === 'function') ? diasUteis(f.os_enviada_em) : 0;
+  return { ultima, proxima, devida: proxima <= new Date(), dias, avisarDona: dias >= 5 };
+}
+function fechDataCurta(d){
+  const x = new Date(d), hj = new Date(); hj.setHours(0, 0, 0, 0);
+  const am = new Date(hj); am.setDate(am.getDate() + 1);
+  if(x.toDateString() === am.toDateString()) return 'amanhã';
+  return x.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+}
+async function fechDesfazerCobranca(orcId){
+  const antes = FECH_COBRANCA_ANTES[orcId] || null;
+  try{ await gravarFechamento(orcId, { followup_em: antes }); }catch(e){ return; }
+  delete FECH_COBRANCA_ANTES[orcId];
+  redesenharFechamento();
 }
 
 // ── mensagens (Guia de Mensagens, Etapa 4) ──
@@ -93,7 +120,12 @@ function fechProximo(e, f){
   if(!f.dados_ok_em) return { n: 1, txt: f.dados_pedidos_em ? 'Aguardando dados do cliente para a OS' : 'Pedir os dados para a OS' };
   if(!f.os_conferida_em) return { n: 2, txt: e.pedidoTiny ? 'Conferir a OS #' + e.pedidoTiny + ' no Tiny' : 'Gerar a OS no Tiny e informar o nº' };
   if(!f.os_enviada_em) return { n: 3, txt: 'Enviar a OS e a forma de pagamento' };
-  if(!f.comprovante_em) return { n: 4, txt: 'Aguardando o pagamento do cliente' };
+  if(!f.comprovante_em){
+    const cb = fechCobranca(f);
+    if(cb && cb.avisarDona) return { n: 4, txt: '⚠️ ' + cb.dias + ' dias úteis sem pagamento: avisar a Madeleine', cobrar: cb.devida, alerta: true };
+    if(cb && cb.devida) return { n: 4, txt: '📣 Cobrar retorno do cliente (OS enviada há ' + cb.dias + (cb.dias === 1 ? ' dia útil)' : ' dias úteis)'), cobrar: true };
+    return { n: 4, txt: 'Aguardando o pagamento do cliente' + (cb ? ' · próxima cobrança ' + fechDataCurta(cb.proxima) : '') };
+  }
   if(!f.validado_em) return { n: 5, txt: 'Madeleine conferir o pagamento no extrato' };
   if(!f.confirmado_em) return { n: 6, txt: 'Avisar o cliente: pagamento confirmado' };
   return { n: 7, txt: 'Fechamento concluído · acompanhe em Pedidos' };
@@ -149,8 +181,14 @@ async function renderFechamentoPasta(){
     : '<div class="fc-sub">Escolha a forma de pagamento para montar a mensagem com os valores.</div>'}`]);
   // 4 · aguardando pagamento
   passos.push(['⏳', 'Aguardando pagamento', !!f.comprovante_em, f.comprovante_em ? feito('comprovante', 'Cliente mandou o comprovante') : `
-    <div class="fc-sub">${f.os_enviada_em ? 'OS enviada ' + fechHaQuanto(f.os_enviada_em) + '.' : ''} Sem resposta? Follow-up com a mensagem do Guia.</div>
-    ${f.followup_em ? feito('followup', 'Follow-up feito') : msgBox('followup', fechMsgFollowup(e), 'Fiz o follow-up', 'followup')}
+    ${(() => {
+      const cb = fechCobranca(f); if(!cb) return '';
+      return `<div class="fc-sub">OS enviada em ${new Date(f.os_enviada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} · ${cb.dias ? 'há ' + cb.dias + (cb.dias === 1 ? ' dia útil' : ' dias úteis') : 'hoje'}.</div>
+        ${cb.avisarDona ? '<div class="ped-alerta">⚠️ 5 ou mais dias úteis sem pagamento: avise a Madeleine.</div>' : ''}
+        ${cb.ultima ? `<div class="fc-feito">📣 Última cobrança <span>${escHtml([f.followup_por, new Date(cb.ultima).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })].filter(Boolean).join(' · '))}</span> <button type="button" class="conf-link" onclick="fechDesfazerCobranca(${id})">desfazer</button></div>` : ''}
+        <div class="fc-sub${cb.devida ? ' fc-atraso' : ''}">📣 ${cb.devida ? '<b>Cobrar retorno hoje</b> com a mensagem do Guia.' : 'Próxima cobrança: ' + fechDataCurta(cb.proxima) + ' (1 dia útil depois do envio, depois a cada 2).'}</div>
+        ${msgBox('followup', fechMsgFollowup(e), 'Já cobrei', 'followup')}`;
+    })()}
     <div class="conf-acoes"><button type="button" class="conf-btn ok" onclick="fechMarcar(${id},'comprovante',true)">${ic('ok',15)} Cliente mandou o comprovante</button></div>
     <div class="conf-nota">⚠️ Comprovante não é pagamento: a Madeleine confere no extrato antes da produção.</div>`]);
   // 5 · validação (só a Madeleine)
@@ -246,14 +284,16 @@ function fechamentosEmAndamento(){
 }
 function desenharFechamentosInicio(){
   const box = document.getElementById('inicio-fechamento'); if(!box) return;
-  const l = fechamentosEmAndamento();
+  const peso = e => { const p = fechProximo(e, FECH_MAPA[e.id]); return p.alerta ? 3 : (p.cobrar ? 2 : 0); };
+  const l = fechamentosEmAndamento().sort((a, b) => peso(b) - peso(a));
+  const cobrar = l.filter(e => peso(e) > 0).length;
   const validar = l.filter(e => { const f = FECH_MAPA[e.id]; return f && f.comprovante_em && !f.validado_em; });
   if(!l.length){ box.innerHTML = ''; return; }
   const item = (e) => {
     const f = FECH_MAPA[e.id] || {}, p = fechProximo(e, f);
-    const atrasoVal = p.n === 5 && somarHorasUteis(f.comprovante_em, 4) < new Date();
-    return `<button type="button" class="inicio-pend-item pend-${atrasoVal ? 'atrasado' : 'enviar'}" onclick="reopenOrc(${e.id})">
-      <span class="inicio-pend-ic">${p.n === 5 ? '💳' : '🤝'}</span>
+    const atrasoVal = (p.n === 5 && somarHorasUteis(f.comprovante_em, 4) < new Date()) || p.alerta;
+    return `<button type="button" class="inicio-pend-item pend-${atrasoVal ? 'atrasado' : (p.cobrar ? 'follow' : 'enviar')}" onclick="reopenOrc(${e.id})">
+      <span class="inicio-pend-ic">${p.n === 5 ? '💳' : (p.cobrar || p.alerta ? '📣' : '🤝')}</span>
       <span class="inicio-pend-txt"><strong>${escHtml(e.client)}</strong><span>${escHtml(numCDP(e.numero))} · passo ${p.n} de 6</span><em>${escHtml(p.txt)}${p.n === 5 ? ' · até ' + somarHorasUteis(f.comprovante_em, 4).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</em></span>
       <span class="inicio-pend-seta">›</span></button>`;
   };
@@ -261,7 +301,7 @@ function desenharFechamentosInicio(){
       <div class="inicio-bloco-tit"><span>💳 Validar pagamentos</span><strong>${validar.length} · prazo 4h úteis</strong></div>
       <div class="inicio-pend">${validar.map(item).join('')}</div></section>` : ''}
     <section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>🤝 Fechamentos em andamento</span><strong>${l.length}</strong></div>
+      <div class="inicio-bloco-tit"><span>🤝 Fechamentos em andamento</span><strong>${l.length}${cobrar ? ' · ' + cobrar + ' para cobrar' : ''}</strong></div>
       <div class="inicio-pend">${l.filter(e => !(fechEhDona() && validar.includes(e))).slice(0, 6).map(item).join('') || '<div class="conf-nota">Os que dependem de você estão acima.</div>'}</div>
     </section>`;
 }

@@ -168,7 +168,15 @@ function cardOS(o, fase){
         ${campo ? `<button type="button" class="conf-btn ok" onclick="pedMarcar(${o.pedido_id},'${campo}',true)">${ic('ok',15)} ${rotulo}</button>` : ''}
         <button type="button" class="conf-link" onclick="pedVer(${o.pedido_id},'${chave}')">fechar</button></div></div>` : '';
   let acoes = '';
-  if(fase === 'pagar') acoes = orc ? `<button type="button" class="conf-link" onclick="reopenOrc(${orc.id})">ver fechamento ›</button>` : '';
+  if(fase === 'pagar'){
+    const cb = (fech && typeof fechCobranca === 'function') ? fechCobranca(fech) : null;
+    const st = !fech || !fech.os_enviada_em ? '<span class="conf-nota">📤 OS ainda não marcada como enviada ao cliente (Fechamento, passo 3).</span>'
+      : fech.comprovante_em ? '<span class="conf-st ok">🧾 Comprovante recebido · aguardando conferência da Madeleine</span>'
+      : cb && cb.avisarDona ? `<span class="ped-alerta">⚠️ ${cb.dias} dias úteis sem pagamento: avisar a Madeleine</span>`
+      : cb && cb.devida ? `<span class="conf-st env">📣 Cobrar retorno do cliente hoje</span>`
+      : `<span class="conf-nota">📤 OS enviada · próxima cobrança ${cb ? fechDataCurta(cb.proxima) : ''}</span>`;
+    acoes = orc ? `<div class="conf-ctrl">${st}<button type="button" class="conf-link" onclick="reopenOrc(${orc.id})">ver fechamento ›</button></div>` : '';
+  }
   if(fase === 'fabrica') acoes = (fech && !fech.validado_em ? `<div class="ped-alerta">⚠️ Pagamento ainda não conferido no extrato pela Madeleine (Fechamento). Comprovante não é pagamento.</div>` : '') +
     `<div class="conf-nota">Faça o pedido no sistema da fábrica (Guia das Fábricas), anote o nº na OS do Tiny e mude para <b>"Preparando envio"</b>.</div>`;
   if(fase === 'producao') acoes = !o.numero_fabrica ? '<div class="ped-alerta">⚠️ OS sem nº da fábrica (D/R) no Tiny.</div>' : '';

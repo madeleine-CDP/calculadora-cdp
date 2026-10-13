@@ -953,3 +953,23 @@ select.cli-in{appearance:auto}
 .sair-botoes .btn,.sair-botoes .btn-outline{min-height:50px;font-size:15px!important;padding:0 14px!important;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .sair-botoes .sair-ficar{grid-column:1 / -1;border-color:transparent;background:var(--s3)}
 @media (max-width:420px){ .sair-botoes{grid-template-columns:1fr} }
+
+/* Retornos · gestão à vista (Início) */
+.rg-grade{border:1px solid var(--linha);border-radius:18px;background:#fff;overflow:hidden;margin-bottom:10px}
+.rg-linha{display:grid;grid-template-columns:minmax(76px,1fr) repeat(4,minmax(46px,64px));align-items:center;border-top:1px solid var(--linha)}
+.rg-linha:first-child{border-top:0}
+.rg-cab{background:var(--s3);font-size:11px;line-height:1.25;color:var(--tinta-suave);text-align:center;padding:8px 0}
+.rg-cab span:first-child{text-align:left;padding-left:12px;align-self:end}
+.rg-nome{background:none;border:0;text-align:left;padding:12px;font:inherit;font-size:14px;font-weight:600;color:var(--tinta);cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rg-nome em{font-style:normal;font-weight:400;color:var(--tinta-suave);font-size:12px}
+.rg-n{height:44px;border:0;background:none;font:inherit;font-size:17px;font-weight:700;cursor:pointer;color:var(--tinta)}
+.rg-n.zero{color:var(--tinta-fraca);font-weight:400}
+.rg-n.atr{color:var(--red)}
+.rg-n.hj{color:var(--dourado-texto)}
+.rg-n.ok{color:var(--verde)}
+.rg-eu{background:rgba(90,21,36,.05);box-shadow:inset 3px 0 0 var(--vinho)}
+.rg-total{background:var(--s3)}
+.rg-total .rg-nome{font-weight:700}
+.rg-sub{font-size:12.5px;font-weight:600;color:var(--tinta-suave);margin:4px 2px 8px}
+.ret-pessoas{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-2px 0 12px}
+.ret-pessoas-rot{font-size:12.5px;color:var(--tinta-suave);margin-right:2px}

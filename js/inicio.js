@@ -160,21 +160,33 @@ function abrirListaEtapa(etapa){
   switchTab('hist');
 }
 
-// Retornos atrasados e de hoje (os meus primeiro)
+// Retornos: gestão à vista por responsável (pedido da Bru, 13/10/2026) + os de hoje/atrasados (os meus primeiro)
 function blocoRetornosInicio(){
   if(typeof retornosParaHoje !== 'function') return '';
   const l = retornosParaHoje(), eu = meuNome();
   const badge = document.getElementById('ret-badge');
   const meus = l.filter(r => r.responsavel === eu).length;
   if(badge){ badge.hidden = !meus; badge.textContent = meus; }
-  if(!l.length) return '';
+  const pn = (typeof painelRetornos === 'function') ? painelRetornos() : { linhas: [] };
+  if(!l.length && !pn.linhas.length) return '';
+  const cel = (nome, filtro, n, cls) => `<button type="button" class="rg-n${n ? ' ' + cls : ' zero'}" onclick="abrirRetornos('${nome}','${filtro}')" aria-label="${n}">${n}</button>`;
+  const linha = (x, total) => `<div class="rg-linha${total ? ' rg-total' : ''}${!total && x.nome === eu ? ' rg-eu' : ''}">
+      <button type="button" class="rg-nome" onclick="abrirRetornos('${total ? '' : x.nome}','todos')">${total ? 'Total' : escHtml(x.nome)}</button>
+      ${cel(total ? '' : x.nome, 'todos', x.atrasados, 'atr')}${cel(total ? '' : x.nome, 'todos', x.hoje, 'hj')}${cel(total ? '' : x.nome, 'todos', x.abertos, 'ab')}${cel(total ? '' : x.nome, 'feitos', x.feitos, 'ok')}
+    </div>`;
+  const grade = pn.linhas.length ? `<div class="rg-grade" role="table" aria-label="Retornos por responsável">
+      <div class="rg-linha rg-cab"><span>Quem</span><span>⚠️<br>Atrasados</span><span>📅<br>Hoje</span><span>⏳<br>Em aberto</span><span>✅<br>Feitos 7d</span></div>
+      ${pn.linhas.map(x => linha(x)).join('')}${pn.linhas.length > 1 ? linha(pn.total, true) : ''}
+    </div>` : '';
   return `<section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>💬 Retornos para hoje</span><strong>${l.length}${meus ? ' · ' + meus + ' comigo' : ''}</strong></div>
+      <div class="inicio-bloco-tit"><span>💬 Retornos</span><strong>${pn.total ? pn.total.abertos + ' em aberto' : ''}${meus ? ' · ' + meus + ' comigo hoje' : ''}</strong></div>
+      ${grade}
+      ${l.length ? `<div class="rg-sub">Para hoje e atrasados</div>` : ''}
       <div class="inicio-pend">${l.slice(0, 6).map(r => `
-        <button type="button" class="inicio-pend-item pend-${situacaoPrazo(r) === 'atrasado' ? 'atrasado' : 'enviar'}" onclick="RET_FILTRO='${r.responsavel === eu ? 'meus' : 'todos'}';switchTab('ret')">
+        <button type="button" class="inicio-pend-item pend-${situacaoPrazo(r) === 'atrasado' ? 'atrasado' : 'enviar'}" onclick="abrirRetornos('${r.responsavel === eu ? '' : escHtml(r.responsavel)}','${r.responsavel === eu ? 'meus' : 'todos'}')">
           <span class="inicio-pend-ic">${ic('chat', 16)}</span>
           <span class="inicio-pend-txt"><strong>${escHtml(r.cliente)}</strong><span>${escHtml(r.assunto)}</span><em>${escHtml(r.responsavel)} · ${escHtml(situacaoPrazo(r) === 'atrasado' ? 'atrasado (' + textoPrazo(r) + ')' : textoPrazo(r))}</em></span>
           <span class="inicio-pend-seta">›</span>
-        </button>`).join('')}${l.length > 6 ? `<button type="button" class="ret-ver-todos" onclick="RET_FILTRO='todos';switchTab('ret')">Ver todos os ${l.length} retornos ›</button>` : ''}</div>
+        </button>`).join('')}${l.length > 6 ? `<button type="button" class="ret-ver-todos" onclick="abrirRetornos('','todos')">Ver todos os ${l.length} retornos ›</button>` : ''}</div>
     </section>`;
 }
