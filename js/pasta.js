@@ -7,14 +7,47 @@
 
 function orcamentoAberto(){ return CART.length > 0 || !!EDITING_ORC_ID; }
 
-// Pergunta antes de descartar alterações não salvas
+// Pergunta antes de descartar alterações não salvas (o salvamento é manual, por "Salvar e fechar").
+// Responde (Promise) true = pode sair · false = continua no orçamento.
+// 💾 Salvar e sair · 🗑️ Sair sem salvar · ↩️ Continuar editando
 function confirmarSairOrc(){
-  if(!ORC_SUJO) return true;
-  return confirm('Este orçamento tem alterações que ainda não foram salvas.\n\nSair sem salvar?');
+  if(!ORC_SUJO) return Promise.resolve(true);
+  return new Promise(resolve => {
+    let m = $('modal-sair');
+    if(!m){
+      m = document.createElement('div');
+      m.id = 'modal-sair'; m.className = 'modal'; m.hidden = true;
+      m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-labelledby', 'modal-sair-titulo');
+      m.innerHTML = `<div class="modal-fundo" data-r="ficar"></div>
+        <div class="modal-caixa">
+          <div class="modal-titulo" id="modal-sair-titulo">Sair do orçamento?</div>
+          <div class="modal-corpo"><p>Você está saindo deste orçamento. Deseja salvar as alterações antes de sair?</p></div>
+          <div class="sair-botoes">
+            <button type="button" class="btn" data-r="salvar">💾 Salvar e sair</button>
+            <button type="button" class="btn-outline" data-r="descartar">🗑️ Sair sem salvar</button>
+            <button type="button" class="btn-outline sair-ficar" data-r="ficar">↩️ Continuar editando</button>
+          </div>
+        </div>`;
+      document.body.appendChild(m);
+    }
+    const fechar = r => { m.hidden = true; m.onclick = null; document.removeEventListener('keydown', esc); resolve(r); };
+    const esc = e => { if(e.key === 'Escape') fechar(false); };
+    m.onclick = async e => {
+      const b = e.target.closest('[data-r]'); if(!b) return;
+      if(b.dataset.r === 'ficar') return fechar(false);
+      if(b.dataset.r === 'descartar') return fechar(true);
+      m.hidden = true;                        // salvar: as perguntas do salvamento aparecem por cima
+      const ok = await salvarOrcamentoGravar();
+      if(ok){ avisoSalvo(ok); fechar(true); } else fechar(false);
+    };
+    document.addEventListener('keydown', esc);
+    m.hidden = false;
+    const b = m.querySelector('[data-r="salvar"]'); if(b) b.focus();
+  });
 }
 
-function voltarParaLista(destino){
-  if(!confirmarSairOrc()) return;
+async function voltarParaLista(destino){
+  if(!(await confirmarSairOrc())) return;
   limparOrcamentoEmAndamento();
   document.body.classList.remove('cli-aberto');
   const d = ['inicio', 'ret', 'agenda', 'gar', 'ped'].includes(destino) ? destino : 'hist';
@@ -25,7 +58,6 @@ function voltarParaLista(destino){
 
 function abrirPasta(){
   pararEdicaoItem();               // voltou sem substituir → o item original fica como estava
-  if(ladoALado()) resetCalc();     // E2: no computador a calculadora ao lado já fica pronta para o próximo item
   irParaTab('orc');
   renderPasta();
   window.scrollTo({top:0});
@@ -212,7 +244,6 @@ function toggleDadosCliente(){
 }
 
 function adicionarItemPasta(){
-  if(document.body.classList.contains('lado-a-lado') && !orcTravado()){ pararEdicaoItem(); resetCalc(); irParaTab('calc'); irPasso(1, true); const amb=$('item-ambiente'); if(amb) amb.focus(); return; }
   if(orcTravado()){ alert('Este orçamento está ' + (ETAPA_NOME[orcEmEdicao().etapa]||'').toLowerCase() + '. Reabra para adicionar itens.'); return; }
   pararEdicaoItem();
   resetCalc();
@@ -342,8 +373,8 @@ function renderJornada(){
     }).join('')}</ol>`;
 }
 
-function abrirOutroOrc(id){
-  if(!confirmarSairOrc()) return;
+async function abrirOutroOrc(id){
+  if(!(await confirmarSairOrc())) return;
   ORC_SUJO = false;
   reopenOrc(id);
 }

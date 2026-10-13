@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════
 // CIDADES → ESTADO (UF)
-// Ao digitar a cidade, o estado é preenchido sozinho quando a cidade está na lista.
-// Lista: Pernambuco (Grande Recife e principais do interior), cidades vizinhas e todas as capitais.
-// Cidade fora da lista: é só escolher o estado à mão.
+// Ao digitar a cidade aparece uma lista com as cidades parecidas; ao escolher, o estado (UF) é preenchido sozinho.
+// Lista: todos os municípios do Brasil (js/municipios.js), com Pernambuco e vizinhos primeiro.
+// Cidade fora da lista (ex.: distrito): é só escolher o estado à mão.
 // ═══════════════════════════════════════════════════════
 const UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
 
@@ -22,25 +22,132 @@ const CIDADES_UF = {
   PR: ['Curitiba'], SC: ['Florianópolis'], RS: ['Porto Alegre']
 };
 
-const _normCidade = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-const _MAPA_CIDADES = {};
-Object.entries(CIDADES_UF).forEach(([uf, l]) => l.forEach(c => { _MAPA_CIDADES[_normCidade(c)] = { nome: c, uf }; }));
+const _normCidade = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
+// Todas as cidades (lista curta acima + todos os municípios do IBGE em js/municipios.js).
+// Ordem de preferência quando o nome existe em mais de um estado: PE, vizinhos, resto.
+const _PRIO_UF = { PE: 0, PB: 1, AL: 1, RN: 1 };
+const _CIDADES = [];            // [{ nome, uf, n (nome sem acento), prio }]
+const _MAPA_CIDADES = {};       // nome sem acento → [{ nome, uf }]
+(function montarCidades(){
+  const vistos = new Set();
+  const add = (nome, uf) => {
+    const n = _normCidade(nome), chave = n + '|' + uf;
+    if(!n || vistos.has(chave)) return;
+    vistos.add(chave);
+    const c = { nome, uf, n, prio: _PRIO_UF[uf] ?? 2 };
+    _CIDADES.push(c);
+    (_MAPA_CIDADES[n] = _MAPA_CIDADES[n] || []).push(c);
+  };
+  Object.entries(CIDADES_UF).forEach(([uf, l]) => l.forEach(c => add(c, uf)));
+  if(typeof MUNICIPIOS_BR === 'object') Object.entries(MUNICIPIOS_BR).forEach(([uf, l]) => l.split('|').forEach(c => add(c, uf)));
+  Object.values(_MAPA_CIDADES).forEach(l => l.sort((a, b) => a.prio - b.prio));
+})();
 
 // "jaboatao dos guararapes" → { nome: 'Jaboatão dos Guararapes', uf: 'PE' }
-function cidadeConhecida(t){ return _MAPA_CIDADES[_normCidade(t)] || null; }
+// Nome que existe em vários estados: só responde se um deles for PE ou vizinho (senão a pessoa escolhe na lista)
+function cidadeConhecida(t, uf){
+  const l = _MAPA_CIDADES[_normCidade(t)];
+  if(!l) return null;
+  if(uf){ const m = l.find(c => c.uf === uf); if(m) return m; }
+  if(l.length === 1 || (l[0].prio < 2 && l[1].prio > l[0].prio)) return l[0];
+  return null;
+}
 
-// Liga um campo de cidade a um campo de UF: escolheu/digitou cidade conhecida → acerta a grafia e o estado
+// Sugestões enquanto digita: nome exato, depois PE e vizinhos, depois as que começam com o texto
+function buscarCidades(t, max = 8){
+  const q = _normCidade(t);
+  if(q.length < 2) return [];
+  const res = [];
+  _CIDADES.forEach(c => {
+    let r = -1;
+    if(c.n === q) r = 0;
+    else if(c.n.startsWith(q)) r = 1;
+    else if((' ' + c.n).includes(' ' + q)) r = 2;
+    if(r >= 0) res.push([r, c]);
+  });
+  res.sort((a, b) => (a[0] > 0) - (b[0] > 0) || a[1].prio - b[1].prio || a[0] - b[0] || a[1].n.length - b[1].n.length || a[1].n.localeCompare(b[1].n));
+  return res.slice(0, max).map(x => x[1]);
+}
+
+// Lista suspensa de cidades (no lugar da lista do navegador, que no celular quase não aparece)
+let _CID_LISTA = null;
+function _cidListaEl(){
+  if(!_CID_LISTA){
+    _CID_LISTA = document.createElement('div');
+    _CID_LISTA.className = 'cid-lista';
+    _CID_LISTA.setAttribute('role', 'listbox');
+    _CID_LISTA.hidden = true;
+    document.body.appendChild(_CID_LISTA);
+  }
+  return _CID_LISTA;
+}
+
+// Liga um campo de cidade a um campo de UF: escolheu cidade da lista → acerta a grafia e o estado
 function ligarCidadeUf(idCidade, idUf){
   const c = document.getElementById(idCidade), u = document.getElementById(idUf);
   if(!c || !u) return;
-  const aplicar = (acertarGrafia) => {
-    const k = cidadeConhecida(c.value);
-    if(!k) return;
-    if(acertarGrafia && c.value !== k.nome) c.value = k.nome;
-    if(u.value !== k.uf){ u.value = k.uf; u.dispatchEvent(new Event('input', { bubbles: true })); }
+  c.removeAttribute('list');
+  c.setAttribute('autocomplete', 'off');
+  c.setAttribute('role', 'combobox');
+  c.setAttribute('aria-autocomplete', 'list');
+  let itens = [], ativo = -1;
+  const lista = _cidListaEl();
+  const avisar = el => { el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
+  const escolher = cid => {
+    c.value = cid.nome;
+    if(u.value !== cid.uf){ u.value = cid.uf; avisar(u); }
+    c.dispatchEvent(new Event('input', { bubbles: true }));
+    fechar();
   };
-  c.addEventListener('input', () => aplicar(false));
-  c.addEventListener('change', () => aplicar(true));
+  const fechar = () => { if(lista.dono === c){ lista.hidden = true; lista.dono = null; } itens = []; ativo = -1; };
+  const posicionar = () => {
+    const r = c.getBoundingClientRect();
+    lista.style.left = Math.max(8, r.left) + 'px';
+    lista.style.top = (r.bottom + 4) + 'px';
+    lista.style.width = Math.max(r.width, 220) + 'px';
+  };
+  const desenhar = () => {
+    itens = buscarCidades(c.value);
+    if(!itens.length || document.activeElement !== c){ fechar(); return; }
+    if(itens.length === 1 && itens[0].nome === c.value && itens[0].uf === u.value){ fechar(); return; }
+    ativo = Math.min(ativo, itens.length - 1);
+    lista.innerHTML = itens.map((x, i) => `<div class="cid-op${i === ativo ? ' on' : ''}" role="option" data-i="${i}"><span>${x.nome}</span><b>${x.uf}</b></div>`).join('');
+    lista.dono = c;
+    lista.hidden = false;
+    posicionar();
+  };
+  c.addEventListener('input', e => {
+    if(e.isTrusted === false && lista.dono !== c) return;
+    ativo = -1;
+    // digitou o nome inteiro de uma cidade conhecida → estado preenchido sem precisar escolher
+    const k = cidadeConhecida(c.value);
+    if(k && k.nome.length === c.value.trim().length && u.value !== k.uf){ u.value = k.uf; avisar(u); }
+    desenhar();
+  });
+  c.addEventListener('focus', () => { if(c.value.trim().length >= 2) desenhar(); });
+  c.addEventListener('keydown', e => {
+    if(lista.hidden || lista.dono !== c) return;
+    if(e.key === 'ArrowDown'){ e.preventDefault(); ativo = (ativo + 1) % itens.length; desenhar(); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); ativo = ativo <= 0 ? itens.length - 1 : ativo - 1; desenhar(); }
+    else if(e.key === 'Enter'){ const x = itens[ativo >= 0 ? ativo : 0]; if(x){ e.preventDefault(); escolher(x); } }
+    else if(e.key === 'Escape'){ fechar(); }
+  });
+  c.addEventListener('blur', () => {
+    setTimeout(() => {
+      if(lista.dono === c) fechar();
+      const k = cidadeConhecida(c.value, u.value);   // saiu do campo: acerta grafia ("recife" → "Recife")
+      if(k){ if(c.value !== k.nome){ c.value = k.nome; c.dispatchEvent(new Event('input', { bubbles: true })); } if(u.value !== k.uf){ u.value = k.uf; avisar(u); } }
+    }, 150);
+  });
+  // toque/clique numa opção (mousedown para não perder o foco antes)
+  lista.addEventListener('mousedown', e => {
+    if(lista.dono !== c) return;
+    const op = e.target.closest('.cid-op');
+    if(op){ e.preventDefault(); escolher(itens[+op.dataset.i]); }
+  });
+  window.addEventListener('resize', () => { if(lista.dono === c) posicionar(); });
+  window.addEventListener('scroll', () => { if(lista.dono === c) posicionar(); }, true);
 }
 
 // "Recife/PE" (como vem do Olist) → { cidade: 'Recife', uf: 'PE' }
@@ -76,8 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('select.sel-uf').forEach(s => {
     s.innerHTML = '<option value="">UF</option>' + UFS.map(u => `<option value="${u}">${u}</option>`).join('') + '<option value="-">—</option>';
   });
-  const dl = document.getElementById('lista-cidades');
-  if(dl) dl.innerHTML = Object.values(_MAPA_CIDADES).map(c => `<option value="${c.nome}">${c.uf}</option>`).join('');
   ligarCidadeUf('novo-cidade', 'novo-uf');
   ligarCidadeUf('cli-cidade', 'cli-uf');
 });

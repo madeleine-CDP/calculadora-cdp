@@ -76,7 +76,7 @@ function desenharAgendaHoje(){
 
 // ═════════ TELA CONFIGURAÇÕES ═════════
 async function abrirConfig(secao){
-  if(typeof orcamentoAberto === 'function' && orcamentoAberto()){ if(!confirmarSairOrc()) return; limparOrcamentoEmAndamento(); }
+  if(typeof orcamentoAberto === 'function' && orcamentoAberto()){ if(!(await confirmarSairOrc())) return; limparOrcamentoEmAndamento(); }
   CFG_EDITANDO_LINKS = secao === 'links';
   irParaTab('config'); window.scrollTo({ top: 0 });
   renderConfig();

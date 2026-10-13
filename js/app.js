@@ -225,6 +225,7 @@ function onTipoMedida(){
     ? 'Preenchida automaticamente a partir da janela + sobra (pode ajustar na mão se precisar)'
     : 'Medida final da cortina/persiana (já com sobra, se aplicável)';
   if(isJanela) calcSobra();
+  updateDetalhamentoPreview();
 }
 
 function acessoriosSelecionados(){
@@ -305,10 +306,7 @@ function updateDetalhamentoPreview(){
   const h = parseFloat($('i-h').value);
   if(!w || !h) return;
   if(STATE.fab !== 'cdp' && !STATE.prod) return;
-  const usandoJanela = $('tipo-medida') && $('tipo-medida').value === 'janela';
-  const jw = usandoJanela ? parseFloat($('jan-w').value) : null;
-  const jh = usandoJanela ? parseFloat($('jan-h').value) : null;
-  const gerado = baseDetalhamento(STATE.fab==='cdp' ? 'Cortina Tradicional' : STATE.prod, w, h, jw, jh);
+  const gerado = detalhamentoDoFormulario(STATE.fab==='cdp' ? 'Cortina Tradicional' : STATE.prod, w, h);
   // só sobrescreve se o campo ainda não foi editado à mão pelo usuário para esta medida
   if(!box.dataset.editedManually){
     box.value = gerado;
@@ -539,7 +537,10 @@ function onAccChange(chk, id){
   const item = $('awi_'+id);
   if(item) item.classList.toggle('checked', chk.checked);
   if($('tipo-medida') && $('tipo-medida').value === 'janela') calcSobra();
+  updateDetalhamentoPreview();   // acessório marcado/desmarcado entra/sai do detalhamento
 }
+// quantidade de um acessório mudou → atualiza o texto
+document.addEventListener('input', e => { if(e.target && /^qty_/.test(e.target.id || '')) updateDetalhamentoPreview(); });
 
 function clearAcc(){
   $('acc-wrap').classList.remove('on');
@@ -1625,7 +1626,12 @@ let ORC_SUJO = false;
 let EDITANDO_ITEM_ID = null;
 let PASSO = 1; // passo da calculadora (1 Ambiente, 2 Produto, 3 Medidas, 4 Resultado) // item da pasta sendo editado na calculadora (Adicionar = substituir) // true = orçamento aberto tem alteração que ainda não foi salva
 
-function baseDetalhamento(prod, w, h, jw, jh){
+// Detalhamento automático do item.
+// jw/jh preenchidos = medida da JANELA (com sobra): "TAMANHO JANELA … CORTINA FICA COM …".
+// jw/jh vazios = medida da cortina/persiana PRONTA: "TAMANHO CORTINA: LxA" (pedido da Bru, 13/10/2026).
+// acc (opcional, de accDetalhamento()): motor/controle vão para ACIONAMENTO; o resto vira "ACESSÓRIOS: …".
+// dentroVao: true quando a janela foi medida para instalar dentro do vão.
+function baseDetalhamento(prod, w, h, jw, jh, acc, dentroVao){
   const wf = w.toFixed(2).replace('.',',');
   const hf = h.toFixed(2).replace('.',',');
   const jwf = (jw ? jw.toFixed(2).replace('.',',') : wf);
@@ -1642,7 +1648,70 @@ function baseDetalhamento(prod, w, h, jw, jh){
     'PERSIANA HORIZONTAL': `TAMANHO JANELA: ${jwf}L X ${jhf}A. PERSIANA FICA COM: ${wf}L X ${hf}A. COR: A DEFINIR. LADO COMANDO: A DEFINIR. ACIONAMENTO: MANUAL, COM CORDÕES E HASTE ACRÍLICA. ACABAMENTO: A DEFINIR. INSTALAÇÃO: FORA DO VÃO DA JANELA.`,
     'Cortina Tradicional': `TAMANHO JANELA: ${jwf}L X ${jhf}A. CORTINA FICA COM: ${wf}L X ${hf}A. COR: A DEFINIR. PREGA: A DEFINIR (SE FOR FORRO, SEM PREGAS). ABERTURA: A DEFINIR. ACIONAMENTO: MANUAL. TRILHO: LINEAR 1 CALHA. INSTALAÇÃO: FORA DO VÃO DA JANELA. (SEM FORRO E SEM BLACKOUT)`
   };
-  return T[fam] || `TAMANHO: ${wf}L X ${hf}A. COR: A DEFINIR. ACIONAMENTO: A DEFINIR.`;
+  let txt = T[fam] || `TAMANHO: ${wf}L X ${hf}A. COR: A DEFINIR. ACIONAMENTO: A DEFINIR.`;
+  // Medida da cortina pronta: uma linha só com o tamanho (sem "Tamanho janela" e sem "fica com")
+  if(!jw || !jh){
+    const peca = /^PERSIANA/.test(fam) ? 'PERSIANA' : 'CORTINA';
+    txt = txt.replace(/^TAMANHO JANELA: [^.]*\. (?:CORTINA|PERSIANA) FICA COM: ([^.]*)\./, `TAMANHO ${peca}: $1.`);
+  }
+  if(dentroVao) txt = txt.replace('INSTALAÇÃO: FORA DO VÃO DA JANELA', 'INSTALAÇÃO: DENTRO DO VÃO DA JANELA');
+  return aplicarAccDetalhamento(txt, acc);
+}
+
+// Lê os acessórios/opcionais marcados no formulário e separa para o texto do detalhamento
+function accDetalhamento(){
+  const r = { motor: [], controle: [], comando: [], outros: [], bando: false, guia: false };
+  if(STATE.fab !== 'real' && STATE.fab !== 'decore') return r;
+  const lista = STATE.fab === 'real' ? ACC_REAL : ACC_DECORE;
+  const COMANDO = ['d_ph50mono','d_ph25mono','d_ph25ev','r_ph50mono','r_ph25mono','r_ph25ev'];
+  lista.forEach(sec => sec.items.forEach(item => {
+    const chk = $('chk_' + item.id);
+    if(!chk || !chk.checked) return;
+    let nome = item.l.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+    const q = item.unit === 'und' ? (parseFloat(($('qty_' + item.id) || {}).value) || 1) : 1;
+    if(q > 1) nome += ` (${q} UN.)`;
+    if(/Motoriza/i.test(sec.sec)) r.motor.push(nome);
+    else if(/Controle/i.test(sec.sec)) r.controle.push(nome);
+    else if(COMANDO.includes(item.id)) r.comando.push(nome);
+    else r.outros.push(nome);
+    if(/^Band/i.test(item.l)) r.bando = true;
+    if(/^Guia/i.test(item.l)) r.guia = true;
+  }));
+  return r;
+}
+
+// Junta os acessórios ao texto: motor/controle/monocomando na linha ACIONAMENTO, o resto em "ACESSÓRIOS: …",
+// e o "(SEM BANDÔ E SEM GUIAS)" do fim só diz o que realmente não foi escolhido.
+function aplicarAccDetalhamento(txt, acc){
+  if(!acc) return txt;
+  if(acc.motor.length){
+    const ctrl = acc.controle.length ? ', COM ' + acc.controle.join(' E ') : '';
+    txt = txt.replace(/ACIONAMENTO: [^.]*\./, `ACIONAMENTO: MOTORIZADO (${acc.motor.join(' + ')})${ctrl}.`);
+  } else if(acc.comando.length){
+    txt = txt.replace(/ACIONAMENTO: [^.]*\./, `ACIONAMENTO: MANUAL, COM ${acc.comando.join(' E ')}.`);
+  }
+  const outros = acc.outros.concat(acc.motor.length ? [] : acc.controle);   // controle sem motor fica nos acessórios
+  const m = txt.match(/\s*\((SEM [^)]*)\)\s*$/);
+  let sem = m ? m[1] : null;
+  if(m){
+    txt = txt.slice(0, m.index);
+    let partes = sem.split(/\s+E\s+/).map(s => s.trim());
+    if(acc.bando) partes = partes.filter(p => !/BAND/.test(p));
+    if(acc.guia) partes = partes.filter(p => !/GUIA/.test(p));
+    sem = partes.length ? '(' + partes.join(' E ') + ')' : null;
+  }
+  if(outros.length) txt += ` ACESSÓRIOS: ${outros.join(', ')}.`;
+  if(sem) txt += ' ' + sem;
+  return txt;
+}
+
+// Detalhamento a partir do que está preenchido agora na calculadora
+function detalhamentoDoFormulario(prod, w, h){
+  const usandoJanela = $('tipo-medida') && $('tipo-medida').value === 'janela';
+  const jw = usandoJanela ? parseFloat($('jan-w').value) : null;
+  const jh = usandoJanela ? parseFloat($('jan-h').value) : null;
+  const dentro = usandoJanela && $('jan-instalacao') && $('jan-instalacao').value === 'dentro';
+  return baseDetalhamento(prod, w, h, jw, jh, accDetalhamento(), dentro);
 }
 
 // Verifica se algum item ainda tem "A DEFINIR" no detalhamento antes de uma ação
@@ -1667,7 +1736,7 @@ function addToCart(){
   const sugestao = (itemEditado && itemEditado.ambiente === r.ambiente) ? itemEditado.label : r.ambiente + (mesmoAmbiente > 0 ? ' - Item ' + (mesmoAmbiente+1) : '');
   const label = prompt('Nome deste item (ajuste se for outro vão/janela ou outra opção do mesmo ambiente):', sugestao) || sugestao;
   const detBox = $('item-detalhamento');
-  const baseDetail = (detBox && detBox.value.trim()) ? detBox.value.trim() : baseDetalhamento(r.prod, r.w, r.h);
+  const baseDetail = (detBox && detBox.value.trim()) ? detBox.value.trim() : detalhamentoDoFormulario(r.fab==='cdp' ? 'Cortina Tradicional' : r.prod, r.w, r.h);
   const fullDetail = baseDetail
     + ((r.extras && r.extras.length) ? ' ADICIONAIS: ' + r.extras.map(e=>e.desc.toUpperCase()).join('; ') + '.' : '')
     + (r.foraDoPadrao ? ` — ⚠️ Medida fora do padrão de fabricação (mín. ${r.minFab}m): cobrado pelo mínimo; possivelmente fora da garantia de fábrica.` : '');
@@ -1980,8 +2049,8 @@ function clearCart(){
 // ═══════════════════════════════════════════════════
 // ── Novo orçamento (C2): começa pelo cliente ──
 // Limpa o que estiver em andamento e abre a tela "Novo orçamento".
-function novoOrcamento(){
-  if(!confirmarSairOrc()) return;
+async function novoOrcamento(){
+  if(!(await confirmarSairOrc())) return;
   limparOrcamentoEmAndamento();
   ['novo-nome','novo-tel','novo-bairro','novo-end','novo-cpf','novo-email'].forEach(id => { const el=$(id); if(el) el.value=''; });
   if($('novo-cidade')) $('novo-cidade').value = 'Recife'; if($('novo-uf')) $('novo-uf').value = 'PE';
@@ -2153,13 +2222,14 @@ function avisoTopo(html){
   clearTimeout(avisoTopo._t); avisoTopo._t = setTimeout(() => el.classList.remove('on'), 4500);
 }
 
-async function saveOrcamento(){
-  if(!CART.length){ alert('Adicione pelo menos um item ao orçamento.'); return; }
-  if(!confirmarPendencias(CART, 'Salvar o orçamento')) return;
+// Grava o orçamento aberto no banco, sem sair da tela. Devolve um resumo (ou null se não gravou).
+async function salvarOrcamentoGravar(){
+  if(!CART.length){ alert('Adicione pelo menos um item ao orçamento.'); return null; }
+  if(!confirmarPendencias(CART, 'Salvar o orçamento')) return null;
   syncCliente();
   const ref    = STATE.cliente.tiny;
   const client = STATE.cliente.nome;
-  if(!client){ alert('Preencha o nome do cliente no topo da tela.'); return; }
+  if(!client){ alert('Preencha o nome do cliente no topo da tela.'); return null; }
 
   const entry = {
     ref, client,
@@ -2182,18 +2252,28 @@ async function saveOrcamento(){
   } catch(err){
     if(String(err && err.message).includes('está fechado')){
       alert('Este orçamento está FECHADO e não pode mudar itens ou valores.\n\nSe precisar alterar, reabra o orçamento antes.');
-      return;
+      return null;
     }
     alert('⚠️ Não foi possível ' + (isUpdate?'atualizar':'salvar') + ' o orçamento.\n\nSeus itens continuam aqui — verifique a conexão e tente de novo.');
-    return;
+    return null;
   }
+  ORC_SUJO = false;
+  return { client, nome, count, isUpdate, primeiroSalvar };
+}
 
+function avisoSalvo(r){
+  avisoTopo(ic('ok',16) + ' Orçamento de <strong>' + escHtml(r.client) + '</strong>' + (r.nome ? ' (' + r.nome + ')' : '') + ' ' + (r.isUpdate && !r.primeiroSalvar ? 'atualizado' : 'salvo') + ' com ' + r.count + (r.count>1?' itens':' item') + '. Edição encerrada.');
+}
+
+async function saveOrcamento(){
+  const r = await salvarOrcamentoGravar();
+  if(!r) return;
   // C3b: salvar fecha a edição e volta para a lista
   limparOrcamentoEmAndamento();
   irParaTab('hist');
   window.scrollTo({top:0});
   await renderHistory();
-  avisoTopo(ic('ok',16) + ' Orçamento de <strong>' + escHtml(client) + '</strong>' + (nome ? ' (' + nome + ')' : '') + ' ' + (isUpdate && !primeiroSalvar ? 'atualizado' : 'salvo') + ' com ' + count + (count>1?' itens':' item') + '. Edição encerrada.');
+  avisoSalvo(r);
 }
 
 // ═══════════════════════════════════════════════════
@@ -2201,10 +2281,11 @@ async function saveOrcamento(){
 // ═══════════════════════════════════════════════════
 // Mostra a aba t ('hist', 'calc' ou 'proposta') sem depender da ordem dos botões
 // E2: no computador (tela larga) com orçamento aberto, pasta à esquerda e calculadora à direita
+// SÓ enquanto um item está sendo adicionado/editado. Salvou o item (ou fechou) → a pasta volta a ocupar a tela toda.
 function ladoALado(){ return window.innerWidth >= 1100 && !!EDITING_ORC_ID; }
 
 function irParaTab(t){
-  const lado = (t === 'orc' || t === 'calc') && ladoALado();
+  const lado = t === 'calc' && ladoALado();
   const alvo = lado ? 'calc' : t;
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
@@ -2232,7 +2313,7 @@ function ajustarLado(){
 }
 window.addEventListener('resize', () => {
   const t = document.body.dataset.tela;
-  if((t === 'orc' || t === 'calc') && EDITING_ORC_ID) irParaTab(document.body.classList.contains('lado-a-lado') || t === 'calc' ? 'calc' : t);
+  if((t === 'orc' || t === 'calc') && EDITING_ORC_ID) irParaTab(t);
 });
 
 function switchTab(t){

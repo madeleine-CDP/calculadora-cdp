@@ -93,7 +93,7 @@ async function olistEscolher(i){
   if(cel){ $('novo-tel').value = cel; if(typeof mascaraTel === 'function') mascaraTel($('novo-tel')); }
   por('novo-bairro', c.bairro);
   const loc = (typeof separarCidadeUf === 'function') ? separarCidadeUf(c.cidade) : { cidade: '', uf: '' };
-  if(loc.cidade){ const k = (typeof cidadeConhecida === 'function') && cidadeConhecida(loc.cidade); por('novo-cidade', k ? k.nome : loc.cidade); }
+  if(loc.cidade){ const k = (typeof cidadeConhecida === 'function') && cidadeConhecida(loc.cidade, loc.uf); por('novo-cidade', k ? k.nome : loc.cidade); }
   por('novo-uf', loc.uf);
   por('novo-end', c.endereco);
   por('novo-cpf', c.cpfCnpj); por('novo-email', c.email);

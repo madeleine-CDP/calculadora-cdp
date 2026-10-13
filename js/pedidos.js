@@ -107,7 +107,7 @@ function pedRedesenhar(){
 // ═════════ TELA ═════════
 async function abrirPedidos(filtro){
   if(filtro) PED_FILTRO = filtro;
-  if(typeof orcamentoAberto === 'function' && orcamentoAberto()){ if(!confirmarSairOrc()) return; limparOrcamentoEmAndamento(); }
+  if(typeof orcamentoAberto === 'function' && orcamentoAberto()){ if(!(await confirmarSairOrc())) return; limparOrcamentoEmAndamento(); }
   irParaTab('ped'); window.scrollTo({ top: 0 });
   renderPedidos();
 }

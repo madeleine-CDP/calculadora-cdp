@@ -83,7 +83,7 @@ function pvMensagem(p){
 // ═════════ TELA "Garantia e pós-venda" ═════════
 async function abrirGarantias(filtro){
   if(filtro) GAR_FILTRO = filtro;
-  if(typeof orcamentoAberto === 'function' && orcamentoAberto()){ if(!confirmarSairOrc()) return; limparOrcamentoEmAndamento(); }
+  if(typeof orcamentoAberto === 'function' && orcamentoAberto()){ if(!(await confirmarSairOrc())) return; limparOrcamentoEmAndamento(); }
   irParaTab('gar'); window.scrollTo({ top: 0 });
   renderGarantias(true);
 }
