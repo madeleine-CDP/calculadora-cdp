@@ -5,7 +5,9 @@
 //   0 Em aberto → aguardando pagamento (ver Fechamento)        3 Aprovado → fazer pedido na fábrica (próximo nº D/R)
 //   4 Preparando envio → em produção: conferir as fábricas a cada 2 dias (uma vez por fábrica, tabela conferencias_fabrica)
 //   7 Pronto para envio → conferir em mãos + agendar instalação (mensagem do Guia)
-//   5 Enviado / 1 Faturado → instalação agendada            6 Entregue (últimos 10 dias) → pedir avaliação no Google
+//   5 Enviado / 1 Faturado → instalação agendada            6 Entregue → pedir avaliação no Google (até 12 dias)
+//   e NOTA FISCAL (últimos 30 dias): sem NF no Tiny → "Emitir NF"; com NF → "Enviar NF ao cliente" (Já enviei, com desfazer);
+//   NF de serviço emitida fora do Tiny (Tinus) → "NF emitida fora do Tiny". A NF pode ter sido emitida antes da entrega.
 // ═══════════════════════════════════════════════════════
 
 const PED_FASES = [
@@ -14,11 +16,12 @@ const PED_FASES = [
   { k: 'producao', sit: [4],    em: '⚙️', tit: 'Em produção' },
   { k: 'pronto',   sit: [7],    em: '📦', tit: 'Pronto · agendar instalação' },
   { k: 'agendado', sit: [5, 1], em: '🚚', tit: 'Instalação agendada' },
-  { k: 'entregue', sit: [6],    em: '✅', tit: 'Entregues · pedir avaliação' },
+  { k: 'entregue', sit: [6],    em: '✅', tit: 'Entregues · avaliação e nota fiscal' },
 ];
 const PED_FABRICAS = [['decore', 'Decore', 'D'], ['real', 'Real', 'R']];
 let PED_OS = [], PED_CONF = [], PED_CARREGADO = false, PED_SINC_EM = 0, PED_FILTRO = 'todos', PED_AGENDA = null;
 const PED_ABERTO = new Set();
+const PED_MARCADAS = new Set();   // marcadas agora: continuam na tela (com desfazer) até recarregar a página
 
 // ── dados ──
 async function sincronizarPedidos(forcar){
@@ -27,7 +30,7 @@ async function sincronizarPedidos(forcar){
   try{ await olistChamar('os'); }catch(e){ PED_SINC_EM = 0; throw e; }
 }
 async function carregarPedidos(){
-  const desde = new Date(Date.now() - 10 * 864e5).toISOString().slice(0, 10);
+  const desde = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
   const [r1, r2] = await Promise.all([
     sbFetch('/rest/v1/os_acompanhamento?select=*&or=(situacao.in.(0,3,4,7,5,1),and(situacao.eq.6,data_entrega.gte.' + desde + '))&order=situacao_desde.asc'),
     sbFetch('/rest/v1/conferencias_fabrica?select=*&order=conferido_em.desc&limit=30'),
@@ -45,6 +48,25 @@ async function carregarAgendaPedidos(){
   }catch(e){ PED_AGENDA = []; }
 }
 const pedFase = (o) => PED_FASES.find(f => f.sit.includes(Number(o.situacao)));
+// ── nota fiscal das entregues (situação da nota no Olist: 1 pendente, 3 cancelada, 5 rejeitada, 10 denegada = ainda não vale) ──
+const NF_NAO_VALE = [1, 3, 5, 10];
+function nfEstado(o){
+  if(Number(o.situacao) !== 6) return null;
+  const emitida = !!o.nf_fora_em || (!!o.nf_id && !NF_NAO_VALE.includes(Number(o.nf_situacao)));
+  if(!emitida) return 'emitir';
+  return o.nf_enviada_em ? 'ok' : 'enviar';
+}
+const NF_SIT_NOME = { 1: 'pendente', 3: 'cancelada', 5: 'rejeitada', 10: 'denegada' };
+// avaliação: só para instalações dos últimos 12 dias
+function avaliacaoPendente(o){
+  if(Number(o.situacao) !== 6 || o.avaliacao_em) return false;
+  const ref = o.data_entrega ? new Date(o.data_entrega + 'T12:00:00') : (o.situacao_desde ? new Date(o.situacao_desde) : null);
+  return !ref || Date.now() - ref.getTime() <= 12 * 864e5;
+}
+// OS de cada fase; nas entregues, só as que ainda pedem alguma ação (avaliação ou nota fiscal)
+function pedNaFase(f){
+  return PED_OS.filter(o => f.sit.includes(Number(o.situacao)) && (f.k !== 'entregue' || avaliacaoPendente(o) || nfEstado(o) !== 'ok' || PED_MARCADAS.has(o.pedido_id)));
+}
 const pedDias = (iso) => iso ? Math.floor((Date.now() - new Date(iso)) / 864e5) : 0;
 const pedNomeChave = (n) => String(n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/\s+/).filter(x => x.length > 2);
 // compromisso na agenda para o cliente (nome e sobrenome no título)
@@ -78,7 +100,8 @@ async function pedMarcar(id, campo, feito){
   if(!r.ok){ avisoTopo('Não foi possível registrar agora. Tente de novo.'); return; }
   const l = (await r.json())[0]; const i = PED_OS.findIndex(o => o.pedido_id === id); if(l && i >= 0) PED_OS[i] = l;
   PED_ABERTO.delete(id + ':' + campo);
-  if(!feito) avisoTopo('Desfeito.');
+  if(feito){ PED_MARCADAS.add(id); avisoTopo('Registrado. <button type="button" class="aviso-desfazer" onclick="pedMarcar(' + id + ',\'' + campo + '\',false)">desfazer</button>'); }
+  else avisoTopo('Desfeito.');
   pedRedesenhar();
 }
 async function conferirFabrica(fab){
@@ -123,10 +146,10 @@ async function renderPedidos(forcar){
 }
 function desenharPedidos(aviso){
   const box = $('ped-lista'); if(!box) return;
-  const grupos = PED_FASES.map(f => ({ f, l: PED_OS.filter(o => f.sit.includes(Number(o.situacao))) }));
+  const grupos = PED_FASES.map(f => ({ f, l: pedNaFase(f) }));
   const lido = PED_OS.reduce((m, o) => o.lido_em > m ? o.lido_em : m, '');
   $('ped-sub').textContent = (PED_OS.filter(o => Number(o.situacao) !== 6).length) + ' OS em andamento' + (lido ? ' · lido do Olist às ' + new Date(lido).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
-  $('ped-filtros').innerHTML = [['todos', '📋 Tudo', PED_OS.length]].concat(grupos.map(g => [g.f.k, g.f.em + ' ' + g.f.tit.split(' · ')[0], g.l.length]))
+  $('ped-filtros').innerHTML = [['todos', '📋 Tudo', grupos.reduce((t, g) => t + g.l.length, 0)]].concat(grupos.map(g => [g.f.k, g.f.em + ' ' + g.f.tit.split(' · ')[0], g.l.length]))
     .map(([k, t, n]) => `<button type="button" class="hist-chip${PED_FILTRO === k ? ' on' : ''}" onclick="PED_FILTRO='${k}';desenharPedidos()">${t} <span>${n}</span></button>`).join('');
   const mostrar = grupos.filter(g => PED_FILTRO === 'todos' || g.f.k === PED_FILTRO);
   box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + mostrar.map(g => `
@@ -189,10 +212,22 @@ function cardOS(o, fase){
     ${msgPainel('agendar', pedMsgAgendar(o), '', '')}
     <div class="conf-nota">Instalação só se confirma com o saldo pago (até 1 dia útil antes) e os itens conferidos em mãos. Agendado e confirmado → <b>"Enviado"</b> no Tiny.</div>`;
   if(fase === 'agendado') acoes = ag ? `<div class="conf-ctrl"><span class="conf-st env">📅 ${new Date(ag.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span></div>` : '<span class="conf-nota">Não achei o compromisso na agenda dos próximos 45 dias.</span>';
-  if(fase === 'entregue') acoes = o.avaliacao_em
-    ? `<div class="conf-ctrl"><span class="conf-st ok">⭐ Avaliação pedida</span><span class="conf-nota">${escHtml((o.avaliacao_por || '') + ' · ' + new Date(o.avaliacao_em).toLocaleDateString('pt-BR'))}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'avaliacao_em',false)">desfazer</button></div>`
-    : `<div class="conf-ctrl"><button type="button" class="conf-btn conf-wa" onclick="pedVer(${o.pedido_id},'avaliacao')">⭐ Mensagem: finalização e avaliação</button></div>${msgPainel('avaliacao', pedMsgAvaliacao(o), 'Já enviei', 'avaliacao_em')}
-       <div class="conf-nota">Lembrete: nota fiscal (produto pelo Tiny, serviço pelo Tinus).</div>`;
+  if(fase === 'entregue'){
+    const quando = (por, em) => escHtml([por, em ? new Date(em).toLocaleDateString('pt-BR') : ''].filter(Boolean).join(' · '));
+    const nf = nfEstado(o);
+    const nfNome = o.nf_fora_em ? 'NF emitida fora do Tiny' : 'NF' + (o.nf_numero ? ' nº ' + escHtml(o.nf_numero) : '') + ' emitida';
+    const nfBloco = nf === 'emitir'
+      ? `<div class="ped-alerta">🧾 Nota fiscal ainda não emitida no Tiny${o.nf_id && NF_SIT_NOME[o.nf_situacao] ? ' (nota ' + NF_SIT_NOME[o.nf_situacao] + ')' : ''}: emitir e depois enviar ao cliente.</div>
+         <div class="conf-ctrl"><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_fora_em',true)">NF de serviço emitida fora do Tiny (Tinus)</button></div>`
+      : `<div class="conf-ctrl"><span class="conf-st ok">🧾 ${nfNome}</span>${o.nf_fora_em ? `<span class="conf-nota">${quando(o.nf_fora_por, o.nf_fora_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_fora_em',false)">desfazer</button>` : ''}</div>
+         <div class="conf-ctrl">${o.nf_enviada_em
+           ? `<span class="conf-st ok">📤 NF enviada ao cliente</span><span class="conf-nota">${quando(o.nf_enviada_por, o.nf_enviada_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',false)">desfazer</button>`
+           : `<span class="conf-st env">📤 Enviar a NF ao cliente</span><button type="button" class="conf-btn ok" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',true)">${ic('ok',15)} Já enviei a NF</button>`}</div>`;
+    const aval = o.avaliacao_em
+      ? `<div class="conf-ctrl"><span class="conf-st ok">⭐ Avaliação pedida</span><span class="conf-nota">${quando(o.avaliacao_por, o.avaliacao_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'avaliacao_em',false)">desfazer</button></div>`
+      : avaliacaoPendente(o) ? `<div class="conf-ctrl"><button type="button" class="conf-btn conf-wa" onclick="pedVer(${o.pedido_id},'avaliacao')">⭐ Mensagem: finalização e avaliação</button></div>${msgPainel('avaliacao', pedMsgAvaliacao(o), 'Já enviei', 'avaliacao_em')}` : '';
+    acoes = nfBloco + aval;
+  }
   return `<div class="ped-card${atrasado ? ' atrasado' : ''}">
     <div class="gar-topo"><strong>${escHtml(o.cliente || 'Cliente')}</strong><span class="ped-os">OS ${escHtml(o.numero || '')}</span></div>
     <div class="gar-meta">${[o.numero_fabrica ? '🏷️ ' + escHtml(o.numero_fabrica) : '', o.valor ? reais(o.valor) : '', fase === 'entregue' && o.data_entrega ? 'instalado em ' + diaBR(o.data_entrega) : (desde ? 'nesta fase há ' + desde + (desde > 1 ? ' dias' : ' dia') : 'nesta fase desde hoje'),
@@ -205,13 +240,16 @@ function cardOS(o, fase){
 function desenharPedidosInicio(){
   const box = document.getElementById('inicio-pedidos'); if(!box || !PED_CARREGADO) return;
   const n = (k) => PED_OS.filter(o => PED_FASES.find(f => f.k === k).sit.includes(Number(o.situacao)));
-  const fabrica = n('fabrica'), producao = n('producao'), pronto = n('pronto'), entregue = n('entregue').filter(o => !o.avaliacao_em);
+  const fabrica = n('fabrica'), producao = n('producao'), pronto = n('pronto'), entregue = n('entregue').filter(avaliacaoPendente);
+  const nfEmitir = n('entregue').filter(o => nfEstado(o) === 'emitir'), nfEnviar = n('entregue').filter(o => nfEstado(o) === 'enviar');
   const conferir = PED_FABRICAS.filter(([k]) => producao.some(o => fabricasDaOS(o).includes(k)) && (() => { const u = ultimaConferencia(k); return !u || pedDias(u.conferido_em) >= 2; })());
   const semMaos = pronto.filter(o => !o.em_maos_em);
   const linhas = [
     fabrica.length && ['fabrica', '🏭', fabrica.length + (fabrica.length > 1 ? ' OS para pedir na fábrica' : ' OS para pedir na fábrica'), 'próximo nº: ' + (proximoNumeroFabrica() || '—'), true],
     conferir.length && ['producao', '🔎', 'Conferir ' + conferir.map(c => c[1]).join(' e '), 'pedidos em produção · a cada 2 dias', true],
     pronto.length && ['pronto', '📦', pronto.length + (pronto.length > 1 ? ' prontos para agendar' : ' pronto para agendar'), semMaos.length ? semMaos.length + ' sem conferência em mãos' : 'itens conferidos', false],
+    nfEmitir.length && ['entregue', '🧾', nfEmitir.length + (nfEmitir.length > 1 ? ' notas fiscais para emitir' : ' nota fiscal para emitir'), 'pedidos entregues sem NF no Tiny', true],
+    nfEnviar.length && ['entregue', '📤', nfEnviar.length + (nfEnviar.length > 1 ? ' notas fiscais para enviar' : ' nota fiscal para enviar'), 'NF emitida · falta enviar ao cliente', false],
     entregue.length && ['entregue', '⭐', entregue.length + (entregue.length > 1 ? ' pedidos de avaliação' : ' pedido de avaliação'), 'instalações dos últimos dias', false],
   ].filter(Boolean);
   if(!linhas.length){ box.innerHTML = ''; return; }
