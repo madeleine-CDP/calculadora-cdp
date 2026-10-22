@@ -2,6 +2,8 @@
 
 Leia este arquivo inteiro antes de qualquer alteração.
 
+**Sessão nova?** Leia também o `HANDOFF.md` (estado atual, trabalho em andamento, backlog e acessos) e o `testes/README.md` (como testar).
+
 ## Quem usa e como falar comigo
 
 - Dona do projeto: **Bruna (Bru)**, administradora da Central das Persianas (Recife). **Não é programadora.**
