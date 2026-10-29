@@ -75,6 +75,12 @@ Regras:
 - SKU: manter os existentes; novos continuando a sequência atual (recomendação) ou padrão novo legível.
 - **Decisões da Bru (29/10/2026):** nome com o **fornecedor no começo** (as duas fábricas têm linhas com nomes parecidos e isso confunde), ex.: "REAL – CORTINA ROLÔ BLACKOUT PÉTALA"; SKU dos novos = **continuar a sequência atual**. Ainda falta confirmar a hierarquia de categorias.
 
+**Andamento em 29/10/2026**
+- Decisões da Bru: 4 níveis = Linha (categoria master) → Modelo (produto) → Material (família) → Coleção, + observação nas exceções; fornecedor no começo do nome ("REAL – CORTINA ROLÔ BLACKOUT BK PINPOINT"); padronizar grafia mesmo que mude o que a fábrica digitou; a "tabela promocional" da Decore é só destaque comercial: a calculadora segue com a tabela normal e os SKUs `…PROMOA` vão para inativar; `…AUXILIARA` = pontas de estoque (inativar se não estiverem na tabela atual).
+- Feito: leitura dos 1.170 produtos (só leitura) e de-para cruzando Olist × planilha 2023 (aba DEPARA, por SKU) × tabelas da calculadora × planilha base das tradicionais (Google Sheets "CDP_Preencher_Ateliê_Tecido_Tradicional"). Resultado entregue à Bru como "Revisao_Produtos_Olist_CDP.xlsx" (abas Leia-me, Conferir, Cadastrar, Inativar, Manter e renomear, Todos, Categorias): manter/renomear 781 · inativar 251 · conferir 137 · cadastrar 112. Não está no repositório (dados do Olist).
+- Proposta em aberto: tradicionais todas com fornecedor "CDP" no nome (inclusive os SKUs DECORE473A–515A); produto sem SKU (Blackout Flat Linen 100%) → sugerido CDP133TA.
+- Aguardando a revisão da Bru (coluna "Sua decisão").
+
 **Próximos passos combinados**
 1. Ler todos os produtos do Olist (paginado, 100 por vez; leitura apenas) e cruzar com a planilha e com as tabelas vigentes do sistema (`js/precos.js`: Decore Out/2026, Real Ago/2026, CDP/Ateliê).
 2. Entregar à Bru uma planilha de revisão (uma linha por produto): SKU · nome atual · nome novo · categoria nova · preço novo · ação (manter / renomear / inativar / cadastrar). Ela revisa.
