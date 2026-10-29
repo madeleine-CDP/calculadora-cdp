@@ -73,7 +73,7 @@ Regras:
 - Hierarquia: Nível 1 Linha (Cortinas · Persianas · Motorização · Acessórios e peças · Serviços · Casa · Catálogos) → Nível 2 Tipo (Rolô, Romana, Painel, Double Vision/Elegance, Celular, Nuette, Tradicional; Vertical, Horizontal 25mm, 50mm; Motores, Controles, Automação; Bandôs, Guias, Barras, Trilhos, Peças) → Nível 3 Família/tecido (Blackout, Translúcida, Tela solar, Linho, Voil…). Fornecedor vira campo próprio, não categoria.
 - Nome: `TIPO + FAMÍLIA + COLEÇÃO + DETALHE/COR – FORNECEDOR`, maiúsculas, sem repetir palavra, igual aos nomes da calculadora. Ex.: "CORTINA ROLÔ BLACKOUT PÉTALA – REAL", "BANDÔ ROLÔ MAXI PRETO – REAL".
 - SKU: manter os existentes; novos continuando a sequência atual (recomendação) ou padrão novo legível.
-- **Decisões pendentes da Bru:** (1) hierarquia ok? (2) padrão de nome e posição do fornecedor; (3) padrão do SKU novo.
+- **Decisões da Bru (29/10/2026):** nome com o **fornecedor no começo** (as duas fábricas têm linhas com nomes parecidos e isso confunde), ex.: "REAL – CORTINA ROLÔ BLACKOUT PÉTALA"; SKU dos novos = **continuar a sequência atual**. Ainda falta confirmar a hierarquia de categorias.
 
 **Próximos passos combinados**
 1. Ler todos os produtos do Olist (paginado, 100 por vez; leitura apenas) e cruzar com a planilha e com as tabelas vigentes do sistema (`js/precos.js`: Decore Out/2026, Real Ago/2026, CDP/Ateliê).
@@ -95,7 +95,7 @@ Não colocar a planilha nem dados exportados do Olist no repositório (usar a pa
 7. 4B: ficha do ateliê. 3B: agendar pelo sistema (adiado).
 8. Apresentação do sistema para a Madeleine.
 
-**Pendências com a Bru (não são código):** convidar a conta pessoal `brubamo` como colaboradora no GitHub (o Claude não pode conceder acesso); decidir tornar o repositório privado (conferir antes o impacto na Netlify); atualizar Canva e guias; criar a conta do Ricardo no Supabase Auth (ela cria com senha provisória; o Claude inclui em `perfis` e o apelido em `USUARIOS_EMAIL`); apagar o projeto vazio do Supabase; conferir saldo de créditos da Netlify após ~25/10.
+**Pendências com a Bru (não são código):** decidir tornar o repositório privado (conferir antes o impacto na Netlify); atualizar Canva e guias; criar a conta do Ricardo no Supabase Auth (ela cria com senha provisória; o Claude inclui em `perfis` e o apelido em `USUARIOS_EMAIL`); apagar o projeto vazio do Supabase; conferir saldo de créditos da Netlify após ~25/10.
 
 ## 8. Como testar (antes de pedir aprovação)
 - `bash testes/rodar_tela.sh` → todos "ok" (banco/Olist simulados; 360px).
