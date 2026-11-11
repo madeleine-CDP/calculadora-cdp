@@ -1,4 +1,4 @@
-# HANDOFF — CDP Sistema (atualizado em 22/10/2026)
+# HANDOFF — CDP Sistema (atualizado em 11/11/2026)
 
 Documento de passagem para continuar o trabalho numa nova sessão do Claude Code.
 **Leia nesta ordem:** este arquivo → `CLAUDE.md` (regras, fórmulas, mapa do código) → `testes/README.md`.
@@ -91,6 +91,16 @@ Regras:
 3. Teste pequeno: importar 3–5 produtos no Olist para confirmar que a importação **atualiza pelo SKU** e não duplica. **Quem importa é a Bru**; o sistema/Claude não grava no Olist sem aprovação.
 4. Importação completa em lotes (renomeados → novos → inativados).
 Não colocar a planilha nem dados exportados do Olist no repositório (usar a pasta temporária da sessão).
+
+## 6B. Tabela Decore Novembro/2026 (11/11/2026)
+- **Caso Viviane (07/11):** o portal da Decore cobrou as guias de parede 6cm a 163,84 (lateral) e 81,92 (inferior), contra 144,21 e 72,11 da tabela de outubro. Explicação: a Decore subiu as guias no portal antes de mandar tabela; 163,84 × 1,03 = 168,76 (preço de novembro). A Bru ia falar com o gerente.
+- **Tabela Novembro/2026 (vigência 16/11/2026)** recebida em 10/11 e aplicada em `js/precos.js` na `dev` em 11/11 (todos os 249 preços da Decore conferidos um a um): tecidos +3% (210 itens), bandôs e barras +3%, guias +17% sobre outubro, motores e controles +5%, Madeira 50mm +5%, Celular sem mudança, itens de preço fixo sem mudança (junção 20, redução 75, monocomandos 60/120, entre-vidros 80, junção c/ tração 47). Cor cinza/bege de bandô/guia continua +15%.
+- Promoções da Decore (a partir de 16/11) = tabela −12% em todos os 45 itens → mesmo custo final; não entram no sistema. Exceção real: PH16 e PH25 em cores específicas a R$ 91,08 (ponta de estoque).
+- **Costura Decore Novembro/2026:** os 33 tecidos +10%, trilhos +5%, regras iguais. Não está na calculadora; afeta a planilha de revisão do Olist.
+- **Publicar** só a partir de 16/11 e com a Bru confirmando crédito na Netlify. Depois: recalcular os orçamentos em aberto da Decore (Viviane e Anderson Torres têm guia).
+- Ainda fora da calculadora (preços de novembro): Painel Double Vision (manual = comando: Opala 116,53 · Jade/Babel 157,42 · Diamante 131,49 · Topázio SBK 161,40), Horizontal 25mm cabeçote revestido (130,47 · Semi-BK 143,52 · Decorada 162,26), Trilho da Rolô Móvel (manual 42,25/ml · com comando 54,92/ml). Bandô Box 70 aceita largura acima de 1,70m sem avisar (corrigir).
+- Planilha de revisão do Olist: atualizar os preços da Decore e da Costura para novembro antes da importação.
+- Decore respondeu (30/10) o estoque dos tecidos de costura fora da tabela; proposta de "ponta de estoque" aguardando a Bru (e decisão do Loppiano).
 
 ## 7. Backlog completo (ordem sugerida; confirmar com a Bru)
 1. **Revisão de produtos do Olist** (seção 6) — em andamento.

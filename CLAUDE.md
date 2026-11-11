@@ -30,7 +30,7 @@ Calculadora de orçamentos de persianas e cortinas, que está virando o **CDP Si
 Estas fórmulas foram confirmadas pela Bru. Qualquer mudança exige confirmação explícita dela na conversa, mesmo que pareça um bug.
 
 ### Decore Persianas
-- Tabela vigente: **Outubro/2026** (vigência 01/10/2026). Não existe mais tabela promocional: todos os itens usam 12% + 3%.
+- Tabela vigente: **Novembro/2026** (vigência 16/11/2026; atualizada no sistema em 11/11/2026). Não existe tabela promocional no sistema: todos os itens usam 12% + 3%. A lista de "promoções" que a Decore manda é a própria tabela com 12% a menos (mesmo custo final), por isso não é tratada à parte. Regra da tabela: guia **avulsa** (vendida sem a cortina) tem +10%.
 - **Custo** = preço tabela × área × 0,88 (12%) × 0,97 (3% pedido pelo site) **+ impostos de PE** (IPI e ICMS-ST conforme `IMPOSTOS_PE` e `getTipoImposto()`).
 - **À vista** = custo × 2.
 - Itens **sem desconto** (motores, controles, monocomandos, redução de peso): lista `SEM_DESCONTO`. Ela aparece **em dois lugares** (cálculo normal e comparação entre fábricas). Ao adicionar um item sem desconto, atualize os dois.
