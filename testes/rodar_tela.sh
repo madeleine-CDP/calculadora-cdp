@@ -12,7 +12,7 @@ cd "$FOTOS"
 LISTA=${1:-}
 for t in "$RAIZ"/testes/tela/teste_*.py; do
   n=$(basename "$t" .py); [ -n "$LISTA" ] && [ "$n" != "$LISTA" ] && continue
-  out=$(timeout 180 python3 "$t" "$FOTOS/shotsN" 2>&1)
+  out=$(PYTHONPATH="$RAIZ/testes/tela/_isolar" timeout 180 python3 "$t" "$FOTOS/shotsN" 2>&1)
   r="$(echo "$out" | grep 'ERROS JS' | tail -1)"; tb=$(echo "$out" | grep -c Traceback)
   if [ "$r" = "ERROS JS: []" ] && [ "$tb" = 0 ]; then echo "ok    $n"; else echo "FALHA $n | $r | tracebacks=$tb"; [ -n "$LISTA" ] && echo "$out"; fi
 done
