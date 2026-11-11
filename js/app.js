@@ -1709,7 +1709,7 @@ function baseDetalhamento(prod, w, h, jw, jh, acc, dentroVao){
 // Lê os acessórios/opcionais marcados no formulário e separa para o texto do detalhamento
 function accDetalhamento(){
   const r = { motor: [], controle: [], comando: [], outros: [], bando: false, guia: false };
-  if(STATE.fab !== 'real' && STATE.fab !== 'decore') return r;
+  if(STATE.fab !== 'real' && STATE.fab !== 'dec') return r;
   const lista = STATE.fab === 'real' ? ACC_REAL : ACC_DECORE;
   const COMANDO = ['d_ph50mono','d_ph25mono','d_ph25ev','r_ph50mono','r_ph25mono','r_ph25ev'];
   lista.forEach(sec => sec.items.forEach(item => {
