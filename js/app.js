@@ -607,7 +607,7 @@ function calcAccCost(){
   const SEM_DESCONTO = [
     // Motorização Real — preço fixo
     'r_m6n','r_mmaxi','r_m4f','r_mwifi','r_mbat','r_fonte',
-    'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf',
+    'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf','r_mcel','r_mcelwf','r_mcelbat',
     // Controles Real — preço fixo
     'r_rc1','r_rc15','r_rctimer','r_hub',
     // Outros opcionais Real — "não se aplicam descontos" na tabela
@@ -1278,7 +1278,7 @@ function calcCmpAccCost(otherFabKey){
 
   const SEM_DESCONTO = [
     'r_m6n','r_mmaxi','r_m4f','r_mwifi','r_mbat','r_fonte',
-    'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf',
+    'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf','r_mcel','r_mcelwf','r_mcelbat',
     'r_rc1','r_rc15','r_rctimer','r_hub',
     'r_junc','r_red','r_redplus','r_supduplo','r_romred',
     'd_mmec','d_mrf','d_mele','d_mt38','d_mt38wf','d_mwmec','d_mwele','d_rmmot','d_rmmotwf','d_ph50mot','d_ph50motwf',

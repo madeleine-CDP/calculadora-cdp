@@ -2543,13 +2543,16 @@ const ACC_REAL = [
       {id:"r_m4f",  l:"Motor Rolô RPC 4 Fios (Automação)",unit:"und",p:430.54,note:"Contato Seco",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
       {id:"r_mwifi",l:"Motor Rolô RPC Connector 10N (Wi-Fi)",unit:"und",p:839.16,note:"",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
       {id:"r_mbat", l:"Motor Rolô RPC Bateria",          unit:"und",p:1386.79,note:"Adicionar Fonte Bivolt R$189,39",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"r_fonte",l:"Fonte Bivolt RPC",                unit:"und",p:189.39, note:"Para motor bateria",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"r_fonte",l:"Fonte Bivolt RPC",                unit:"und",p:189.39, note:"Para motor bateria",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION","CORTINA CELULAR"]},
       {id:"r_rm6n", l:"Motor Romana RPC 6N",             unit:"und",p:845.08,note:"",compat:["CORTINA ROMANA"]},
       {id:"r_rm4f", l:"Motor Romana RPC 4 Fios",          unit:"und",p:706.99, note:"Automação",compat:["CORTINA ROMANA"]},
       {id:"r_rmwifi",l:"Motor Romana RPC Connector (Wi-Fi)",unit:"und",p:933.33,note:"",compat:["CORTINA ROMANA"]},
       {id:"r_rmbat",l:"Motor Romana RPC Bateria",         unit:"und",p:1566.26,note:"Adicionar Fonte Bivolt R$189,39",compat:["CORTINA ROMANA"]},
       {id:"r_ph50mot",l:"Motor PH 50mm RPC",             unit:"und",p:1001.10,note:"Exclusivo Cadarço",compat:["PERSIANA HORIZONTAL"]},
-      {id:"r_ph50wf",l:"Motor PH 50mm RPC Wi-Fi",        unit:"und",p:1230.77,note:"Exclusivo Cadarço",compat:["PERSIANA HORIZONTAL"]}
+      {id:"r_ph50wf",l:"Motor PH 50mm RPC Wi-Fi",        unit:"und",p:1230.77,note:"Exclusivo Cadarço",compat:["PERSIANA HORIZONTAL"]},
+      {id:"r_mcel",  l:"Motor Celular RPC",              unit:"und",p:1001.10,note:"Larg 0,80 a 2,80m | Alt máx 3,00m | Máx 7,00 m²",maxLarg:2.80,compat:["CORTINA CELULAR"]},
+      {id:"r_mcelwf",l:"Motor Celular RPC Connector 10N (Wi-Fi)",unit:"und",p:1230.77,note:"Larg 0,80 a 3,00m | Alt máx 3,50m | Máx 9,00 m²",maxLarg:3.00,compat:["CORTINA CELULAR"]},
+      {id:"r_mcelbat",l:"Motor Celular RPC Bateria",     unit:"und",p:2367.97,note:"Obrigatório acrescentar a Fonte Bivolt R$189,39 | Larg 0,80 a 2,80m | Alt máx 3,00m | Máx 7,00 m²",maxLarg:2.80,compat:["CORTINA CELULAR"]}
     ]
   },
   {
