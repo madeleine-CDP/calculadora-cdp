@@ -212,6 +212,7 @@ function onCol(){
   if(!STATE.col) return;
   updateChips();
   validateMedidas();
+  revalidarAcc();   // acessório que depende da coleção (ex.: revestido da 25mm)
   updateDetalhamentoPreview();
 }
 
@@ -320,6 +321,7 @@ function onMedidas(){
   updateChips();
   validateMedidas();
   if(STATE.fam){ fillColSel(getData()); }
+  revalidarAcc();
   autoFillAccMl();
   updateDetalhamentoPreview();
 }
@@ -482,17 +484,14 @@ function buildAcc(){
       const w = STATE.w, h = STATE.h;
 
       // Incompatibility check
-      let incompatMsg = '';
-      if(item.maxLarg && w > item.maxLarg)
-        incompatMsg = 'Incompatível: larg ' + w + 'm > máx ' + item.maxLarg + 'm';
-      if(STATE.fab==='real' && STATE.tubo && item.l.includes('Bandô')){
-        const tuboCompat = STATE.tubo.bandos.some(b => item.l.includes(b.replace('Bandô ','')));
-        if(!incompatMsg && !tuboCompat) incompatMsg = 'Incompatível: ' + STATE.tubo.label + ' não aceita este bandô (ver tabela de restrições)';
-      }
+      const incompatMsg = accIncompat(item);
 
       // Price display
       let priceStr = '';
-      if(item.cor){
+      if(u==='m2-dif'){
+        const dif = accDifM2(item);
+        priceStr = dif!=null ? '+'+fmtDec(dif)+'/m²' : '';
+      } else if(item.cor){
         priceStr = 'Br/Pt: '+fmtDec(item.cor.W)+'/ml' + (item.cor.C ? ' | Cor: '+fmtDec(item.cor.C)+'/ml' : ' (só branco)');
       } else if(item.p){
         priceStr = fmtDec(item.p)+'/und';
@@ -500,7 +499,9 @@ function buildAcc(){
 
       // Controls
       let ctrl = '';
-      if(u==='und'){
+      if(u==='m2-dif'){
+        ctrl = '';   // cobra pela área da própria persiana — nada a preencher
+      } else if(u==='und'){
         ctrl = '<input type="number" id="qty_'+item.id+'" value="1" min="1" max="50" step="1" style="width:52px">';
       } else {
         const defVal = '';
@@ -531,12 +532,84 @@ function buildAcc(){
   setTimeout(autoFillAccMl, 50);
 }
 
+// Acessório cobrado como diferença de preço por m² (ex.: cabeçote/base revestido da
+// horizontal 25mm Decore): preço da versão revestida da coleção − preço da coleção.
+// null = a coleção escolhida não tem essa versão.
+function accDifM2(item){
+  if(!item.precoPorCol || !STATE.col) return null;
+  const alvo = item.precoPorCol[STATE.col];
+  const data = getData(); const ci = data && getColPrice(data, STATE.col);
+  if(alvo == null || !ci) return null;
+  return Math.max(0, alvo - ci.p);
+}
+
+// Por que um acessório não serve para a medida/produto atual ('' = serve).
+// Usado ao montar a lista, ao mudar as medidas e na hora de calcular.
+function accIncompat(item){
+  const w = STATE.w;
+  if(item.maxLarg && w > item.maxLarg)
+    return 'Incompatível: larg ' + w + 'm > máx ' + item.maxLarg + 'm';
+  if(STATE.fab==='real' && STATE.tubo && item.l.includes('Bandô')){
+    const tuboCompat = STATE.tubo.bandos.some(b => item.l.includes(b.replace('Bandô ','')));
+    if(!tuboCompat) return 'Incompatível: ' + STATE.tubo.label + ' não aceita este bandô (ver tabela de restrições)';
+  }
+  if(item.unit==='m2-dif' && accDifM2(item)==null)
+    return 'Não disponível para esta coleção';
+  if(item.incompatCom){
+    const outro = item.incompatCom.find(id => { const c = $('chk_'+id); return c && c.checked; });
+    if(outro){
+      let nome = outro;
+      (STATE.fab==='real' ? ACC_REAL : ACC_DECORE).forEach(sec => sec.items.forEach(i => { if(i.id===outro) nome = i.l; }));
+      return 'Incompatível com ' + nome;
+    }
+  }
+  if(item.semReducao && STATE.fab==='dec' && STATE.reducao)
+    return 'Incompatível com a redução de peso (aplicada a partir de 1,80m de largura ou 2,00m de altura)';
+  return '';
+}
+
+// Medida mudou depois de montar a lista: refaz os avisos. Acessório já marcado
+// que deixou de servir continua marcado (para a pessoa ver e trocar), mas o
+// Calcular não deixa passar (ver accMarcadosIncompat).
+function revalidarAcc(){
+  const accList = STATE.fab==='real' ? ACC_REAL : ACC_DECORE;
+  if(!accList) return;
+  accList.forEach(sec => sec.items.forEach(item => {
+    const box = $('awi_'+item.id), chk = $('chk_'+item.id);
+    if(!box || !chk) return;
+    const msg = accIncompat(item);
+    if(item.unit==='m2-dif'){
+      const pr = box.querySelector('.ai-price'), dif = accDifM2(item);
+      if(pr) pr.textContent = dif!=null ? '+'+fmtDec(dif)+'/m²' : '';
+    }
+    box.classList.toggle('incompatible', !!msg);
+    chk.disabled = !!msg && !chk.checked;
+    let aviso = box.querySelector('.ai-incomp');
+    if(msg){
+      if(!aviso){ aviso = document.createElement('div'); aviso.className = 'ai-incomp'; box.querySelector('.acc-item-body').appendChild(aviso); }
+      aviso.innerHTML = ic('alerta',13) + ' ' + msg + (chk.checked ? ' — desmarque ou troque' : '');
+    } else if(aviso) aviso.remove();
+  }));
+}
+
+// Acessórios marcados que não servem para a medida atual (para bloquear o cálculo).
+function accMarcadosIncompat(){
+  const accList = STATE.fab==='real' ? ACC_REAL : ACC_DECORE;
+  const out = [];
+  (accList||[]).forEach(sec => sec.items.forEach(item => {
+    const chk = $('chk_'+item.id);
+    if(chk && chk.checked){ const msg = accIncompat(item); if(msg) out.push(item.l + ': ' + msg.replace('Incompatível: ','').replace('Incompatível ','')); }
+  }));
+  return out;
+}
+
 function onAccChange(chk, id){
   const ctrlDiv = $('ctrl_'+id);
   if(ctrlDiv) ctrlDiv.style.display = chk.checked ? 'flex' : 'none';
   const item = $('awi_'+id);
   if(item) item.classList.toggle('checked', chk.checked);
   if($('tipo-medida') && $('tipo-medida').value === 'janela') calcSobra();
+  revalidarAcc();                // um acessório pode excluir outro (ex.: Trilho Móvel x Barra Comum)
   updateDetalhamentoPreview();   // acessório marcado/desmarcado entra/sai do detalhamento
 }
 // quantidade de um acessório mudou → atualiza o texto
@@ -557,7 +630,7 @@ function calcAccCost(){
   const SEM_DESCONTO = [
     // Motorização Real — preço fixo
     'r_m6n','r_mmaxi','r_m4f','r_mwifi','r_mbat','r_fonte',
-    'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf',
+    'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf','r_mcel','r_mcelwf','r_mcelbat',
     // Controles Real — preço fixo
     'r_rc1','r_rc15','r_rctimer','r_hub',
     // Outros opcionais Real — "não se aplicam descontos" na tabela
@@ -579,7 +652,14 @@ function calcAccCost(){
       const u = item.unit;
       let cost = 0, label = '';
 
-      if(u==='und'){
+      if(u==='m2-dif'){
+        // diferença por m² × a mesma área cobrada da persiana (respeita a metragem mínima)
+        const data = getData();
+        const area = Math.max(w*h, (data && data.minM2) || 1.20);
+        const dif = accDifM2(item) || 0;
+        cost = dif * area;
+        label = item.l + ' ' + area.toFixed(2) + 'm² × +' + dif.toFixed(2);
+      } else if(u==='und'){
         const qty = parseFloat(($('qty_'+item.id)||{}).value)||1;
         cost = (item.p||0) * qty;
         label = item.l + (qty>1?' ×'+qty:'');
@@ -617,6 +697,12 @@ function calcAccCost(){
           costDisc = cost * (1 - d1/100) * (1 - d2/100);
           discLabel = d1+'%+'+d2+'%';
         }
+      }
+      // Parte do preço da própria persiana (ex.: revestido): leva os mesmos impostos dela
+      if(item.impProduto && STATE.fab==='dec'){
+        const data = getData();
+        const imp = getImpostos((data && data.tipoImp) || getTipoImposto(STATE.prod, STATE.fam));
+        costDisc = costDisc * (1 + imp.ipi) * (1 + imp.st);
       }
       total += costDisc;
       lines.push({
@@ -702,6 +788,13 @@ function calcular(){
   // Check fabric width
   if(colInfo.fw && colInfo.fw < 99 && w > colInfo.fw){
     alert('⚠️ O tecido "' + colLabel(STATE.col) + '" tem largura máxima de ' + colInfo.fw + 'm e não atende ' + w + 'm.\n\nEscolha uma coleção compatível.');
+    return;
+  }
+
+  // Acessório marcado que não serve para esta medida (ex.: Bandô Box 70 acima de 1,70m)
+  const accRuins = accMarcadosIncompat();
+  if(accRuins.length){
+    alert('⚠️ Acessório que não serve para esta medida:\n\n• ' + accRuins.join('\n• ') + '\n\nDesmarque ou troque o acessório antes de calcular.');
     return;
   }
 
@@ -1145,10 +1238,10 @@ function toggleCompare(){
   let anyAcc = false;
 
   accList.forEach(sec => {
-    const items = sec.items.filter(item =>
+    const items = sec.items.filter(item => item.unit !== 'm2-dif' && (
       !item.compat || item.compat.some(c => prod.includes(c.replace('CORTINA ','').replace('PERSIANA ','')))
       || item.compat.indexOf(prod) >= 0
-    );
+    ));
     if(!items.length) return;
     anyAcc = true;
 
@@ -1221,7 +1314,7 @@ function calcCmpAccCost(otherFabKey){
 
   const SEM_DESCONTO = [
     'r_m6n','r_mmaxi','r_m4f','r_mwifi','r_mbat','r_fonte',
-    'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf',
+    'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf','r_mcel','r_mcelwf','r_mcelbat',
     'r_rc1','r_rc15','r_rctimer','r_hub',
     'r_junc','r_red','r_redplus','r_supduplo','r_romred',
     'd_mmec','d_mrf','d_mele','d_mt38','d_mt38wf','d_mwmec','d_mwele','d_rmmot','d_rmmotwf','d_ph50mot','d_ph50motwf',
@@ -1661,7 +1754,7 @@ function baseDetalhamento(prod, w, h, jw, jh, acc, dentroVao){
 // Lê os acessórios/opcionais marcados no formulário e separa para o texto do detalhamento
 function accDetalhamento(){
   const r = { motor: [], controle: [], comando: [], outros: [], bando: false, guia: false };
-  if(STATE.fab !== 'real' && STATE.fab !== 'decore') return r;
+  if(STATE.fab !== 'real' && STATE.fab !== 'dec') return r;
   const lista = STATE.fab === 'real' ? ACC_REAL : ACC_DECORE;
   const COMANDO = ['d_ph50mono','d_ph25mono','d_ph25ev','r_ph50mono','r_ph25mono','r_ph25ev'];
   lista.forEach(sec => sec.items.forEach(item => {

@@ -6,7 +6,7 @@
 // Ao trocar de tabela, atualize SÓ AQUI (não mexe em nenhum preço).
 const TABELAS_INFO = {
   real: { nome: 'Real Persianas',  tabela: 'Agosto/2026',  data: '16/09/2026', rotulo: 'conferida em' },
-  dec:  { nome: 'Decore',          tabela: 'Outubro/2026', data: '01/10/2026', rotulo: 'vigente desde' },
+  dec:  { nome: 'Decore',          tabela: 'Novembro/2026', data: '16/11/2026', rotulo: 'vigente desde' },
   cdp:  { nome: 'CDP',             tabela: 'tabela própria', data: '',         rotulo: '' }
 };
 function textoTabela(fab){
@@ -114,7 +114,7 @@ const CATMAP = {
   "CORTINAS": {
     "CORTINA ROLÔ":["BLACKOUT","FILTRA-SOL","TRANSLÚCIDA"],
     "CORTINA ROMANA":["BLACKOUT","FILTRA-SOL","TRANSLÚCIDA"],
-    "CORTINA PAINEL":["BLACKOUT","FILTRA-SOL","TRANSLÚCIDA"],
+    "CORTINA PAINEL":["BLACKOUT","FILTRA-SOL","TRANSLÚCIDA","DOUBLE VISION"],
     "CORTINA ELEGANCE / DOUBLE VISION":["TRANSLÚCIDA","SEMI BLACKOUT"],
     "CORTINA NUETTE":["TECIDO"],
     "CORTINA CELULAR":["TRANSLÚCIDA","BLACKOUT"]
@@ -1076,7 +1076,7 @@ const DB_REAL = {
   }
 };
 
-// Tabela Decore — Outubro/2026 (vigência 01/10/2026). Sem tabela promocional: 12%+3% em todos os itens.
+// Tabela Decore — Novembro/2026 (vigência 16/11/2026). Sem tabela promocional: 12%+3% em todos os itens (a lista de promoções da Decore = tabela −12%, mesmo custo final).
 const DB_DECORE = {
   "CORTINAS|CORTINA ROLÔ|TRANSLÚCIDA": {
     "minM2": 1.2,
@@ -1089,72 +1089,72 @@ const DB_DECORE = {
     ],
     "cols": {
       "Delta": {
-        "p": 95.51,
+        "p": 98.38,
         "fw": 2,
         "promo": false
       },
       "Monaco Luz": {
-        "p": 103.36,
+        "p": 106.46,
         "fw": 2.5,
         "promo": false
       },
       "Fustão Luz": {
-        "p": 111.97,
+        "p": 115.33,
         "fw": 2,
         "promo": false
       },
       "Lugano Luz": {
-        "p": 107.25,
+        "p": 110.47,
         "fw": 3,
         "promo": false
       },
       "Odin Luz": {
-        "p": 110.99,
+        "p": 114.32,
         "fw": 1.4,
         "promo": false
       },
       "Carlota": {
-        "p": 112.33,
+        "p": 115.7,
         "fw": 2,
         "promo": false
       },
       "Atlas": {
-        "p": 119.94,
+        "p": 123.54,
         "fw": 2,
         "promo": false
       },
       "Book": {
-        "p": 113.97,
+        "p": 117.39,
         "fw": 2,
         "promo": false
       },
       "Linho Misto": {
-        "p": 118.83,
+        "p": 122.39,
         "fw": 2,
         "promo": false
       },
       "Maia": {
-        "p": 116.5,
+        "p": 119.99,
         "fw": 2,
         "promo": false
       },
       "Napoles Luz": {
-        "p": 122.52,
+        "p": 126.19,
         "fw": 2.4,
         "promo": false
       },
       "Inca Luz": {
-        "p": 123.41,
+        "p": 127.11,
         "fw": 2,
         "promo": false
       },
       "Laus": {
-        "p": 136.44,
+        "p": 140.53,
         "fw": 2,
         "promo": false
       },
       "Rustico Luz": {
-        "p": 111.84,
+        "p": 115.2,
         "fw": 3,
         "promo": false
       }
@@ -1170,17 +1170,17 @@ const DB_DECORE = {
     ],
     "cols": {
       "Hydra 5%": {
-        "p": 121.44,
+        "p": 125.08,
         "fw": 3,
         "promo": false
       },
       "Malta 3%": {
-        "p": 126.68,
+        "p": 130.48,
         "fw": 3,
         "promo": false
       },
       "Betis 1%": {
-        "p": 142.94,
+        "p": 147.23,
         "fw": 3,
         "promo": false
       }
@@ -1198,102 +1198,102 @@ const DB_DECORE = {
     ],
     "cols": {
       "BK Berlim": {
-        "p": 120.32,
+        "p": 123.93,
         "fw": 2.5,
         "promo": false
       },
       "BK Pinpoint Soft": {
-        "p": 118.68,
+        "p": 122.24,
         "fw": 3,
         "promo": false
       },
       "BK Pinpoint Flex": {
-        "p": 131.72,
+        "p": 135.67,
         "fw": 3,
         "promo": false
       },
       "BK Libia": {
-        "p": 128.39,
+        "p": 132.24,
         "fw": 2.2,
         "promo": false
       },
       "BK Pinpoint Plus": {
-        "p": 140.11,
+        "p": 144.31,
         "fw": 3,
         "promo": false
       },
       "BK Odin": {
-        "p": 146.64,
+        "p": 151.04,
         "fw": 1.4,
         "promo": false
       },
       "BK Monaco": {
-        "p": 142.47,
+        "p": 146.74,
         "fw": 3,
         "promo": false
       },
       "BK Madri": {
-        "p": 147.18,
+        "p": 151.59,
         "fw": 3,
         "promo": false
       },
       "BK Lugano": {
-        "p": 148.06,
+        "p": 152.5,
         "fw": 3,
         "promo": false
       },
       "BK Napoles": {
-        "p": 150.26,
+        "p": 154.77,
         "fw": 2.4,
         "promo": false
       },
       "BK Lins": {
-        "p": 161.05,
+        "p": 165.88,
         "fw": 2.8,
         "promo": false
       },
       "BK Manari": {
-        "p": 154.53,
+        "p": 159.16,
         "fw": 3,
         "promo": false
       },
       "BK Elise": {
-        "p": 161.82,
+        "p": 166.68,
         "fw": 2,
         "promo": false
       },
       "BK Fustão": {
-        "p": 176.19,
+        "p": 181.47,
         "fw": 2.8,
         "promo": false
       },
       "BK Aurea": {
-        "p": 152.71,
+        "p": 157.29,
         "fw": 2.4,
         "promo": false
       },
       "BK Inca": {
-        "p": 178.87,
+        "p": 184.23,
         "fw": 2,
         "promo": false
       },
       "BK Viena": {
-        "p": 179.65,
+        "p": 185.04,
         "fw": 2.8,
         "promo": false
       },
       "BK Prestige": {
-        "p": 194.63,
+        "p": 200.47,
         "fw": 2.8,
         "promo": false
       },
       "BK Rustico": {
-        "p": 154.25,
+        "p": 158.87,
         "fw": 3,
         "promo": false
       },
       "BK Screen": {
-        "p": 143.64,
+        "p": 147.95,
         "fw": 3,
         "promo": false
       }
@@ -1310,67 +1310,67 @@ const DB_DECORE = {
     ],
     "cols": {
       "Delta": {
-        "p": 153.18,
+        "p": 157.78,
         "fw": 99,
         "promo": false
       },
       "Fustão Luz": {
-        "p": 168.73,
+        "p": 173.79,
         "fw": 99,
         "promo": false
       },
       "Lugano Luz": {
-        "p": 168.54,
+        "p": 173.59,
         "fw": 99,
         "promo": false
       },
       "Carlota": {
-        "p": 169.07,
+        "p": 174.14,
         "fw": 99,
         "promo": false
       },
       "Atlas": {
-        "p": 176.25,
+        "p": 181.54,
         "fw": 99,
         "promo": false
       },
       "Book": {
-        "p": 170.62,
+        "p": 175.74,
         "fw": 99,
         "promo": false
       },
       "Linho Misto": {
-        "p": 175.2,
+        "p": 180.45,
         "fw": 99,
         "promo": false
       },
       "Maia": {
-        "p": 173,
+        "p": 178.19,
         "fw": 99,
         "promo": false
       },
       "Napoles Luz": {
-        "p": 188.73,
+        "p": 194.39,
         "fw": 99,
         "promo": false
       },
       "Inca Luz": {
-        "p": 179.53,
+        "p": 184.92,
         "fw": 99,
         "promo": false
       },
       "Laus": {
-        "p": 191.84,
+        "p": 197.59,
         "fw": 99,
         "promo": false
       },
       "Rustico Luz": {
-        "p": 172.88,
+        "p": 178.06,
         "fw": 99,
         "promo": false
       },
       "Monaco Luz": {
-        "p": 164.87,
+        "p": 169.81,
         "fw": 99,
         "promo": false
       }
@@ -1387,17 +1387,17 @@ const DB_DECORE = {
     ],
     "cols": {
       "Hydra 5%": {
-        "p": 181.94,
+        "p": 187.39,
         "fw": 99,
         "promo": false
       },
       "Malta 3%": {
-        "p": 186.89,
+        "p": 192.5,
         "fw": 99,
         "promo": false
       },
       "Betis 1%": {
-        "p": 202.24,
+        "p": 208.31,
         "fw": 99,
         "promo": false
       }
@@ -1414,77 +1414,77 @@ const DB_DECORE = {
     ],
     "cols": {
       "BK Berlim": {
-        "p": 180.89,
+        "p": 186.31,
         "fw": 99,
         "promo": false
       },
       "BK Pinpoint Flex": {
-        "p": 191.65,
+        "p": 197.4,
         "fw": 99,
         "promo": false
       },
       "BK Libia": {
-        "p": 184.23,
+        "p": 189.76,
         "fw": 99,
         "promo": false
       },
       "BK Monaco": {
-        "p": 201.8,
+        "p": 207.85,
         "fw": 99,
         "promo": false
       },
       "BK Lugano": {
-        "p": 207.08,
+        "p": 213.29,
         "fw": 99,
         "promo": false
       },
       "BK Napoles": {
-        "p": 209.16,
+        "p": 215.44,
         "fw": 99,
         "promo": false
       },
       "BK Lins": {
-        "p": 215.08,
+        "p": 221.53,
         "fw": 99,
         "promo": false
       },
       "BK Manari": {
-        "p": 213.19,
+        "p": 219.58,
         "fw": 99,
         "promo": false
       },
       "BK Elise": {
-        "p": 215.81,
+        "p": 222.28,
         "fw": 99,
         "promo": false
       },
       "BK Fustão": {
-        "p": 229.38,
+        "p": 236.26,
         "fw": 99,
         "promo": false
       },
       "BK Aurea": {
-        "p": 207.2,
+        "p": 213.42,
         "fw": 99,
         "promo": false
       },
       "BK Inca": {
-        "p": 231.9,
+        "p": 238.86,
         "fw": 99,
         "promo": false
       },
       "BK Viena": {
-        "p": 236.92,
+        "p": 244.03,
         "fw": 99,
         "promo": false
       },
       "BK Rustico": {
-        "p": 212.92,
+        "p": 219.31,
         "fw": 99,
         "promo": false
       },
       "BK Screen": {
-        "p": 202.91,
+        "p": 209,
         "fw": 99,
         "promo": false
       }
@@ -1502,139 +1502,139 @@ const DB_DECORE = {
     "subCols": {
       "Painel Manual": {
         "Delta": {
-          "p": 127.03,
+          "p": 130.84,
           "fw": 99,
           "promo": false
         },
         "Fustão Luz": {
-          "p": 146.22,
+          "p": 150.61,
           "fw": 99,
           "promo": false
         },
         "Lugano Luz": {
-          "p": 143.01,
+          "p": 147.3,
           "fw": 99,
           "promo": false
         },
         "Odin Luz": {
-          "p": 175.02,
+          "p": 180.27,
           "fw": 99,
           "promo": false
         },
         "Carlota": {
-          "p": 146.64,
+          "p": 151.04,
           "fw": 99,
           "promo": false
         },
         "Atlas": {
-          "p": 155.51,
+          "p": 160.18,
           "fw": 99,
           "promo": false
         },
         "Book": {
-          "p": 148.55,
+          "p": 153.01,
           "fw": 99,
           "promo": false
         },
         "Linho Misto": {
-          "p": 154.21,
+          "p": 158.84,
           "fw": 99,
           "promo": false
         },
         "Maia": {
-          "p": 151.5,
+          "p": 156.04,
           "fw": 99,
           "promo": false
         },
         "Napoles Luz": {
-          "p": 153.76,
+          "p": 158.38,
           "fw": 99,
           "promo": false
         },
         "Inca Luz": {
-          "p": 159.56,
+          "p": 164.35,
           "fw": 99,
           "promo": false
         },
         "Laus": {
-          "p": 174.75,
+          "p": 179.99,
           "fw": 99,
           "promo": false
         },
         "Rustico Luz": {
-          "p": 148.4,
+          "p": 152.85,
           "fw": 99,
           "promo": false
         },
         "Monaco Luz": {
-          "p": 138.44,
+          "p": 142.6,
           "fw": 99,
           "promo": false
         }
       },
       "Painel Romano Manual": {
         "Delta": {
-          "p": 152.43,
+          "p": 157.01,
           "fw": 99,
           "promo": false
         },
         "Fustão Luz": {
-          "p": 175.46,
+          "p": 180.73,
           "fw": 99,
           "promo": false
         },
         "Lugano Luz": {
-          "p": 171.61,
+          "p": 176.76,
           "fw": 99,
           "promo": false
         },
         "Carlota": {
-          "p": 175.97,
+          "p": 181.25,
           "fw": 99,
           "promo": false
         },
         "Atlas": {
-          "p": 186.61,
+          "p": 192.21,
           "fw": 99,
           "promo": false
         },
         "Book": {
-          "p": 178.26,
+          "p": 183.61,
           "fw": 99,
           "promo": false
         },
         "Linho Misto": {
-          "p": 185.05,
+          "p": 190.6,
           "fw": 99,
           "promo": false
         },
         "Maia": {
-          "p": 181.8,
+          "p": 187.25,
           "fw": 99,
           "promo": false
         },
         "Napoles Luz": {
-          "p": 184.51,
+          "p": 190.05,
           "fw": 99,
           "promo": false
         },
         "Inca Luz": {
-          "p": 191.47,
+          "p": 197.21,
           "fw": 99,
           "promo": false
         },
         "Laus": {
-          "p": 209.7,
+          "p": 215.99,
           "fw": 99,
           "promo": false
         },
         "Rustico Luz": {
-          "p": 178.08,
+          "p": 183.43,
           "fw": 99,
           "promo": false
         },
         "Monaco Luz": {
-          "p": 166.13,
+          "p": 171.12,
           "fw": 99,
           "promo": false
         }
@@ -1653,34 +1653,34 @@ const DB_DECORE = {
     "subCols": {
       "Painel Manual": {
         "Hydra 5%": {
-          "p": 159.67,
+          "p": 164.46,
           "fw": 99,
           "promo": false
         },
         "Malta 3%": {
-          "p": 165.83,
+          "p": 170.8,
           "fw": 99,
           "promo": false
         },
         "Betis 1%": {
-          "p": 184.92,
+          "p": 190.46,
           "fw": 99,
           "promo": false
         }
       },
       "Painel Romano Manual": {
         "Hydra 5%": {
-          "p": 191.6,
+          "p": 197.35,
           "fw": 99,
           "promo": false
         },
         "Malta 3%": {
-          "p": 199,
+          "p": 204.97,
           "fw": 99,
           "promo": false
         },
         "Betis 1%": {
-          "p": 221.9,
+          "p": 228.56,
           "fw": 99,
           "promo": false
         }
@@ -1700,182 +1700,221 @@ const DB_DECORE = {
     "subCols": {
       "Painel Manual": {
         "BK Berlim": {
-          "p": 158.36,
+          "p": 163.11,
           "fw": 99,
           "promo": false
         },
         "BK Pinpoint Soft": {
-          "p": 154.04,
+          "p": 158.66,
           "fw": 99,
           "promo": false
         },
         "BK Pinpoint Flex": {
-          "p": 171.74,
+          "p": 176.89,
           "fw": 99,
           "promo": false
         },
         "BK Libia": {
-          "p": 161.07,
+          "p": 165.9,
           "fw": 99,
           "promo": false
         },
         "BK Pinpoint Plus": {
-          "p": 166.46,
+          "p": 171.46,
           "fw": 99,
           "promo": false
         },
         "BK Odin": {
-          "p": 234.41,
+          "p": 241.44,
           "fw": 99,
           "promo": false
         },
         "BK Monaco": {
-          "p": 184.36,
-          "fw": 99,
-          "promo": false
-        },
-        "BK Madri": {
           "p": 189.89,
           "fw": 99,
           "promo": false
         },
+        "BK Madri": {
+          "p": 195.59,
+          "fw": 99,
+          "promo": false
+        },
         "BK Lugano": {
-          "p": 185.75,
+          "p": 191.32,
           "fw": 99,
           "promo": false
         },
         "BK Napoles": {
-          "p": 192.14,
+          "p": 197.91,
           "fw": 99,
           "promo": false
         },
         "BK Lins": {
-          "p": 203.45,
+          "p": 209.55,
           "fw": 99,
           "promo": false
         },
         "BK Manari": {
-          "p": 198.52,
+          "p": 204.48,
           "fw": 99,
           "promo": false
         },
         "BK Elise": {
-          "p": 204.35,
+          "p": 210.48,
           "fw": 99,
           "promo": false
         },
         "BK Fustão": {
-          "p": 221.1,
+          "p": 227.73,
           "fw": 99,
           "promo": false
         },
         "BK Aurea": {
-          "p": 182.94,
+          "p": 188.43,
           "fw": 99,
           "promo": false
         },
         "BK Inca": {
-          "p": 224.22,
+          "p": 230.95,
           "fw": 99,
           "promo": false
         },
         "BK Viena": {
-          "p": 228.03,
+          "p": 234.87,
           "fw": 99,
           "promo": false
         },
         "BK Prestige": {
-          "p": 218.35,
+          "p": 224.9,
           "fw": 99,
           "promo": false
         },
         "BK Rustico": {
-          "p": 198.19,
+          "p": 204.14,
           "fw": 99,
           "promo": false
         },
         "BK Screen": {
-          "p": 185.75,
+          "p": 191.32,
           "fw": 99,
           "promo": false
         }
       },
       "Painel Romano Manual": {
         "BK Berlim": {
-          "p": 190.03,
+          "p": 195.73,
           "fw": 99,
           "promo": false
         },
         "BK Pinpoint Flex": {
-          "p": 206.09,
+          "p": 212.27,
           "fw": 99,
           "promo": false
         },
         "BK Libia": {
-          "p": 193.28,
+          "p": 199.08,
           "fw": 99,
           "promo": false
         },
         "BK Monaco": {
-          "p": 221.23,
+          "p": 227.87,
           "fw": 99,
           "promo": false
         },
         "BK Lugano": {
-          "p": 222.89,
+          "p": 229.58,
           "fw": 99,
           "promo": false
         },
         "BK Napoles": {
-          "p": 230.57,
+          "p": 237.49,
           "fw": 99,
           "promo": false
         },
         "BK Lins": {
-          "p": 244.13,
+          "p": 251.46,
           "fw": 99,
           "promo": false
         },
         "BK Manari": {
-          "p": 238.23,
+          "p": 245.38,
           "fw": 99,
           "promo": false
         },
         "BK Elise": {
-          "p": 245.22,
+          "p": 252.58,
           "fw": 99,
           "promo": false
         },
         "BK Fustão": {
-          "p": 265.32,
+          "p": 273.28,
           "fw": 99,
           "promo": false
         },
         "BK Aurea": {
-          "p": 219.53,
+          "p": 226.12,
           "fw": 99,
           "promo": false
         },
         "BK Inca": {
-          "p": 269.07,
+          "p": 277.14,
           "fw": 99,
           "promo": false
         },
         "BK Viena": {
-          "p": 273.64,
+          "p": 281.84,
           "fw": 99,
           "promo": false
         },
         "BK Rustico": {
-          "p": 237.83,
+          "p": 244.97,
           "fw": 99,
           "promo": false
         },
         "BK Screen": {
-          "p": 222.89,
+          "p": 229.58,
           "fw": 99,
           "promo": false
         }
+      }
+    }
+  },
+  "CORTINAS|CORTINA PAINEL|DOUBLE VISION": {
+    "minM2": 1.5,
+    "minAlt": 1.5,
+    "maxAlt": 4.5,
+    "tipoImp": "tecido",
+    "isPromo": false,
+    "obs": [
+      "Painel Double Vision — mesmo preço manual ou com comando (tabela Decore Novembro/2026)",
+      "Cobrança mínima: 1,50 m² | Alt mín: 1,50m | Alt máx: 4,50m | Bandô cobrado separadamente | Prazo: 5 dias úteis",
+      "Acessórios coloridos (cinza ou bege): +5%"
+    ],
+    "cols": {
+      "Opala": {
+        "p": 116.53,
+        "fw": 99,
+        "promo": false
+      },
+      "Jade": {
+        "p": 157.42,
+        "fw": 99,
+        "promo": false
+      },
+      "Babel": {
+        "p": 157.42,
+        "fw": 99,
+        "promo": false
+      },
+      "Diamante": {
+        "p": 131.49,
+        "fw": 99,
+        "promo": false
+      },
+      "Topázio SBK": {
+        "p": 161.4,
+        "fw": 99,
+        "promo": false
       }
     }
   },
@@ -1892,22 +1931,22 @@ const DB_DECORE = {
     ],
     "cols": {
       "Opala": {
-        "p": 217.41,
+        "p": 223.93,
         "fw": 3,
         "promo": false
       },
       "Jade": {
-        "p": 294.05,
+        "p": 302.87,
         "fw": 2.25,
         "promo": false
       },
       "Babel": {
-        "p": 294.05,
+        "p": 302.87,
         "fw": 2.25,
         "promo": false
       },
       "Diamante": {
-        "p": 247.71,
+        "p": 255.14,
         "fw": 3,
         "promo": false
       }
@@ -1925,7 +1964,7 @@ const DB_DECORE = {
     ],
     "cols": {
       "Topázio SBK": {
-        "p": 308.31,
+        "p": 317.56,
         "fw": 3,
         "promo": false
       }
@@ -1991,82 +2030,82 @@ const DB_DECORE = {
     ],
     "cols": {
       "Nuance": {
-        "p": 99.08,
+        "p": 102.06,
         "fw": 99,
         "promo": false
       },
       "Paris": {
-        "p": 104.76,
+        "p": 107.91,
         "fw": 99,
         "promo": false
       },
       "Nantes": {
-        "p": 109.01,
+        "p": 112.28,
         "fw": 99,
         "promo": false
       },
       "Monaco Luz": {
-        "p": 104.28,
+        "p": 107.41,
         "fw": 99,
         "promo": false
       },
       "Delta": {
-        "p": 104.38,
+        "p": 107.51,
         "fw": 99,
         "promo": false
       },
       "Atlas": {
-        "p": 128.44,
+        "p": 132.3,
         "fw": 99,
         "promo": false
       },
       "Fustão Luz": {
-        "p": 120.59,
+        "p": 124.21,
         "fw": 99,
         "promo": false
       },
       "Lugano Luz": {
-        "p": 107.81,
+        "p": 111.05,
         "fw": 99,
         "promo": false
       },
       "Linho Misto": {
-        "p": 127.35,
+        "p": 131.17,
         "fw": 99,
         "promo": false
       },
       "Napoles Luz": {
-        "p": 116.14,
+        "p": 119.62,
         "fw": 99,
         "promo": false
       },
       "Book": {
-        "p": 122.57,
+        "p": 126.24,
         "fw": 99,
         "promo": false
       },
       "Maia": {
-        "p": 125.05,
+        "p": 128.8,
         "fw": 99,
         "promo": false
       },
       "Letrinhas Kids": {
-        "p": 132.15,
+        "p": 136.11,
         "fw": 99,
         "promo": false
       },
       "Novo Arezzo Luz": {
-        "p": 148.95,
+        "p": 153.42,
         "fw": 99,
         "promo": false
       },
       "Odin Luz": {
-        "p": 144.93,
+        "p": 149.28,
         "fw": 99,
         "promo": false
       },
       "Rustico Luz": {
-        "p": 111.99,
+        "p": 115.35,
         "fw": 99,
         "promo": false
       }
@@ -2084,17 +2123,17 @@ const DB_DECORE = {
     ],
     "cols": {
       "Hydra 5%": {
-        "p": 120.71,
+        "p": 124.34,
         "fw": 99,
         "promo": false
       },
       "Malta 3%": {
-        "p": 125.49,
+        "p": 129.25,
         "fw": 99,
         "promo": false
       },
       "Betis 1%": {
-        "p": 140.27,
+        "p": 144.48,
         "fw": 99,
         "promo": false
       }
@@ -2112,112 +2151,112 @@ const DB_DECORE = {
     ],
     "cols": {
       "BK Berlim": {
-        "p": 119.7,
+        "p": 123.29,
         "fw": 99,
         "promo": false
       },
       "BK Pinpoint Soft": {
-        "p": 127.2,
+        "p": 131.02,
         "fw": 99,
         "promo": false
       },
       "BK Lins": {
-        "p": 168.94,
+        "p": 174.01,
         "fw": 99,
         "promo": false
       },
       "BK Pinpoint Flex": {
-        "p": 132.23,
+        "p": 136.2,
         "fw": 99,
         "promo": false
       },
       "BK Libia": {
-        "p": 133.14,
+        "p": 137.13,
         "fw": 99,
         "promo": false
       },
       "BK Monaco": {
-        "p": 139.84,
+        "p": 144.04,
         "fw": 99,
         "promo": false
       },
       "BK Lugano": {
-        "p": 140.91,
+        "p": 145.14,
         "fw": 99,
         "promo": false
       },
       "BK Soleil": {
-        "p": 144.13,
+        "p": 148.45,
         "fw": 99,
         "promo": false
       },
       "BK Madri": {
-        "p": 164.98,
+        "p": 169.93,
         "fw": 99,
         "promo": false
       },
       "BK Fustão": {
-        "p": 183.86,
+        "p": 189.38,
         "fw": 99,
         "promo": false
       },
       "BK Napoles": {
-        "p": 145.87,
+        "p": 150.24,
         "fw": 99,
         "promo": false
       },
       "BK Manari": {
-        "p": 150.81,
+        "p": 155.33,
         "fw": 99,
         "promo": false
       },
       "BK Aurea": {
-        "p": 151.62,
+        "p": 156.17,
         "fw": 99,
         "promo": false
       },
       "BK Tokio": {
-        "p": 192.79,
+        "p": 198.57,
         "fw": 99,
         "promo": false
       },
       "BK Prestige": {
-        "p": 166.16,
+        "p": 171.15,
         "fw": 99,
         "promo": false
       },
       "BK Odin": {
-        "p": 195.11,
+        "p": 200.96,
         "fw": 99,
         "promo": false
       },
       "BK Juta": {
-        "p": 196.68,
+        "p": 202.58,
         "fw": 99,
         "promo": false
       },
       "BK Salta": {
-        "p": 202.69,
+        "p": 208.77,
         "fw": 99,
         "promo": false
       },
       "BK Viena": {
-        "p": 173.66,
+        "p": 178.87,
         "fw": 99,
         "promo": false
       },
       "BK Novo Arezzo": {
-        "p": 210.47,
+        "p": 216.78,
         "fw": 99,
         "promo": false
       },
       "BK Rustico": {
-        "p": 150.55,
+        "p": 155.07,
         "fw": 99,
         "promo": false
       },
       "BK Screen": {
-        "p": 140.91,
+        "p": 145.14,
         "fw": 99,
         "promo": false
       }
@@ -2237,72 +2276,72 @@ const DB_DECORE = {
     ],
     "cols": {
       "Pvc Slim": {
-        "p": 132.11,
+        "p": 136.07,
         "fw": 99,
         "promo": false
       },
       "Pvc Basic (Br/Be/Camurça/Cinza)": {
-        "p": 148.36,
+        "p": 152.81,
         "fw": 99,
         "promo": false
       },
       "Pvc Basic Demais Cores": {
-        "p": 155.65,
+        "p": 160.31,
         "fw": 99,
         "promo": false
       },
       "Pvc Arizona": {
-        "p": 195.92,
+        "p": 201.8,
         "fw": 99,
         "promo": false
       },
       "Pvc Rustic": {
-        "p": 181.28,
+        "p": 186.71,
         "fw": 99,
         "promo": false
       },
       "Pvc Studio": {
-        "p": 202.01,
+        "p": 208.07,
         "fw": 99,
         "promo": false
       },
       "Pvc Vintage": {
-        "p": 208.02,
+        "p": 214.26,
         "fw": 99,
         "promo": false
       },
       "Pvc Regatta": {
-        "p": 219.24,
+        "p": 225.82,
         "fw": 99,
         "promo": false
       },
       "Pvc Thay": {
-        "p": 166.82,
+        "p": 171.83,
         "fw": 99,
         "promo": false
       },
       "Pvc Juta": {
-        "p": 166.82,
+        "p": 171.83,
         "fw": 99,
         "promo": false
       },
       "Pvc Patina": {
-        "p": 166.82,
+        "p": 171.83,
         "fw": 99,
         "promo": false
       },
       "Pvc Office": {
-        "p": 166.82,
+        "p": 171.83,
         "fw": 99,
         "promo": false
       },
       "Pvc Frost": {
-        "p": 166.82,
+        "p": 171.83,
         "fw": 99,
         "promo": false
       },
       "Pvc Studio S": {
-        "p": 166.82,
+        "p": 171.83,
         "fw": 99,
         "promo": false
       }
@@ -2322,12 +2361,12 @@ const DB_DECORE = {
     ],
     "cols": {
       "16mm Lisa (cores promo: Br/Pt/Gelo/Areia/Inox/Gold)": {
-        "p": 117.13,
+        "p": 120.64,
         "fw": 99,
         "promo": false
       },
       "16mm Lisa Demais Cores": {
-        "p": 119.64,
+        "p": 123.23,
         "fw": 99,
         "promo": false
       }
@@ -2348,32 +2387,32 @@ const DB_DECORE = {
     ],
     "cols": {
       "25mm Lisa (cores promo)": {
-        "p": 117.13,
+        "p": 120.64,
         "fw": 99,
         "promo": false
       },
       "25mm Lisa Demais Cores": {
-        "p": 119.64,
+        "p": 123.23,
         "fw": 99,
         "promo": false
       },
       "25mm Semi-BK": {
-        "p": 131.6,
+        "p": 135.55,
         "fw": 99,
         "promo": false
       },
       "25mm Perfurada": {
-        "p": 148.94,
+        "p": 153.4,
         "fw": 99,
         "promo": false
       },
       "25mm Decorada": {
-        "p": 145.66,
+        "p": 150.03,
         "fw": 99,
         "promo": false
       },
       "25mm Decorada Semi-BK": {
-        "p": 160.23,
+        "p": 165.03,
         "fw": 99,
         "promo": false
       }
@@ -2392,32 +2431,32 @@ const DB_DECORE = {
     ],
     "cols": {
       "50mm Lisa c/ Cadarço": {
-        "p": 222.48,
+        "p": 229.15,
         "fw": 99,
         "promo": false
       },
       "50mm Lisa c/ Fita": {
-        "p": 260.3,
+        "p": 268.11,
         "fw": 99,
         "promo": false
       },
       "50mm Perfurada c/ Cadarço": {
-        "p": 237.87,
+        "p": 245.01,
         "fw": 99,
         "promo": false
       },
       "50mm Perfurada c/ Fita": {
-        "p": 278.31,
+        "p": 286.66,
         "fw": 99,
         "promo": false
       },
       "50mm Decorada c/ Cadarço": {
-        "p": 245.57,
+        "p": 252.94,
         "fw": 99,
         "promo": false
       },
       "50mm Decorada c/ Fita": {
-        "p": 287.32,
+        "p": 295.94,
         "fw": 99,
         "promo": false
       }
@@ -2436,12 +2475,12 @@ const DB_DECORE = {
     ],
     "cols": {
       "50mm Madeira c/ Cadarço (Mono incl.)": {
-        "p": 517.32,
+        "p": 543.19,
         "fw": 99,
         "promo": false
       },
       "50mm Madeira c/ Fita (Mono incl.)": {
-        "p": 553.54,
+        "p": 581.21,
         "fw": 99,
         "promo": false
       }
@@ -2543,13 +2582,16 @@ const ACC_REAL = [
       {id:"r_m4f",  l:"Motor Rolô RPC 4 Fios (Automação)",unit:"und",p:430.54,note:"Contato Seco",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
       {id:"r_mwifi",l:"Motor Rolô RPC Connector 10N (Wi-Fi)",unit:"und",p:839.16,note:"",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
       {id:"r_mbat", l:"Motor Rolô RPC Bateria",          unit:"und",p:1386.79,note:"Adicionar Fonte Bivolt R$189,39",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"r_fonte",l:"Fonte Bivolt RPC",                unit:"und",p:189.39, note:"Para motor bateria",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"r_fonte",l:"Fonte Bivolt RPC",                unit:"und",p:189.39, note:"Para motor bateria",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION","CORTINA CELULAR"]},
       {id:"r_rm6n", l:"Motor Romana RPC 6N",             unit:"und",p:845.08,note:"",compat:["CORTINA ROMANA"]},
       {id:"r_rm4f", l:"Motor Romana RPC 4 Fios",          unit:"und",p:706.99, note:"Automação",compat:["CORTINA ROMANA"]},
       {id:"r_rmwifi",l:"Motor Romana RPC Connector (Wi-Fi)",unit:"und",p:933.33,note:"",compat:["CORTINA ROMANA"]},
       {id:"r_rmbat",l:"Motor Romana RPC Bateria",         unit:"und",p:1566.26,note:"Adicionar Fonte Bivolt R$189,39",compat:["CORTINA ROMANA"]},
       {id:"r_ph50mot",l:"Motor PH 50mm RPC",             unit:"und",p:1001.10,note:"Exclusivo Cadarço",compat:["PERSIANA HORIZONTAL"]},
-      {id:"r_ph50wf",l:"Motor PH 50mm RPC Wi-Fi",        unit:"und",p:1230.77,note:"Exclusivo Cadarço",compat:["PERSIANA HORIZONTAL"]}
+      {id:"r_ph50wf",l:"Motor PH 50mm RPC Wi-Fi",        unit:"und",p:1230.77,note:"Exclusivo Cadarço",compat:["PERSIANA HORIZONTAL"]},
+      {id:"r_mcel",  l:"Motor Celular RPC",              unit:"und",p:1001.10,note:"Larg 0,80 a 2,80m | Alt máx 3,00m | Máx 7,00 m²",maxLarg:2.80,compat:["CORTINA CELULAR"]},
+      {id:"r_mcelwf",l:"Motor Celular RPC Connector 10N (Wi-Fi)",unit:"und",p:1230.77,note:"Larg 0,80 a 3,00m | Alt máx 3,50m | Máx 9,00 m²",maxLarg:3.00,compat:["CORTINA CELULAR"]},
+      {id:"r_mcelbat",l:"Motor Celular RPC Bateria",     unit:"und",p:2367.97,note:"Obrigatório acrescentar a Fonte Bivolt R$189,39 | Larg 0,80 a 2,80m | Alt máx 3,00m | Máx 7,00 m²",maxLarg:2.80,compat:["CORTINA CELULAR"]}
     ]
   },
   {
@@ -2567,44 +2609,65 @@ const ACC_DECORE = [
   {
     sec:"Bandô",
     items:[
-      {id:"d_bstd",  l:"Bandô Rolo 8,15×8,65cm (máx 3,50m)", unit:"ml-larg",cor:{W:82.72,C:95.13},note:"Branco/Preto = preço base | Cinza/Bege: +15% | Larg máx 3,50m",maxLarg:3.50,
+      {id:"d_bstd",  l:"Bandô Rolo 8,15×8,65cm (máx 3,50m)", unit:"ml-larg",cor:{W:85.20,C:97.98},note:"Branco/Preto = preço base | Cinza/Bege: +15% | Larg máx 3,50m",maxLarg:3.50,
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_bb90",  l:"Bandô Box 90 9×9cm (máx 3,50m)",      unit:"ml-larg",cor:{W:194.10,C:223.22},note:"Branco/Preto = preço base | Cinza/Bege: +15% | Larg máx 3,50m",maxLarg:3.50,
+      {id:"d_bb90",  l:"Bandô Box 90 9×9cm (máx 3,50m)",      unit:"ml-larg",cor:{W:199.93,C:229.92},note:"Branco/Preto = preço base | Cinza/Bege: +15% | Larg máx 3,50m",maxLarg:3.50,
        compat:["CORTINA ROLÔ"]},
-      {id:"d_bb70",  l:"Bandô Box 70 7×7cm (máx 1,70m)",      unit:"ml-larg",cor:{W:146.66,C:null},  note:"Apenas Branco | Larg máx 1,70m | Incompatível c/ Redução",maxLarg:1.70,
+      {id:"d_bb70",  l:"Bandô Box 70 7×7cm (máx 1,70m)",      unit:"ml-larg",cor:{W:151.06,C:null},  note:"Apenas Branco | Larg máx 1,70m | Incompatível c/ Redução",maxLarg:1.70,semReducao:true,
        compat:["CORTINA ROLÔ"]},
-      {id:"d_bdv",   l:"Bandô Double Vision 8×8cm",            unit:"ml-larg",cor:{W:89.43,C:102.84},  note:"Branco/Preto = preço base | Cinza/Bege: +15%",
+      {id:"d_bdv",   l:"Bandô Double Vision 8×8cm",            unit:"ml-larg",cor:{W:92.12,C:105.94},  note:"Branco/Preto = preço base | Cinza/Bege: +15%",
        compat:["CORTINA ELEGANCE / DOUBLE VISION"]}
+    ]
+  },
+  {
+    sec:"Bandô do Painel",
+    items:[
+      {id:"d_bpn0",l:"Bandô do Painel sem lâmina",unit:"ml-larg",cor:{W:31.51,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpntr","d_bpnfs","d_bpnbk","d_bpnpl","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpntr",l:"Bandô do Painel c/ lâmina de tecido translúcido",unit:"ml-larg",cor:{W:37.56,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpnfs","d_bpnbk","d_bpnpl","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpnfs",l:"Bandô do Painel c/ lâmina de tecido filtra-sol",unit:"ml-larg",cor:{W:35.69,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpntr","d_bpnbk","d_bpnpl","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpnbk",l:"Bandô do Painel c/ lâmina de tecido blackout",unit:"ml-larg",cor:{W:39.37,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpntr","d_bpnfs","d_bpnpl","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpnpl",l:"Bandô do Painel c/ lâmina de PVC liso",unit:"ml-larg",cor:{W:39.68,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpntr","d_bpnfs","d_bpnbk","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpnpd",l:"Bandô do Painel c/ lâmina de PVC decorado",unit:"ml-larg",cor:{W:43.59,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpntr","d_bpnfs","d_bpnbk","d_bpnpl"],
+       compat:["CORTINA PAINEL"]}
     ]
   },
   {
     sec:"Barra Estabilizadora",
     items:[
-      {id:"d_bcom",  l:"Barra Estabilizadora Comum",  unit:"ml-larg",cor:{W:39.36,C:45.26},note:"Branco/Preto = preço base | Cinza/Bege: +15%",
+      {id:"d_bcom",  l:"Barra Estabilizadora Comum",  unit:"ml-larg",cor:{W:40.54,C:46.62},note:"Branco/Preto = preço base | Cinza/Bege: +15% | Não serve com o Trilho da Rolô Móvel",incompatCom:["d_trmov","d_trmovc"],
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_bmov",  l:"Barra Estabilizadora Móvel",  unit:"ml-larg",cor:{W:43.10,C:null},note:"Não compatível com Trilho Móvel | Apenas Branco",
-       compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]}
+      {id:"d_bmov",  l:"Barra Estabilizadora Móvel",  unit:"ml-larg",cor:{W:44.39,C:null},note:"Apenas Branco | É a barra usada com o Trilho da Rolô Móvel",
+       compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_trmov", l:"Trilho da Rolô Móvel Manual",  unit:"ml-larg",cor:{W:42.25,C:null},note:"Apenas Branco | Metragem = largura TOTAL do conjunto | Usar com a Barra Estabilizadora Móvel (a Comum não serve)",incompatCom:["d_bcom"],
+       compat:["CORTINA ROLÔ"]},
+      {id:"d_trmovc",l:"Trilho da Rolô Móvel com Comando",unit:"ml-larg",cor:{W:54.92,C:null},note:"Apenas Branco | Metragem = largura TOTAL do conjunto | Usar com a Barra Estabilizadora Móvel (a Comum não serve)",incompatCom:["d_bcom"],
+       compat:["CORTINA ROLÔ"]}
     ]
   },
   {
     sec:"Guias Laterais",
     items:[
-      {id:"d_gvao",  l:"Guia Lateral Vão 5,55cm",     unit:"ml-alt", cor:{W:131.73,C:151.49},note:"por metro de ALTURA | Branco/Preto base | Cinza/Bege: +15%",
+      {id:"d_gvao",  l:"Guia Lateral Vão 5,55cm",     unit:"ml-alt", cor:{W:154.39,C:177.55},note:"por metro de ALTURA | Branco/Preto base | Cinza/Bege: +15%",
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_gpar6", l:"Guia Lateral Parede 6cm",      unit:"ml-alt", cor:{W:144.21,C:165.84},note:"por metro de ALTURA | Branco/Preto base | Cinza/Bege: +15%",
+      {id:"d_gpar6", l:"Guia Lateral Parede 6cm",      unit:"ml-alt", cor:{W:168.76,C:194.07},note:"por metro de ALTURA | Branco/Preto base | Cinza/Bege: +15%",
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_gpar8", l:"Guia Lateral Parede 8cm",      unit:"ml-alt", cor:{W:177.98,C:null},note:"por metro de ALTURA — apenas Branco",
+      {id:"d_gpar8", l:"Guia Lateral Parede 8cm",      unit:"ml-alt", cor:{W:208.39,C:null},note:"por metro de ALTURA — apenas Branco",
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]}
     ]
   },
   {
     sec:"Guias Inferiores",
     items:[
-      {id:"d_givao", l:"Guia Inferior Vão 5,55cm",    unit:"ml-larg",cor:{W:65.87,C:75.75},note:"por metro de LARGURA | Branco/Preto base | Cinza/Bege: +15%",
+      {id:"d_givao", l:"Guia Inferior Vão 5,55cm",    unit:"ml-larg",cor:{W:77.20,C:88.78},note:"por metro de LARGURA | Branco/Preto base | Cinza/Bege: +15%",
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_gipar6",l:"Guia Inferior Parede 6cm",    unit:"ml-larg",cor:{W:72.11,C:82.93},note:"por metro de LARGURA | Branco/Preto base | Cinza/Bege: +15%",
+      {id:"d_gipar6",l:"Guia Inferior Parede 6cm",    unit:"ml-larg",cor:{W:84.38,C:97.04},note:"por metro de LARGURA | Branco/Preto base | Cinza/Bege: +15%",
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_gipar8",l:"Guia Inferior Parede 8cm",    unit:"ml-larg",cor:{W:88.99,C:null},note:"por metro de LARGURA — apenas Branco",
+      {id:"d_gipar8",l:"Guia Inferior Parede 8cm",    unit:"ml-larg",cor:{W:104.20,C:null},note:"por metro de LARGURA — apenas Branco",
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]}
     ]
   },
@@ -2620,32 +2683,36 @@ const ACC_DECORE = [
       {id:"d_ph25mono",l:"Monocomando 25mm (sem desconto)",unit:"und",p:60,note:"",
        compat:["PERSIANA HORIZONTAL"]},
       {id:"d_ph25ev",l:"Comando Entre-Vidros (sem desconto)",unit:"und",p:80,note:"",
+       compat:["PERSIANA HORIZONTAL"]},
+      {id:"d_ph25rev",l:"Cabeçote/Base Revestido c/ a Lâmina (25mm)",unit:"m2-dif",impProduto:true,
+       precoPorCol:{"25mm Lisa (cores promo)":130.47,"25mm Lisa Demais Cores":130.47,"25mm Semi-BK":143.52,"25mm Decorada":162.26},
+       note:"Cabeçote e base em alumínio revestidos com a mesma lâmina. Cobra a diferença para o preço do m² revestido (tabela Decore: Lisa/Text. 130,47 · Semi-BK 143,52 · Decorada 162,26)",
        compat:["PERSIANA HORIZONTAL"]}
     ]
   },
   {
     sec:"Motorização",
     items:[
-      {id:"d_mmec",  l:"Motor Mecânico 4 Fios 220v",    unit:"und",p:310.10,note:"Larg máx 3,50m | Alt máx 6,00m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_mrf",   l:"Motor Mecânico RF 220v",         unit:"und",p:422.55,note:"",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_mele",  l:"Motor Eletrônico RF 220v",       unit:"und",p:550.79,note:"",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_mt38",  l:"Motor T38 Eletrônico Bivolt",        unit:"und",p:395.58,note:"Larg máx 1,80m | Alt máx 2,70m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_mt38wf",l:"Motor T38 Eletrônico Bivolt Wi-Fi",  unit:"und",p:438.97,note:"Larg máx 1,80m | Alt máx 2,70m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_mwmec", l:"Motor Mecânico Wi-Fi 220v",          unit:"und",p:491.61,note:"Larg máx 3,50m | Alt máx 6,00m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_mwele", l:"Motor Eletrônico Wi-Fi Bivolt",      unit:"und",p:629.71,note:"Larg máx 4,50m | Alt máx 7,50m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_rmmot", l:"Motor Romana Mecânico 220v",              unit:"und",p:591.21,note:"Larg máx 2,80m | Alt máx 3,50m",compat:["CORTINA ROMANA"]},
-      {id:"d_rmmotwf",l:"Motor Romana Mecânico Wi-Fi 220v",       unit:"und",p:660.26,note:"Larg máx 2,80m | Alt máx 3,50m",compat:["CORTINA ROMANA"]},
-      {id:"d_ph50mot",l:"Motor PH 50mm 220v (só cadarço)",  unit:"und",p:505.43,note:"Larg máx 2,40m | Alt máx 3,50m",compat:["PERSIANA HORIZONTAL"]},
-      {id:"d_ph50motwf",l:"Motor PH 50mm 220v Wi-Fi (só cadarço)",unit:"und",p:574.49,note:"Larg máx 2,40m | Alt máx 3,50m | App Smart Life",compat:["PERSIANA HORIZONTAL"]}
+      {id:"d_mmec",  l:"Motor Mecânico 4 Fios 220v",    unit:"und",p:325.60,note:"Larg máx 3,50m | Alt máx 6,00m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_mrf",   l:"Motor Mecânico RF 220v",         unit:"und",p:443.68,note:"",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_mele",  l:"Motor Eletrônico RF 220v",       unit:"und",p:578.33,note:"",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_mt38",  l:"Motor T38 Eletrônico Bivolt",        unit:"und",p:415.36,note:"Larg máx 1,80m | Alt máx 2,70m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_mt38wf",l:"Motor T38 Eletrônico Bivolt Wi-Fi",  unit:"und",p:460.92,note:"Larg máx 1,80m | Alt máx 2,70m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_mwmec", l:"Motor Mecânico Wi-Fi 220v",          unit:"und",p:516.19,note:"Larg máx 3,50m | Alt máx 6,00m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_mwele", l:"Motor Eletrônico Wi-Fi Bivolt",      unit:"und",p:661.20,note:"Larg máx 4,50m | Alt máx 7,50m",compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_rmmot", l:"Motor Romana Mecânico 220v",              unit:"und",p:620.77,note:"Larg máx 2,80m | Alt máx 3,50m",compat:["CORTINA ROMANA"]},
+      {id:"d_rmmotwf",l:"Motor Romana Mecânico Wi-Fi 220v",       unit:"und",p:693.27,note:"Larg máx 2,80m | Alt máx 3,50m",compat:["CORTINA ROMANA"]},
+      {id:"d_ph50mot",l:"Motor PH 50mm 220v (só cadarço)",  unit:"und",p:530.70,note:"Larg máx 2,40m | Alt máx 3,50m",compat:["PERSIANA HORIZONTAL"]},
+      {id:"d_ph50motwf",l:"Motor PH 50mm 220v Wi-Fi (só cadarço)",unit:"und",p:603.21,note:"Larg máx 2,40m | Alt máx 3,50m | App Smart Life",compat:["PERSIANA HORIZONTAL"]}
     ]
   },
   {
     sec:"Controles Remotos",
     items:[
-      {id:"d_dc1",   l:"Controle 1 canal (T38/Mec/Elet/Wi-Fi)",       unit:"und",p:93.41, note:"",compat:["CORTINA ROLÔ","CORTINA ROMANA","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_dc16",  l:"Controle 16 canais (T38/Mec/Elet/Wi-Fi)",      unit:"und",p:173.71,note:"",compat:["CORTINA ROLÔ","CORTINA ROMANA","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_bpi1",  l:"Controle 1 canal (PH 50mm)",    unit:"und",p:93.41,note:"",compat:["PERSIANA HORIZONTAL"]},
-      {id:"d_bpi15", l:"Controle 16 canais (PH 50mm)",  unit:"und",p:173.71,note:"",compat:["PERSIANA HORIZONTAL"]},
+      {id:"d_dc1",   l:"Controle 1 canal (T38/Mec/Elet/Wi-Fi)",       unit:"und",p:98.08, note:"",compat:["CORTINA ROLÔ","CORTINA ROMANA","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_dc16",  l:"Controle 16 canais (T38/Mec/Elet/Wi-Fi)",      unit:"und",p:182.40,note:"",compat:["CORTINA ROLÔ","CORTINA ROMANA","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_bpi1",  l:"Controle 1 canal (PH 50mm)",    unit:"und",p:98.08,note:"",compat:["PERSIANA HORIZONTAL"]},
+      {id:"d_bpi15", l:"Controle 16 canais (PH 50mm)",  unit:"und",p:182.40,note:"",compat:["PERSIANA HORIZONTAL"]},
       {id:"d_jmt",   l:"Junção c/ Tração (2 Rolos / 1 Motor)",unit:"und",p:47,note:"",compat:["CORTINA ROLÔ"]}
     ]
   }
