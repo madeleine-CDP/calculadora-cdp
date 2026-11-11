@@ -536,6 +536,14 @@ function accIncompat(item){
     const tuboCompat = STATE.tubo.bandos.some(b => item.l.includes(b.replace('Bandô ','')));
     if(!tuboCompat) return 'Incompatível: ' + STATE.tubo.label + ' não aceita este bandô (ver tabela de restrições)';
   }
+  if(item.incompatCom){
+    const outro = item.incompatCom.find(id => { const c = $('chk_'+id); return c && c.checked; });
+    if(outro){
+      let nome = outro;
+      (STATE.fab==='real' ? ACC_REAL : ACC_DECORE).forEach(sec => sec.items.forEach(i => { if(i.id===outro) nome = i.l; }));
+      return 'Incompatível com ' + nome;
+    }
+  }
   if(item.semReducao && STATE.fab==='dec' && STATE.reducao)
     return 'Incompatível com a redução de peso (aplicada a partir de 1,80m de largura ou 2,00m de altura)';
   return '';
@@ -578,6 +586,7 @@ function onAccChange(chk, id){
   const item = $('awi_'+id);
   if(item) item.classList.toggle('checked', chk.checked);
   if($('tipo-medida') && $('tipo-medida').value === 'janela') calcSobra();
+  revalidarAcc();                // um acessório pode excluir outro (ex.: Trilho Móvel x Barra Comum)
   updateDetalhamentoPreview();   // acessório marcado/desmarcado entra/sai do detalhamento
 }
 // quantidade de um acessório mudou → atualiza o texto

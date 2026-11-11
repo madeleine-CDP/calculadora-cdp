@@ -2580,10 +2580,14 @@ const ACC_DECORE = [
   {
     sec:"Barra Estabilizadora",
     items:[
-      {id:"d_bcom",  l:"Barra Estabilizadora Comum",  unit:"ml-larg",cor:{W:40.54,C:46.62},note:"Branco/Preto = preço base | Cinza/Bege: +15%",
+      {id:"d_bcom",  l:"Barra Estabilizadora Comum",  unit:"ml-larg",cor:{W:40.54,C:46.62},note:"Branco/Preto = preço base | Cinza/Bege: +15% | Não serve com o Trilho da Rolô Móvel",incompatCom:["d_trmov","d_trmovc"],
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
-      {id:"d_bmov",  l:"Barra Estabilizadora Móvel",  unit:"ml-larg",cor:{W:44.39,C:null},note:"Não compatível com Trilho Móvel | Apenas Branco",
-       compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]}
+      {id:"d_bmov",  l:"Barra Estabilizadora Móvel",  unit:"ml-larg",cor:{W:44.39,C:null},note:"Apenas Branco | É a barra usada com o Trilho da Rolô Móvel",
+       compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
+      {id:"d_trmov", l:"Trilho da Rolô Móvel Manual",  unit:"ml-larg",cor:{W:42.25,C:null},note:"Apenas Branco | Metragem = largura TOTAL do conjunto | Usar com a Barra Estabilizadora Móvel (a Comum não serve)",incompatCom:["d_bcom"],
+       compat:["CORTINA ROLÔ"]},
+      {id:"d_trmovc",l:"Trilho da Rolô Móvel com Comando",unit:"ml-larg",cor:{W:54.92,C:null},note:"Apenas Branco | Metragem = largura TOTAL do conjunto | Usar com a Barra Estabilizadora Móvel (a Comum não serve)",incompatCom:["d_bcom"],
+       compat:["CORTINA ROLÔ"]}
     ]
   },
   {
