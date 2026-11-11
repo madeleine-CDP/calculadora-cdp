@@ -88,7 +88,7 @@ Arquivos (desde a fase 0 o antigo arquivo único foi separado, sem mudar nenhuma
 Dentro do código:
 
 - `DB_DECORE`, `DB_REAL`: preços por produto, família e coleção (`p` = preço/m², `fw` = largura máxima do tecido, 99 = sem limite).
-- `ACC_DECORE`, `ACC_REAL`: acessórios e opcionais.
+- `ACC_DECORE`, `ACC_REAL`: acessórios e opcionais. Campos especiais: `maxLarg` (largura máxima), `incompatCom` (lista de ids que não podem ser marcados juntos, ex.: Trilho da Rolô Móvel x Barra Comum; os 6 bandôs do Painel entre si), `semReducao` (Box 70 x redução de peso), `unit:'m2-dif'` + `precoPorCol` + `impProduto` (cobra a diferença para o preço do m² de outra versão da coleção, com os impostos da persiana: cabeçote/base revestido da horizontal 25mm Decore; fica fora da comparação entre fábricas).
 - `IMPOSTOS_PE`, `getTipoImposto()`: impostos da Decore.
 - `FABRIC_W_DECORE`, `TUBOS_REAL`: larguras de tecido e tubos.
 - `STATE`: estado da tela. `calcular()` é o cálculo principal.

@@ -2620,6 +2620,23 @@ const ACC_DECORE = [
     ]
   },
   {
+    sec:"Bandô do Painel",
+    items:[
+      {id:"d_bpn0",l:"Bandô do Painel sem lâmina",unit:"ml-larg",cor:{W:31.51,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpntr","d_bpnfs","d_bpnbk","d_bpnpl","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpntr",l:"Bandô do Painel c/ lâmina de tecido translúcido",unit:"ml-larg",cor:{W:37.56,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpnfs","d_bpnbk","d_bpnpl","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpnfs",l:"Bandô do Painel c/ lâmina de tecido filtra-sol",unit:"ml-larg",cor:{W:35.69,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpntr","d_bpnbk","d_bpnpl","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpnbk",l:"Bandô do Painel c/ lâmina de tecido blackout",unit:"ml-larg",cor:{W:39.37,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpntr","d_bpnfs","d_bpnpl","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpnpl",l:"Bandô do Painel c/ lâmina de PVC liso",unit:"ml-larg",cor:{W:39.68,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpntr","d_bpnfs","d_bpnbk","d_bpnpd"],
+       compat:["CORTINA PAINEL"]},
+      {id:"d_bpnpd",l:"Bandô do Painel c/ lâmina de PVC decorado",unit:"ml-larg",cor:{W:43.59,C:null},note:"PVC ou alumínio (mesmo preço; o de PVC tem IPI 3,25%) | por metro de largura",incompatCom:["d_bpn0","d_bpntr","d_bpnfs","d_bpnbk","d_bpnpl"],
+       compat:["CORTINA PAINEL"]}
+    ]
+  },
+  {
     sec:"Barra Estabilizadora",
     items:[
       {id:"d_bcom",  l:"Barra Estabilizadora Comum",  unit:"ml-larg",cor:{W:40.54,C:46.62},note:"Branco/Preto = preço base | Cinza/Bege: +15% | Não serve com o Trilho da Rolô Móvel",incompatCom:["d_trmov","d_trmovc"],
