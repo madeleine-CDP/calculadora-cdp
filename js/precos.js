@@ -114,7 +114,7 @@ const CATMAP = {
   "CORTINAS": {
     "CORTINA ROLÔ":["BLACKOUT","FILTRA-SOL","TRANSLÚCIDA"],
     "CORTINA ROMANA":["BLACKOUT","FILTRA-SOL","TRANSLÚCIDA"],
-    "CORTINA PAINEL":["BLACKOUT","FILTRA-SOL","TRANSLÚCIDA"],
+    "CORTINA PAINEL":["BLACKOUT","FILTRA-SOL","TRANSLÚCIDA","DOUBLE VISION"],
     "CORTINA ELEGANCE / DOUBLE VISION":["TRANSLÚCIDA","SEMI BLACKOUT"],
     "CORTINA NUETTE":["TECIDO"],
     "CORTINA CELULAR":["TRANSLÚCIDA","BLACKOUT"]
@@ -1876,6 +1876,45 @@ const DB_DECORE = {
           "fw": 99,
           "promo": false
         }
+      }
+    }
+  },
+  "CORTINAS|CORTINA PAINEL|DOUBLE VISION": {
+    "minM2": 1.5,
+    "minAlt": 1.5,
+    "maxAlt": 4.5,
+    "tipoImp": "tecido",
+    "isPromo": false,
+    "obs": [
+      "Painel Double Vision — mesmo preço manual ou com comando (tabela Decore Novembro/2026)",
+      "Cobrança mínima: 1,50 m² | Alt mín: 1,50m | Alt máx: 4,50m | Bandô cobrado separadamente | Prazo: 5 dias úteis",
+      "Acessórios coloridos (cinza ou bege): +5%"
+    ],
+    "cols": {
+      "Opala": {
+        "p": 116.53,
+        "fw": 99,
+        "promo": false
+      },
+      "Jade": {
+        "p": 157.42,
+        "fw": 99,
+        "promo": false
+      },
+      "Babel": {
+        "p": 157.42,
+        "fw": 99,
+        "promo": false
+      },
+      "Diamante": {
+        "p": 131.49,
+        "fw": 99,
+        "promo": false
+      },
+      "Topázio SBK": {
+        "p": 161.4,
+        "fw": 99,
+        "promo": false
       }
     }
   },
