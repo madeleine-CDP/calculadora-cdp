@@ -212,6 +212,7 @@ function onCol(){
   if(!STATE.col) return;
   updateChips();
   validateMedidas();
+  revalidarAcc();   // acessório que depende da coleção (ex.: revestido da 25mm)
   updateDetalhamentoPreview();
 }
 
@@ -487,7 +488,10 @@ function buildAcc(){
 
       // Price display
       let priceStr = '';
-      if(item.cor){
+      if(u==='m2-dif'){
+        const dif = accDifM2(item);
+        priceStr = dif!=null ? '+'+fmtDec(dif)+'/m²' : '';
+      } else if(item.cor){
         priceStr = 'Br/Pt: '+fmtDec(item.cor.W)+'/ml' + (item.cor.C ? ' | Cor: '+fmtDec(item.cor.C)+'/ml' : ' (só branco)');
       } else if(item.p){
         priceStr = fmtDec(item.p)+'/und';
@@ -495,7 +499,9 @@ function buildAcc(){
 
       // Controls
       let ctrl = '';
-      if(u==='und'){
+      if(u==='m2-dif'){
+        ctrl = '';   // cobra pela área da própria persiana — nada a preencher
+      } else if(u==='und'){
         ctrl = '<input type="number" id="qty_'+item.id+'" value="1" min="1" max="50" step="1" style="width:52px">';
       } else {
         const defVal = '';
@@ -526,6 +532,17 @@ function buildAcc(){
   setTimeout(autoFillAccMl, 50);
 }
 
+// Acessório cobrado como diferença de preço por m² (ex.: cabeçote/base revestido da
+// horizontal 25mm Decore): preço da versão revestida da coleção − preço da coleção.
+// null = a coleção escolhida não tem essa versão.
+function accDifM2(item){
+  if(!item.precoPorCol || !STATE.col) return null;
+  const alvo = item.precoPorCol[STATE.col];
+  const data = getData(); const ci = data && getColPrice(data, STATE.col);
+  if(alvo == null || !ci) return null;
+  return Math.max(0, alvo - ci.p);
+}
+
 // Por que um acessório não serve para a medida/produto atual ('' = serve).
 // Usado ao montar a lista, ao mudar as medidas e na hora de calcular.
 function accIncompat(item){
@@ -536,6 +553,8 @@ function accIncompat(item){
     const tuboCompat = STATE.tubo.bandos.some(b => item.l.includes(b.replace('Bandô ','')));
     if(!tuboCompat) return 'Incompatível: ' + STATE.tubo.label + ' não aceita este bandô (ver tabela de restrições)';
   }
+  if(item.unit==='m2-dif' && accDifM2(item)==null)
+    return 'Não disponível para esta coleção';
   if(item.incompatCom){
     const outro = item.incompatCom.find(id => { const c = $('chk_'+id); return c && c.checked; });
     if(outro){
@@ -559,6 +578,10 @@ function revalidarAcc(){
     const box = $('awi_'+item.id), chk = $('chk_'+item.id);
     if(!box || !chk) return;
     const msg = accIncompat(item);
+    if(item.unit==='m2-dif'){
+      const pr = box.querySelector('.ai-price'), dif = accDifM2(item);
+      if(pr) pr.textContent = dif!=null ? '+'+fmtDec(dif)+'/m²' : '';
+    }
     box.classList.toggle('incompatible', !!msg);
     chk.disabled = !!msg && !chk.checked;
     let aviso = box.querySelector('.ai-incomp');
@@ -629,7 +652,14 @@ function calcAccCost(){
       const u = item.unit;
       let cost = 0, label = '';
 
-      if(u==='und'){
+      if(u==='m2-dif'){
+        // diferença por m² × a mesma área cobrada da persiana (respeita a metragem mínima)
+        const data = getData();
+        const area = Math.max(w*h, (data && data.minM2) || 1.20);
+        const dif = accDifM2(item) || 0;
+        cost = dif * area;
+        label = item.l + ' ' + area.toFixed(2) + 'm² × +' + dif.toFixed(2);
+      } else if(u==='und'){
         const qty = parseFloat(($('qty_'+item.id)||{}).value)||1;
         cost = (item.p||0) * qty;
         label = item.l + (qty>1?' ×'+qty:'');
@@ -667,6 +697,12 @@ function calcAccCost(){
           costDisc = cost * (1 - d1/100) * (1 - d2/100);
           discLabel = d1+'%+'+d2+'%';
         }
+      }
+      // Parte do preço da própria persiana (ex.: revestido): leva os mesmos impostos dela
+      if(item.impProduto && STATE.fab==='dec'){
+        const data = getData();
+        const imp = getImpostos((data && data.tipoImp) || getTipoImposto(STATE.prod, STATE.fam));
+        costDisc = costDisc * (1 + imp.ipi) * (1 + imp.st);
       }
       total += costDisc;
       lines.push({
@@ -1202,10 +1238,10 @@ function toggleCompare(){
   let anyAcc = false;
 
   accList.forEach(sec => {
-    const items = sec.items.filter(item =>
+    const items = sec.items.filter(item => item.unit !== 'm2-dif' && (
       !item.compat || item.compat.some(c => prod.includes(c.replace('CORTINA ','').replace('PERSIANA ','')))
       || item.compat.indexOf(prod) >= 0
-    );
+    ));
     if(!items.length) return;
     anyAcc = true;
 

@@ -2627,6 +2627,10 @@ const ACC_DECORE = [
       {id:"d_ph25mono",l:"Monocomando 25mm (sem desconto)",unit:"und",p:60,note:"",
        compat:["PERSIANA HORIZONTAL"]},
       {id:"d_ph25ev",l:"Comando Entre-Vidros (sem desconto)",unit:"und",p:80,note:"",
+       compat:["PERSIANA HORIZONTAL"]},
+      {id:"d_ph25rev",l:"Cabeçote/Base Revestido c/ a Lâmina (25mm)",unit:"m2-dif",impProduto:true,
+       precoPorCol:{"25mm Lisa (cores promo)":130.47,"25mm Lisa Demais Cores":130.47,"25mm Semi-BK":143.52,"25mm Decorada":162.26},
+       note:"Cabeçote e base em alumínio revestidos com a mesma lâmina. Cobra a diferença para o preço do m² revestido (tabela Decore: Lisa/Text. 130,47 · Semi-BK 143,52 · Decorada 162,26)",
        compat:["PERSIANA HORIZONTAL"]}
     ]
   },
