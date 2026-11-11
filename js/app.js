@@ -494,7 +494,7 @@ function buildAcc(){
       } else if(item.cor){
         priceStr = 'Br/Pt: '+fmtDec(item.cor.W)+'/ml' + (item.cor.C ? ' | Cor: '+fmtDec(item.cor.C)+'/ml' : ' (só branco)');
       } else if(item.p){
-        priceStr = fmtDec(item.p)+'/und';
+        priceStr = fmtDec(item.p)+' por peça';
       }
 
       // Controls
@@ -502,7 +502,7 @@ function buildAcc(){
       if(u==='m2-dif'){
         ctrl = '';   // cobra pela área da própria persiana — nada a preencher
       } else if(u==='und'){
-        ctrl = '<input type="number" id="qty_'+item.id+'" value="1" min="1" max="50" step="1" style="width:52px">';
+        ctrl = '<input type="number" id="qty_'+item.id+'" value="1" min="1" max="50" step="1" style="width:52px" title="Quantidade em CADA peça (o sistema já multiplica pelo número de peças)"><span class="ai-por-peca">por peça</span>';
       } else {
         const defVal = '';
         ctrl = (item.cor && item.cor.C)
@@ -563,6 +563,8 @@ function accIncompat(item){
       return 'Incompatível com ' + nome;
     }
   }
+  if(item.autoRed && STATE.fab==='dec' && STATE.reducao)
+    return 'Já incluída automaticamente nesta medida (não precisa marcar)';
   if(item.semReducao && STATE.fab==='dec' && STATE.reducao)
     return 'Incompatível com a redução de peso (aplicada a partir de 1,80m de largura ou 2,00m de altura)';
   return '';
