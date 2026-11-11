@@ -320,6 +320,7 @@ function onMedidas(){
   updateChips();
   validateMedidas();
   if(STATE.fam){ fillColSel(getData()); }
+  revalidarAcc();
   autoFillAccMl();
   updateDetalhamentoPreview();
 }
@@ -482,13 +483,7 @@ function buildAcc(){
       const w = STATE.w, h = STATE.h;
 
       // Incompatibility check
-      let incompatMsg = '';
-      if(item.maxLarg && w > item.maxLarg)
-        incompatMsg = 'Incompatível: larg ' + w + 'm > máx ' + item.maxLarg + 'm';
-      if(STATE.fab==='real' && STATE.tubo && item.l.includes('Bandô')){
-        const tuboCompat = STATE.tubo.bandos.some(b => item.l.includes(b.replace('Bandô ','')));
-        if(!incompatMsg && !tuboCompat) incompatMsg = 'Incompatível: ' + STATE.tubo.label + ' não aceita este bandô (ver tabela de restrições)';
-      }
+      const incompatMsg = accIncompat(item);
 
       // Price display
       let priceStr = '';
@@ -529,6 +524,52 @@ function buildAcc(){
   wrap.classList.toggle('on', anySection);
   // Auto-fill ml fields with current medidas
   setTimeout(autoFillAccMl, 50);
+}
+
+// Por que um acessório não serve para a medida/produto atual ('' = serve).
+// Usado ao montar a lista, ao mudar as medidas e na hora de calcular.
+function accIncompat(item){
+  const w = STATE.w;
+  if(item.maxLarg && w > item.maxLarg)
+    return 'Incompatível: larg ' + w + 'm > máx ' + item.maxLarg + 'm';
+  if(STATE.fab==='real' && STATE.tubo && item.l.includes('Bandô')){
+    const tuboCompat = STATE.tubo.bandos.some(b => item.l.includes(b.replace('Bandô ','')));
+    if(!tuboCompat) return 'Incompatível: ' + STATE.tubo.label + ' não aceita este bandô (ver tabela de restrições)';
+  }
+  if(item.semReducao && STATE.fab==='dec' && STATE.reducao)
+    return 'Incompatível com a redução de peso (aplicada a partir de 1,80m de largura ou 2,00m de altura)';
+  return '';
+}
+
+// Medida mudou depois de montar a lista: refaz os avisos. Acessório já marcado
+// que deixou de servir continua marcado (para a pessoa ver e trocar), mas o
+// Calcular não deixa passar (ver accMarcadosIncompat).
+function revalidarAcc(){
+  const accList = STATE.fab==='real' ? ACC_REAL : ACC_DECORE;
+  if(!accList) return;
+  accList.forEach(sec => sec.items.forEach(item => {
+    const box = $('awi_'+item.id), chk = $('chk_'+item.id);
+    if(!box || !chk) return;
+    const msg = accIncompat(item);
+    box.classList.toggle('incompatible', !!msg);
+    chk.disabled = !!msg && !chk.checked;
+    let aviso = box.querySelector('.ai-incomp');
+    if(msg){
+      if(!aviso){ aviso = document.createElement('div'); aviso.className = 'ai-incomp'; box.querySelector('.acc-item-body').appendChild(aviso); }
+      aviso.innerHTML = ic('alerta',13) + ' ' + msg + (chk.checked ? ' — desmarque ou troque' : '');
+    } else if(aviso) aviso.remove();
+  }));
+}
+
+// Acessórios marcados que não servem para a medida atual (para bloquear o cálculo).
+function accMarcadosIncompat(){
+  const accList = STATE.fab==='real' ? ACC_REAL : ACC_DECORE;
+  const out = [];
+  (accList||[]).forEach(sec => sec.items.forEach(item => {
+    const chk = $('chk_'+item.id);
+    if(chk && chk.checked){ const msg = accIncompat(item); if(msg) out.push(item.l + ': ' + msg.replace('Incompatível: ','').replace('Incompatível ','')); }
+  }));
+  return out;
 }
 
 function onAccChange(chk, id){
@@ -702,6 +743,13 @@ function calcular(){
   // Check fabric width
   if(colInfo.fw && colInfo.fw < 99 && w > colInfo.fw){
     alert('⚠️ O tecido "' + colLabel(STATE.col) + '" tem largura máxima de ' + colInfo.fw + 'm e não atende ' + w + 'm.\n\nEscolha uma coleção compatível.');
+    return;
+  }
+
+  // Acessório marcado que não serve para esta medida (ex.: Bandô Box 70 acima de 1,70m)
+  const accRuins = accMarcadosIncompat();
+  if(accRuins.length){
+    alert('⚠️ Acessório que não serve para esta medida:\n\n• ' + accRuins.join('\n• ') + '\n\nDesmarque ou troque o acessório antes de calcular.');
     return;
   }
 

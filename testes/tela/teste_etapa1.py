@@ -36,7 +36,7 @@ with sync_playwright() as p:
     pg.locator('.pasta-barra button', has_text='Adicionar').first.click() if pg.locator('.pasta-barra button', has_text='Adicionar').count() else pg.evaluate('adicionarItemPasta()')
     pg.wait_for_timeout(300)
     print('A2 adicionar item → lado a lado:', lado(pg), '| botão voltar:', pg.inner_text('#passo-voltar'))
-    d=item(pg,'Sala','real','ROL','2.40','2.60',acc=['r_bs','r_gl6','r_m6n','r_rc1'])
+    d=item(pg,'Sala','real','ROL','2.20','2.40',acc=['r_bs','r_gl6','r_m6n','r_rc1'])
     print('B1 Rolô pronta + bandô/guia/motor/controle →\n   ', d)
     pg.screenshot(path=S+'/e1-detalhamento.png')
     pg.locator('#passo-avancar').click(); pg.wait_for_timeout(350); pg.locator('#passo-avancar').click(); pg.wait_for_timeout(400)

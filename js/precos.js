@@ -2571,7 +2571,7 @@ const ACC_DECORE = [
        compat:["CORTINA ROLÔ","CORTINA ELEGANCE / DOUBLE VISION"]},
       {id:"d_bb90",  l:"Bandô Box 90 9×9cm (máx 3,50m)",      unit:"ml-larg",cor:{W:199.93,C:229.92},note:"Branco/Preto = preço base | Cinza/Bege: +15% | Larg máx 3,50m",maxLarg:3.50,
        compat:["CORTINA ROLÔ"]},
-      {id:"d_bb70",  l:"Bandô Box 70 7×7cm (máx 1,70m)",      unit:"ml-larg",cor:{W:151.06,C:null},  note:"Apenas Branco | Larg máx 1,70m | Incompatível c/ Redução",maxLarg:1.70,
+      {id:"d_bb70",  l:"Bandô Box 70 7×7cm (máx 1,70m)",      unit:"ml-larg",cor:{W:151.06,C:null},  note:"Apenas Branco | Larg máx 1,70m | Incompatível c/ Redução",maxLarg:1.70,semReducao:true,
        compat:["CORTINA ROLÔ"]},
       {id:"d_bdv",   l:"Bandô Double Vision 8×8cm",            unit:"ml-larg",cor:{W:92.12,C:105.94},  note:"Branco/Preto = preço base | Cinza/Bege: +15%",
        compat:["CORTINA ELEGANCE / DOUBLE VISION"]}
