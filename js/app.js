@@ -1906,6 +1906,29 @@ function duplicarItemCarrinho(id){
   updateCartBar();
 }
 
+// Itens salvos antes de 'accSelections' existir só têm as linhas de preço dos acessórios
+// (ex.: "Bandô Box 70 7×7cm (máx 1,70m) 1.15ml (branco)", "Motor X ×2"). Reconstrói a seleção.
+function selecoesDeLinhasAntigas(lines, fab){
+  const lista = fab === 'real' ? ACC_REAL : ACC_DECORE;
+  const itens = []; lista.forEach(s => s.items.forEach(i => itens.push(i)));
+  itens.sort((a, b) => b.l.length - a.l.length);   // o nome mais completo primeiro
+  const selecoes = [], perdidos = [];
+  lines.forEach(ln => {
+    const lab = String(ln.label || '');
+    if(/^Redução de Peso \(auto/i.test(lab)) return;   // essa entra sozinha
+    const it = itens.find(i => lab === i.l || lab.startsWith(i.l + ' '));
+    if(!it){ perdidos.push(lab); return; }
+    const sel = { id: it.id };
+    if(it.unit === 'und'){ const q = lab.match(/×(\d+)\s*$/); sel.qty = q ? parseInt(q[1]) : 1; }
+    else if(it.unit !== 'm2-dif'){
+      const m = lab.match(/(\d+(?:\.\d+)?)ml/); if(m) sel.ml = parseFloat(m[1]);
+      sel.cor = /\(cor\)/.test(lab) ? 'C' : 'W';
+    }
+    selecoes.push(sel);
+  });
+  return { selecoes, perdidos };
+}
+
 function editarItemCarrinho(id){
   const item = CART.find(x => x.id === id);
   if(!item) return;
@@ -1929,7 +1952,7 @@ function editarItemCarrinho(id){
   // Avisa se o desconto usado no cálculo original é diferente do que está nos campos
   // de desconto agora (eles são globais da sessão, não por item — não mexe sozinho pra
   // não afetar outros itens que você ainda vai calcular).
-  let avisoDesconto = '';
+  let avisoDesconto = '', avisoAcc = '';
   if(item.fab === 'real' && full.discPct != null && full.discPct !== STATE.discReal){
     avisoDesconto = `\n\n⚠️ Este item foi calculado com desconto de ${full.discPct}% (campo atual: ${STATE.discReal}%). Ajuste o campo de desconto Real se quiser manter o valor original.`;
   } else if(item.fab === 'dec' && full.discPct != null){
@@ -1966,7 +1989,16 @@ function editarItemCarrinho(id){
 
     // Restaura acessórios depois do autoFillAccMl (roda em 50ms lá dentro do buildAcc),
     // senão os campos de metragem que a gente restaura seriam sobrescritos por ele.
-    setTimeout(() => restoreAccSelections(full.accSelections), 120);
+    // Itens antigos (antes de existir accSelections) só guardaram as linhas de preço:
+    // tenta reconstruir a seleção a partir delas e avisa o que não deu para recuperar.
+    let selecoes = full.accSelections;
+    if(!selecoes && full.acc && Array.isArray(full.acc.lines) && full.acc.lines.length){
+      const rec = selecoesDeLinhasAntigas(full.acc.lines, item.fab);
+      selecoes = rec.selecoes;
+      avisoAcc = rec.selecoes.length ? '\n\nℹ️ Item antigo: os acessórios foram recuperados pelo preço salvo (' + rec.selecoes.length + '). Confira se estão certos.' : '';
+      if(rec.perdidos.length) avisoAcc += '\n\n⚠️ Não consegui recuperar estes acessórios — marque de novo à mão:\n• ' + rec.perdidos.join('\n• ');
+    }
+    setTimeout(() => restoreAccSelections(selecoes), 120);
   }
 
   // Restaura peças adicionais / serviços fora de tabela
@@ -1981,7 +2013,7 @@ function editarItemCarrinho(id){
   document.querySelectorAll('button.btn[onclick="addToCart()"]').forEach(b => b.innerHTML = ic('ok',17) + ' Substituir item');
   window.scrollTo({top:0, behavior:'smooth'});
   if(typeof irPasso === 'function') irPasso(3, true);   // D1: edição abre direto em Medidas
-  alert('📝 Item carregado na Calculadora com fábrica, produto, coleção, medidas' + (item.fab!=='cdp' ? ', acessórios' : '') + ' e peças adicionais restaurados. Confira, recalcule se precisar e toque em Substituir item.' + avisoDesconto);
+  alert('📝 Item carregado na Calculadora com fábrica, produto, coleção, medidas' + (item.fab!=='cdp' ? ', acessórios' : '') + ' e peças adicionais restaurados. Confira, recalcule se precisar e toque em Substituir item.' + avisoAcc + avisoDesconto);
 }
 
 function toggleResumoOrc(){
