@@ -1043,3 +1043,10 @@ select.cli-in{appearance:auto}
 .cmp-cotar{grid-column:1/-1;margin-top:6px}
 .cmp-cotar .btn{width:100%}
 .cmp-cotar-dica{font-size:12.5px;color:var(--tinta-suave);margin-top:6px;text-align:center}
+
+/* Cores disponíveis da coleção (12/11/2026) */
+.cores-col{margin:12px 0 4px;padding:12px;border-radius:14px;background:#fff;border:1px solid var(--linha)}
+.cores-tit{font-size:13.5px;font-weight:700;color:var(--tinta)}
+.cores-tit span{font-weight:500;font-size:12.5px;color:var(--tinta-suave);margin-left:6px}
+.cores-col .amb-chips{margin-top:8px}
+.cores-aviso{font-size:12px;color:var(--tinta-suave);margin-top:8px}

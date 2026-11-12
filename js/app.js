@@ -207,13 +207,57 @@ function fillColSel(data){
   sel.disabled = false;
 }
 
+// ── Cores disponíveis da coleção (12/11/2026) ──
+// Lista em js/cores.js. Tocar numa cor preenche "COR: …" no detalhamento (dá para marcar mais de uma: "BRANCO OU BEGE").
+let CORES_SEL = [];
+function coresDaColecao(){
+  if(typeof CORES_COLECAO === 'undefined' || !STATE.fab || STATE.fab === 'cdp' || !STATE.col) return null;
+  const k = STATE.fab + '|' + STATE.prod + '|' + STATE.fam + '|' + STATE.col;
+  if(CORES_COLECAO[k]) return CORES_COLECAO[k];
+  // mesma coleção em outro produto da mesma fábrica (ex.: Painel Double Vision usa os tecidos da Double Vision)
+  const nome = colLabel(STATE.col).toLowerCase();
+  const alt = Object.keys(CORES_COLECAO).find(x => x.startsWith(STATE.fab + '|') && colLabel(x.split('|').slice(3).join('|')).toLowerCase() === nome);
+  return alt ? CORES_COLECAO[alt] : null;
+}
+function renderCoresColecao(){
+  const box = $('cores-col'); if(!box) return;
+  if(!STATE.col || STATE.fab === 'cdp'){ box.hidden = true; box.innerHTML = ''; return; }
+  const cores = coresDaColecao();
+  box.hidden = false;
+  if(!cores || !cores.length){ box.innerHTML = '<div class="cores-tit">Cores</div><div class="cores-aviso">Cores desta coleção: confirmar com a fábrica.</div>'; return; }
+  CORES_SEL = CORES_SEL.filter(c => cores.includes(c));
+  box.innerHTML = '<div class="cores-tit">Cores disponíveis <span>toque para pôr no detalhamento</span></div><div class="amb-chips">'
+    + cores.map(c => `<button type="button" class="hist-chip${CORES_SEL.includes(c) ? ' on' : ''}" onclick="alternarCor(this.dataset.c)" data-c="${escHtml(c)}">${escHtml(c)}</button>`).join('')
+    + '</div><div class="cores-aviso">Cores do ' + escHtml((typeof CORES_INFO !== 'undefined' && CORES_INFO[STATE.fab]) || 'fornecedor') + '. Confirme o estoque antes de fechar.</div>';
+}
+function alternarCor(c){
+  CORES_SEL = CORES_SEL.includes(c) ? CORES_SEL.filter(x => x !== c) : CORES_SEL.concat([c]);
+  const det = $('item-detalhamento');
+  if(det){
+    const cor = CORES_SEL.length ? CORES_SEL.map(x => x.toUpperCase()).join(' OU ') : 'A DEFINIR';
+    if(/COR: [^.]*\./.test(det.value)) det.value = det.value.replace(/COR: [^.]*\./, 'COR: ' + cor + '.');
+    else if(det.value.trim()) det.value = det.value.trim() + ' COR: ' + cor + '.';
+    else updateDetalhamentoPreview();
+  }
+  renderCoresColecao();
+}
+// Ao abrir um item para editar: marca as cores que já estão no texto
+function coresDoTexto(txt){
+  const m = String(txt || '').match(/COR: ([^.]*)\./); const cores = coresDaColecao() || [];
+  if(!m) return [];
+  const partes = m[1].split(/\s+OU\s+|,|\/|\s+E\s+/).map(p => p.trim().toLowerCase());
+  return cores.filter(c => partes.includes(c.toLowerCase()));
+}
+
 function onCol(){
   STATE.col = $('s-col').value;
-  if(!STATE.col) return;
+  if(!STATE.col){ renderCoresColecao(); return; }
+  if(typeof CORES_SEL !== 'undefined'){ const det = $('item-detalhamento'); CORES_SEL = coresDoTexto(det && det.value); }
   updateChips();
   validateMedidas();
   revalidarAcc();   // acessório que depende da coleção (ex.: revestido da 25mm)
   updateDetalhamentoPreview();
+  renderCoresColecao();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1551,6 +1595,7 @@ function resetCalc(){
   const amb = $('item-ambiente'); if(amb) amb.value = '';
   const vaoEl = $('item-vao'); if(vaoEl) vaoEl.value = '';
   STATE.vao = ''; if(typeof MODO_ITEM !== 'undefined') MODO_ITEM = null;
+  CORES_SEL = []; const cc = $('cores-col'); if(cc){ cc.hidden = true; cc.innerHTML = ''; }
   STATE = {fab:null,cat:'',prod:'',fam:'',col:'',w:0,h:0,qty:1,discReal:20,discDecNorm:12,discDecNorm2:3,discDecPromo:3,tubo:null,reducao:false,lastResult:null,cmpActive:false,cdpTipo:'',cdpCam1:'',cdpCam2:'',cdpIlhos:false,cdpCurvo:false,cdpCurvoValor:0};
   $('fb-real').className='fab-btn'; $('fb-dec').className='fab-btn'; $('fb-cdp').className='fab-btn';
   $('disc-row').style.display='none';
@@ -2079,6 +2124,7 @@ function editarItemCarrinho(id){
 
   $('item-detalhamento').value = item.detail || '';
   $('item-detalhamento').dataset.editedManually = '1';
+  CORES_SEL = coresDoTexto(item.detail); renderCoresColecao();
 
   // C4: o item NÃO sai mais do orçamento; "Substituir item" troca no mesmo lugar
   EDITANDO_ITEM_ID = id;

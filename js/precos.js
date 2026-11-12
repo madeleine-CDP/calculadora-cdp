@@ -1123,7 +1123,7 @@ const DB_DECORE = {
     "tipoImp": "tecido",
     "isPromo": false,
     "obs": [
-      "Cobrança mínima: 1,20 m² | Redução de peso automática: larg >1,80m OU alt >2,00m (R$75) | Prazo: 5 dias úteis"
+      "Cobrança mínima: 1,20 m² | Redução de peso automática: larg ≥1,80m OU alt ≥2,00m (R$75) | Prazo: 5 dias úteis"
     ],
     "cols": {
       "Hydra 5%": {
@@ -1150,7 +1150,7 @@ const DB_DECORE = {
     "isPromo": false,
     "obs": [
       "Cobrança mínima: 1,20 m² | Observar largura máxima de cada tecido",
-      "Redução de peso automática: larg >1,80m OU alt >2,00m (R$75/cortina, sem desconto)",
+      "Redução de peso automática: larg ≥1,80m OU alt ≥2,00m (R$75/cortina, sem desconto)",
       "Junção: R$20 | Acessórios cinza/bege: +7% | Prazo: 5 dias úteis"
     ],
     "cols": {
