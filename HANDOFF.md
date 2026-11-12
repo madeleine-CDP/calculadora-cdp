@@ -1,4 +1,4 @@
-# HANDOFF — CDP Sistema (atualizado em 11/11/2026)
+# HANDOFF — CDP Sistema (atualizado em 12/11/2026)
 
 Documento de passagem para continuar o trabalho numa nova sessão do Claude Code.
 **Leia nesta ordem:** este arquivo → `CLAUDE.md` (regras, fórmulas, mapa do código) → `testes/README.md`.
@@ -104,6 +104,12 @@ Não colocar a planilha nem dados exportados do Olist no repositório (usar a pa
 - Planilha de revisão do Olist **atualizada para novembro em 11/11** (Decore e Costura; scripts em `depara_nov/` no scratchpad, com `nov_map.py` traduzindo os preços da planilha de outubro para o PDF de novembro, e `ajustes4.py` anotando o estoque da Decore de 30/10). Mesmos produtos de antes: manter 772 · inativar 339 · cadastrar 188 · conferir 63. Aguardando a revisão da Bru.
 - **Tradicionais CDP e Serviços (11/11):** entregue à Bru a planilha "Tradicionais_e_Servicos_para_preencher.xlsx". Tradicionais: a base dela no Drive (`1dBivaPFhBmoeTCNk36Dz70Qf7fY05MWTNIr9FbCNQjs`) tem 145 linhas, 53 com preço novo e 92 sem; o padrão dos preços dela é **venda ≈ 117 + 8 × custo Vidal/ml** (±31), forro de blackout ≈ 65% da cortina; 5 tecidos sem preço travam a calculadora (Linho Nature, Mônaco, Nilo, Primavera, Tulipa). Conferir com ela: forros do Ares/Zeus/Flat Linen com o mesmo preço da cortina; Persa e Prime abaixo do padrão. Serviços: 6 SKUs no Olist (instalação persiana 90 / cortina 140, lavagem 100/100, manutenção 130/160) + taxa de visita 80; referência = tabela de serviços da Real Ago/2026. Falta a Bru definir unidade e preço de cada serviço e a data da tabela CDP.
 - Decore respondeu (30/10) o estoque dos tecidos de costura fora da tabela; proposta de "ponta de estoque" aguardando a Bru (e decisão do Loppiano).
+
+
+## 6C. Publicação de 12/11/2026 (PR #4)
+- No ar: redução de peso não cobrada em dobro; itens antigos recuperam acessórios ao editar; comparação com redução automática; tubo 55mm da Real pela tabela; orçamento novo abre a pasta; calculadora em gaveta no computador; Ambiente · Vão · Opção (passo 1, pasta, proposta com 3 jeitos de total); "cotar na outra fábrica como outra opção"; cores por coleção (`js/cores.js`); detalhamento acompanha as medidas.
+- Com a Bru: recalcular orçamentos da Decore em aberto (nº 1, 3, 4, 5, 6, 7, 11, 15, 18, 22, 23); nº 29 (Juliana) desmarcar a redução manual; nº 22 (Viviane) trocar o Box 70; nº 4 (Douglas) e 22 corrigir o texto "SEM BANDÔ".
+- Pendente: R\$ 20 por peça do tubo da Real (caso Joseane, nº 28) — a Bru está investigando com a Real; conversa com o gerente da Decore sobre as guias; planilhas (revisão do Olist; tradicionais e serviços) com a Bru.
 
 ## 7. Backlog completo (ordem sugerida; confirmar com a Bru)
 1. **Revisão de produtos do Olist** (seção 6) — em andamento.
