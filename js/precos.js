@@ -54,7 +54,7 @@ function getTipoImposto(prod, fam) {
 const TUBOS_REAL = [
   {id:"32mm",  label:"Tubo 32mm",       maxLarg:1.80, maxAlt:2.00, maxM2:4.00, bandos:["Bandô Standard","Bandô Solution","Bandô Box 32"]},
   {id:"40mm",  label:"Tubo 40mm",       maxLarg:2.40, maxAlt:2.50, maxM2:5.00, bandos:["Bandô Standard","Bandô Solution","Bandô Box 40"]},
-  {id:"55mm",  label:"Tubo 55mm RPC",   maxLarg:3.00, maxAlt:3.00, maxM2:6.00, bandos:["Bandô Standard","Bandô Solution","Bandô Box 40","Bandô Box Plus"]},
+  {id:"55mm",  label:"Tubo 55mm Redutor RPC", maxLarg:3.00, maxAlt:2.00, maxM2:6.00, bandos:["Bandô Standard","Bandô Solution","Bandô Box 40"]},   // tabela Real Ago/2026 (corrigido em 12/11/2026: era alt 3,00 e aceitava Box Plus)
   {id:"55mmR", label:"Tubo 55mm R Plus",maxLarg:4.00, maxAlt:3.50, maxM2:8.00, bandos:["Bandô Maxi","Bandô Plus","Bandô Box Plus"]}
 ];
 
