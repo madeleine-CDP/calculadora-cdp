@@ -81,6 +81,12 @@ function passoVoltar(){
   if(EDITING_ORC_ID) abrirPasta(); else sairCalculoRapido();
 }
 
+// Gaveta (computador): o X fecha e volta ao orçamento. Depois do passo 1 pergunta antes, para não perder o item preenchido.
+function fecharGaveta(){
+  if(PASSO > 1 && !confirm('Fechar sem adicionar este item?\n\nO que você preencheu nele será perdido. O orçamento não muda.')) return;
+  abrirPasta();
+}
+
 function calcularOutro(){ CALC_OUTRO = true; addToCart(); }
 
 function renderPassos(){

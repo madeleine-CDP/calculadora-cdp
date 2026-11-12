@@ -97,11 +97,13 @@
 </div>
 
 <!-- ═══════════ TAB: CALCULADORA ═══════════ -->
+<div id="gaveta-fundo" aria-hidden="true"></div>
 <div id="tab-calc" class="tab-panel" data-passo-atual="1">
 <div class="wrap">
 
 <!-- D1 · CABEÇALHO DOS PASSOS -->
 <div class="passos-topo">
+  <button type="button" id="gaveta-x" class="gaveta-x" onclick="fecharGaveta()" aria-label="Fechar e voltar ao orçamento" title="Fechar e voltar ao orçamento"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="passos-contexto" id="passos-contexto"></div>
   <ol class="passos" id="passos">
     <li data-p="1"><button type="button" onclick="irPasso(1)"><span>1</span>Ambiente</button></li>
