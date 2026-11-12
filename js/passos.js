@@ -110,17 +110,13 @@ function renderPassos(){
 
   // ambiente escolhido, com "Trocar", nos passos 2 a 4
   const amb = ($('item-ambiente').value || '').trim();
+  const vaoAt = ($('item-vao') && $('item-vao').value || '').trim();
   $('passo-amb').innerHTML = (PASSO > 1 && amb)
-    ? ic('local',15) + ' Ambiente: <strong>' + escHtml(amb) + '</strong> <button type="button" onclick="irPasso(1, true)">Trocar</button>'
+    ? ic('local',15) + ' <strong>' + escHtml(rotuloItem({ ambiente: amb, vao: vaoAt, opcao: letraPrevista() })) + '</strong> <button type="button" onclick="irPasso(1, true)">Trocar</button>'
     : '';
 
-  // passo 1: atalhos com os ambientes que o orçamento já tem
-  let sug = $('passo-amb-sug');
-  if(!sug){ sug = document.createElement('div'); sug.id = 'passo-amb-sug'; sug.className = 'passo-amb-sug'; $('ambiente-card').appendChild(sug); }
-  const jaTem = [...new Set(CART.map(i => (i.ambiente||'').trim()).filter(Boolean))];
-  sug.innerHTML = jaTem.length
-    ? '<span>Já neste orçamento:</span>' + jaTem.map(a => `<button type="button" class="hist-chip" onclick="escolherAmbiente(this.dataset.a)" data-a="${escHtml(a)}">${escHtml(a)}</button>`).join('')
-    : '';
+  // passo 1: atalhos de um toque (ambientes do orçamento + comuns), vãos do ambiente e "mais um item × outra opção"
+  renderPassoAmbiente();
 
   // passo 4: resumo do item no topo do resultado
   const r = STATE.lastResult, tit = $('rcard-title');
@@ -160,17 +156,64 @@ function renderPassos(){
   else avancar.innerHTML = ic('ok',17) + (EDITANDO_ITEM_ID ? ' Substituir item' : (EDITING_ORC_ID ? ' Adicionar ao orçamento' : ' Criar orçamento'));
 }
 
+// ── Ambiente · Vão · Opção (12/11/2026) ──
+const AMBIENTES_COMUNS = ['Sala', 'Quarto Casal', 'Quarto Solteiro', 'Varanda', 'Escritório', 'Cozinha'];
+let MODO_ITEM = null;   // 'soma' | 'opcao' (null = ainda não escolhido → usa o padrão)
+const _ci = s => (s || '').trim().toLowerCase();
+
+// Itens do orçamento no mesmo ambiente e vão (fora o que está sendo editado)
+function itensDoVao(amb, vao){
+  return CART.filter(i => i.id !== EDITANDO_ITEM_ID && _ci(i.ambiente) === _ci(amb) && _ci(i.vao) === _ci(vao));
+}
+function modoItemAtual(){
+  const amb = ($('item-ambiente').value || '').trim(), vao = ($('item-vao').value || '').trim();
+  if(EDITANDO_ITEM_ID || !amb || !itensDoVao(amb, vao).length) return null;   // sem pergunta
+  return MODO_ITEM || (vao ? 'opcao' : 'soma');   // mesmo vão nomeado → quase sempre é outra opção
+}
+// Letra que o item vai receber (para mostrar antes de adicionar)
+function letraPrevista(){
+  if(EDITANDO_ITEM_ID){ const it = CART.find(x => x.id === EDITANDO_ITEM_ID); return it ? it.opcao : ''; }
+  if(modoItemAtual() !== 'opcao') return '';
+  const amb = $('item-ambiente').value, vao = $('item-vao').value;
+  const usadas = itensDoVao(amb, vao).map(i => i.opcao).filter(Boolean);
+  if(!usadas.length) return 'B';
+  return LETRAS_OPCAO.find(l => !usadas.includes(l)) || '';
+}
+function rotuloItem(it){
+  return [(it.ambiente || '').trim(), (it.vao || '').trim(), it.opcao ? 'Opção ' + it.opcao : ''].filter(Boolean).join(' · ');
+}
+function escolherModoItem(m){ MODO_ITEM = m; renderPassos(); }
 function escolherAmbiente(a){
-  $('item-ambiente').value = a;
-  $('item-ambiente').dispatchEvent(new Event('input'));
-  STATE.ambiente = a;
-  irPasso(2);
+  $('item-ambiente').value = a; STATE.ambiente = a; MODO_ITEM = null;
+  renderPassos();
+  const v = $('item-vao'); if(v && window.innerWidth > 720) v.focus();
+}
+function escolherVao(v){ $('item-vao').value = v; STATE.vao = v; MODO_ITEM = null; renderPassos(); }
+
+function renderPassoAmbiente(){
+  const amb = ($('item-ambiente').value || '').trim(), vao = ($('item-vao') ? $('item-vao').value : '').trim();
+  const jaTem = [...new Set(CART.map(i => (i.ambiente||'').trim()).filter(Boolean))];
+  const comuns = AMBIENTES_COMUNS.filter(a => !jaTem.some(j => _ci(j) === _ci(a)));
+  const chip = (txt, fn, on) => `<button type="button" class="hist-chip${on ? ' on' : ''}" onclick="${fn}(this.dataset.v)" data-v="${escHtml(txt)}">${escHtml(txt)}</button>`;
+  $('amb-chips').innerHTML = (jaTem.length ? '<span>Neste orçamento:</span>' + jaTem.map(a => chip(a, 'escolherAmbiente', _ci(a) === _ci(amb))).join('') : '')
+    + (comuns.length ? '<span>' + (jaTem.length ? 'Outros:' : 'Comuns:') + '</span>' + comuns.map(a => chip(a, 'escolherAmbiente', _ci(a) === _ci(amb))).join('') : '');
+  const vaos = amb ? [...new Set(CART.filter(i => i.id !== EDITANDO_ITEM_ID && _ci(i.ambiente) === _ci(amb)).map(i => (i.vao||'').trim()).filter(Boolean))] : [];
+  $('vao-chips').innerHTML = vaos.length ? '<span>Vãos de ' + escHtml(amb) + ':</span>' + vaos.map(v => chip(v, 'escolherVao', _ci(v) === _ci(vao))).join('') : '';
+  const modo = modoItemAtual(), box = $('amb-modo');
+  box.hidden = !modo;
+  if(modo){
+    const n = itensDoVao(amb, vao).length;
+    $('amb-modo-tit').innerHTML = escHtml(rotuloItem({ ambiente: amb, vao })) + ' já tem ' + n + (n > 1 ? ' itens' : ' item') + '. Este novo é:';
+    box.querySelectorAll('[data-modo]').forEach(b => { const on = b.dataset.modo === modo; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+  }
 }
 
 // Enter no campo de ambiente = Continuar
 document.addEventListener('DOMContentLoaded', () => {
   const a = $('item-ambiente');
-  if(a) a.addEventListener('keydown', ev => { if(ev.key === 'Enter'){ ev.preventDefault(); irPasso(2); } });
+  if(a) a.addEventListener('keydown', ev => { if(ev.key === 'Enter'){ ev.preventDefault(); const v = $('item-vao'); if(v) v.focus(); else irPasso(2); } });
+  const v = $('item-vao');
+  if(v) v.addEventListener('keydown', ev => { if(ev.key === 'Enter'){ ev.preventDefault(); irPasso(2); } });
 });
 
 

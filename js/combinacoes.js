@@ -84,7 +84,9 @@ function combosEscolhidos(itens){
 // ── Pasta: opção do item e ambiente opcional ──
 function mudarOpcaoItem(id, letra){
   const it = CART.find(x => x.id === id); if(!it) return;
+  const auto = typeof rotuloItem === 'function' && it.label === rotuloItem(it);   // nome automático acompanha a letra
   if(letra) it.opcao = letra; else delete it.opcao;
+  if(auto) it.label = rotuloItem(it);
   COMBOS_SEL = null;
   ORC_SUJO = true;
   renderPasta();

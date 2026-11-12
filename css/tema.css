@@ -996,3 +996,19 @@ select.cli-in{appearance:auto}
 }
 @keyframes gavetaEntra{from{transform:translateX(48px);opacity:.3}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){ body.lado-a-lado #tab-calc{animation:none} }
+
+/* ═══ Passo Ambiente: Ambiente · Vão · Opção (12/11/2026) ═══ */
+.amb-rotulo{display:block;margin-top:14px;font-size:13px;font-weight:700;color:var(--tinta)}
+.amb-rotulo em{font-style:normal;font-weight:500;color:var(--tinta-suave)}
+.amb-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.amb-chips:empty{display:none}
+.amb-chips>span{font-size:12.5px;color:var(--tinta-suave);margin-right:2px}
+.amb-chips .hist-chip{min-height:40px}
+.amb-chips .hist-chip.on{background:var(--vinho);color:#fff;border-color:var(--vinho)}
+.amb-modo{margin-top:16px;padding:12px;border-radius:14px;background:#fff;border:1px solid var(--linha)}
+.amb-modo-tit{font-size:13.5px;font-weight:600;margin-bottom:10px}
+.amb-modo-ops{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.amb-modo-ops button{min-height:56px;border-radius:12px;border:1.5px solid var(--linha);background:var(--fundo,#F7F4F1);text-align:left;padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-family:inherit;color:var(--tinta)}
+.amb-modo-ops button strong{font-size:14.5px}
+.amb-modo-ops button span{font-size:12.5px;color:var(--tinta-suave)}
+.amb-modo-ops button.on{border-color:var(--vinho);background:var(--vinho-suave)}

@@ -1498,6 +1498,8 @@ function resetCalc(){
   const jsug = $('jan-sugestao'); if(jsug) jsug.innerHTML = '';
   const det = $('item-detalhamento'); if(det){ det.value=''; delete det.dataset.editedManually; }
   const amb = $('item-ambiente'); if(amb) amb.value = '';
+  const vaoEl = $('item-vao'); if(vaoEl) vaoEl.value = '';
+  STATE.vao = ''; if(typeof MODO_ITEM !== 'undefined') MODO_ITEM = null;
   STATE = {fab:null,cat:'',prod:'',fam:'',col:'',w:0,h:0,qty:1,discReal:20,discDecNorm:12,discDecNorm2:3,discDecPromo:3,tubo:null,reducao:false,lastResult:null,cmpActive:false,cdpTipo:'',cdpCam1:'',cdpCam2:'',cdpIlhos:false,cdpCurvo:false,cdpCurvoValor:0};
   $('fb-real').className='fab-btn'; $('fb-dec').className='fab-btn'; $('fb-cdp').className='fab-btn';
   $('disc-row').style.display='none';
@@ -1832,9 +1834,19 @@ function addToCart(){
   if(!STATE.lastResult){ alert('Calcule um produto primeiro.'); return; }
   const r = STATE.lastResult;
   const itemEditado = EDITANDO_ITEM_ID ? CART.find(x => x.id === EDITANDO_ITEM_ID) : null;
-  const mesmoAmbiente = CART.filter(i => i.ambiente === r.ambiente && i !== itemEditado).length;
-  const sugestao = (itemEditado && itemEditado.ambiente === r.ambiente) ? itemEditado.label : r.ambiente + (mesmoAmbiente > 0 ? ' - Item ' + (mesmoAmbiente+1) : '');
-  const label = prompt('Nome deste item (ajuste se for outro vão/janela ou outra opção do mesmo ambiente):', sugestao) || sugestao;
+  // Ambiente · Vão · Opção (12/11/2026): o nome do item vem desses campos (não pergunta mais o nome)
+  const vao = (($('item-vao') && $('item-vao').value) || '').trim();
+  let opcao = itemEditado ? (itemEditado.opcao || '') : '';
+  if(!itemEditado && typeof modoItemAtual === 'function' && modoItemAtual() === 'opcao'){
+    const grupo = itensDoVao(r.ambiente, vao);
+    if(!grupo.some(i => i.opcao)) grupo.forEach(i => { const auto = i.label === rotuloItem(i); i.opcao = 'A'; if(auto || !i.label) i.label = rotuloItem(i); });
+    const usadas = grupo.map(i => i.opcao).filter(Boolean);
+    opcao = LETRAS_OPCAO.find(l => !usadas.includes(l)) || '';
+    if(!opcao){ alert('Este vão já tem as opções ' + LETRAS_OPCAO.join(', ') + '. Use outro vão ou remova uma opção.'); return; }
+    if(typeof COMBOS_SEL !== 'undefined') COMBOS_SEL = null;
+  }
+  const manterNomeAntigo = itemEditado && !vao && !itemEditado.vao && itemEditado.ambiente === r.ambiente && itemEditado.label && itemEditado.label !== rotuloItem(itemEditado);
+  const label = manterNomeAntigo ? itemEditado.label : rotuloItem({ ambiente: r.ambiente, vao, opcao });
   const detBox = $('item-detalhamento');
   const baseDetail = (detBox && detBox.value.trim()) ? detBox.value.trim() : detalhamentoDoFormulario(r.fab==='cdp' ? 'Cortina Tradicional' : r.prod, r.w, r.h);
   const fullDetail = baseDetail
@@ -1847,6 +1859,9 @@ function addToCart(){
     id: Date.now(),
     label,
     ambiente: r.ambiente || '',
+    vao,
+    ...(opcao ? { opcao } : {}),
+    ...(itemEditado && itemEditado.ambienteOpcional ? { ambienteOpcional: true } : {}),
     fab: r.fab,
     prod: r.prod,
     fam: r.fam,
@@ -1947,6 +1962,7 @@ function editarItemCarrinho(id){
   selectFab(item.fab);
   $('item-ambiente').value = item.ambiente || '';
   STATE.ambiente = item.ambiente || '';
+  if($('item-vao')){ $('item-vao').value = item.vao || ''; STATE.vao = item.vao || ''; }
 
   // Medidas primeiro — onMedidas() reconstrói o select de coleção quando STATE.fam já
   // está preenchido, então precisa rodar ANTES da cascata categoria→produto→família→coleção

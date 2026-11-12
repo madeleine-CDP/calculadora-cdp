@@ -118,9 +118,21 @@
 <!-- AMBIENTE -->
 <div class="card" id="ambiente-card" data-passo="1" style="border-color:var(--gold)">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Ambiente deste item</div>
-  <div class="card-sub">Todo cálculo pertence a um ambiente — preencha antes de calcular (ex: Quarto Casal, Sala)</div>
-  <input type="text" id="item-ambiente" list="ambientes-datalist" placeholder="Ex: Quarto Casal" oninput="STATE.ambiente=this.value" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);font-size:13.5px;font-family:inherit;margin-top:6px">
+  <div class="card-sub">Onde vai este item: ambiente, vão (janela/porta) e, se for o caso, outra opção para o mesmo vão</div>
+  <label class="amb-rotulo" for="item-ambiente">Ambiente</label>
+  <input type="text" id="item-ambiente" list="ambientes-datalist" placeholder="Ex: Quarto Casal" oninput="STATE.ambiente=this.value; renderPassos()" autocomplete="off" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);font-size:13.5px;font-family:inherit;margin-top:6px">
   <datalist id="ambientes-datalist"></datalist>
+  <div class="amb-chips" id="amb-chips"></div>
+  <label class="amb-rotulo" for="item-vao">Vão <em>(opcional)</em></label>
+  <input type="text" id="item-vao" placeholder="Ex: Janela 1, Porta da varanda" oninput="STATE.vao=this.value; renderPassos()" autocomplete="off" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);font-size:13.5px;font-family:inherit;margin-top:6px">
+  <div class="amb-chips" id="vao-chips"></div>
+  <div class="amb-modo" id="amb-modo" hidden>
+    <div class="amb-modo-tit" id="amb-modo-tit"></div>
+    <div class="amb-modo-ops" role="radiogroup">
+      <button type="button" role="radio" data-modo="soma" onclick="escolherModoItem('soma')"><strong>Mais um item</strong><span>soma junto no total</span></button>
+      <button type="button" role="radio" data-modo="opcao" onclick="escolherModoItem('opcao')"><strong>Outra opção</strong><span>o cliente escolhe uma</span></button>
+    </div>
+  </div>
 </div>
 
 <!-- FÁBRICA -->
