@@ -300,6 +300,16 @@ function calcSobra(){
   $('jan-sugestao').innerHTML = `${ic('ok',15)} Sugestão: <b>${w.toFixed(2)}L × ${h.toFixed(2)}A</b> (janela ${jw.toFixed(2)}×${jh.toFixed(2)}m) — ${obs.join(' · ')}`;
 }
 
+// Trecho das medidas no detalhamento: "TAMANHO JANELA: …. CORTINA FICA COM: …." · "TAMANHO CORTINA: …." ·
+// "TAMANHO PERSIANA: …." · "TAMANHO: …." · "TAMANHOS: … (CADA)." (itens antigos)
+const MEDIDAS_DETALHE_RE = /TAMANHOS?(?: JANELA| CORTINA| PERSIANA)?: [^.]*\.(?: (?:CORTINA|PERSIANA) FICA COM: [^.]*\.)?/i;
+function trocarMedidasDetalhe(texto, gerado){
+  const novo = (gerado || '').match(MEDIDAS_DETALHE_RE);
+  if(!novo) return texto;
+  if(!texto || !texto.trim()) return gerado;
+  return MEDIDAS_DETALHE_RE.test(texto) ? texto.replace(MEDIDAS_DETALHE_RE, novo[0]) : novo[0] + ' ' + texto;
+}
+
 function updateDetalhamentoPreview(){
   const box = $('item-detalhamento');
   if(!box) return;
@@ -309,7 +319,10 @@ function updateDetalhamentoPreview(){
   if(STATE.fab !== 'cdp' && !STATE.prod) return;
   const gerado = detalhamentoDoFormulario(STATE.fab==='cdp' ? 'Cortina Tradicional' : STATE.prod, w, h);
   // só sobrescreve se o campo ainda não foi editado à mão pelo usuário para esta medida
-  if(!box.dataset.editedManually){
+  if(box.dataset.editedManually){
+    // Texto editado à mão (ou item aberto para editar): troca SÓ o trecho das medidas e mantém o resto (pedido da Bru, 12/11/2026)
+    box.value = trocarMedidasDetalhe(box.value, gerado);
+  } else {
     box.value = gerado;
   }
 }
