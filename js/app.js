@@ -110,7 +110,7 @@ function selectFab(fab){
   $('disc-real').style.display      = fab==='real' ? 'flex' : 'none';
   $('disc-dec-normal').style.display  = fab==='dec' ? 'flex' : 'none';
   $('disc-dec-normal2').style.display = fab==='dec' ? 'flex' : 'none';
-  $('disc-dec-promo').style.display   = fab==='dec' ? 'flex' : 'none';
+  $('disc-dec-promo').style.display   = 'none';   // não existe mais tabela promocional na Decore (a lista de promoções = tabela −12%)
 
   // Comparar com outra fábrica não faz sentido pra produção própria
   const btnCmp = $('btn-compare');

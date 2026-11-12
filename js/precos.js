@@ -19,51 +19,8 @@ function textoTabela(fab){
 // DADOS BASE — PRODUTOS COM LIMITES E COLEÇÕES
 // ═══════════════════════════════════════════════════════
 
-// Larguras de tecido por coleção (Real)
-const FABRIC_W_REAL = {
-  // Rolô BK
-  "BK Pinpoint":2.50,"BK Napole":2.40,"BK Euro":3.00,"BK Max Pinpoint":3.00,
-  "BK Iene":2.80,"BK New Rial":3.00,"BK Cardano":2.50,"BK Yuan":2.80,
-  "BK Grivnia":2.00,"BK Kina":2.00,"BK Pataca":2.80,"BK Quiate":2.00,"BK Manat":2.40,
-  // Screen
-  "Screen 5% Fit":3.00,"Screen 5%":3.00,"Screen 3%":3.00,"Screen 1%":3.00,"Screen 5% Especial":3.00,
-  // Translucido
-  "Napole Luz":2.40,"Euro Translúcido":3.00,"Metical":2.80,"Yuan Translúcido":2.80,
-  "Kina":2.00,"Quiate Luz":2.00,"Bolivar":2.00,"Dalásia":2.00,"Naira":2.50,
-  // Elegance
-  "Basic":2.15,"Stile":3.00,"Shadow":3.00,"Semi Blackout":3.00,
-  // Nuette
-  "Nuette Basic":2.60,
-  // Celular
-  "Luna":99,"BK Cocoon":99
-};
-
-// Larguras de tecido por coleção (Decore)
-const FABRIC_W_DECORE = {
-  // Rolô BK
-  "BK Berlim":2.50,"BK Pinpoint Soft":3.00,"BK Pinpoint Flex":3.00,"BK Libia":2.20,
-  "BK Pinpoint Plus":3.00,"BK Monaco":3.00,"BK Madri":3.00,"BK Lugano":3.00,
-  "BK Napoles":2.40,"BK Lins":2.80,"BK Manari":3.00,"BK Elise":2.00,
-  "BK Fustão":2.80,"BK Aurea":2.40,"BK Inca":2.00,"BK Viena":2.80,
-  "BK Prestige":2.80,"BK Rustico":3.00,"BK Screen":3.00,
-  // Filtra-sol
-  "Hydra 5%":3.00,"Malta 3%":3.00,"Betis 1%":3.00,
-  // Translucido Rolô
-  "Delta":2.00,"Monaco Luz":2.50,"Fustão Luz":2.00,"Lugano Luz":3.00,
-  "Carlota":2.00,"Atlas":2.00,"Book":2.00,"Linho Misto":2.00,"Maia":2.00,
-  "Napoles Luz":2.40,"Inca Luz":2.00,"Laus":2.00,"Rustico Luz":3.00,"Odin Luz":1.40,
-  // Double Vision
-  "Opala":3.00,"Jade":2.25,"Babel":2.25,"Diamante":3.00,"Topázio SBK":3.00,
-  // Vertical
-  "Nuance":99,"Paris":99,"Nantes":99,"PVC Slim":99,"PVC Basic":99
-};
-
-// Tabelas promocionais Decore (aplica 3% desc)
-const DECORE_PROMO_COLS = [
-  "Hydra 5%","Malta 3%","Betis 1%",
-  "BK Pinpoint Flex","BK Berlim","BK Mônaco","BK Nápoles",
-  "Mônaco Luz","Lugano Luz","Nápoles Luz"
-];
+// (11/11/2026) Removidas as listas FABRIC_W_REAL, FABRIC_W_DECORE e DECORE_PROMO_COLS: não eram usadas.
+// A largura do tecido de cada coleção fica no campo "fw" dentro de DB_REAL / DB_DECORE.
 
 // Impostos PE
 const IMPOSTOS_PE = {
