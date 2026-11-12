@@ -1417,6 +1417,11 @@ function runCompare(){
 
   // Acessórios da comparação
   const cmpAcc = calcCmpAccCost(otherFab);
+  // Decore: redução de peso automática (mesma regra do cálculo normal: larg >= 1,80m ou alt >= 2,00m), sem desconto
+  if(otherFab === 'dec' && (r.prod.includes('ROLÔ') || r.prod.includes('ELEGANCE')) && (r.w >= 1.80 || r.h >= 2.00)){
+    cmpAcc.total += 75;
+    cmpAcc.lines.push({ label: 'Redução de Peso (auto)', cost: 75, discLabel: '', semDesc: true });
+  }
   const cmpTotal = (subtDesc + impostoValor + cmpAcc.total) * r.qty;
 
   // Render side by side
