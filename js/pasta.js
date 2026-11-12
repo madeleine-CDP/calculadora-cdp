@@ -97,7 +97,7 @@ function renderPasta(){
   $('pasta-n').textContent = CART.length ? CART.length + (CART.length>1?' itens':' item') + ' · ' + nAmb + (nAmb>1?' ambientes':' ambiente') : '';
 
   $('pasta-lista').innerHTML = !CART.length
-    ? '<div class="pasta-vazio">Nenhum item ainda.<br>Toque em <strong>Adicionar item</strong> para calcular o primeiro.</div>'
+    ? '<div class="pasta-vazio">Nenhum item ainda.<br>Toque em <strong>Adicionar o primeiro item</strong> para calcular.</div>'
     : Object.entries(grupos).map(([amb, itens]) => {
         const sub = itens.reduce((s,i)=>s+(i.avista||0),0);
         return `<div class="pasta-amb">
@@ -109,6 +109,13 @@ function renderPasta(){
 
   document.querySelectorAll('#pasta-lista textarea').forEach(autoAltura);
   renderEvolucao();
+  // Orçamento vazio: "Adicionar" vira o botão principal da tela
+  const add = document.querySelector('.pasta-add');
+  if(add){
+    add.classList.toggle('principal', !CART.length);
+    const txt = [...add.childNodes].find(n => n.nodeType === 3);
+    if(txt) txt.textContent = CART.length ? 'Adicionar item a este orçamento' : 'Adicionar o primeiro item';
+  }
   renderJornada();
   renderStatus();
   if(typeof renderContatoPasta === 'function') renderContatoPasta();
@@ -296,7 +303,7 @@ function renderEvolucao(){
   const pai = e.anteriorId ? HISTORY_CACHE.find(x => x.id === e.anteriorId) : null;
   const semRegistro = CART.some(i => !i.tabelaVer);
   const avisoCopia = (e.anteriorId && semRegistro) ? `<div class="pasta-evol-aviso aviso-preco">${ic('alerta',16)}<span>Itens copiados ${pai ? 'do <strong>' + numCDP(pai.numero) + '</strong> ' : ''}com os preços da época${pai && pai.date ? ' (' + escHtml(pai.date) + ')' : ''}. Se a tabela de alguma fábrica mudou desde então, edite o item e adicione de novo para recalcular.</span></div>` : '';
-  if(e.etapa === 'fechado' || e.etapa === 'perdido'){ box.innerHTML = avisoCopia; return; }
+  if(e.etapa === 'fechado' || e.etapa === 'perdido' || !CART.length){ box.innerHTML = avisoCopia; return; }   // sem itens não há o que evoluir
   const destino = e.etapa === 'pre_orcamento' ? 'visita / orçamento final' : 'nova versão do orçamento';
   box.innerHTML = avisoCopia + `<button type="button" class="pasta-evoluir" onclick="evoluirOrcamento()">
       ${ic('raio',18)}<span><strong>Evoluir para ${destino}</strong><em>Cria um novo orçamento com cópia dos itens; este fica guardado.</em></span></button>`;

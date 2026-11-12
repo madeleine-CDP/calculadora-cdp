@@ -2341,9 +2341,9 @@ async function criarOrcamento(){
     avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado para ' + escHtml(nome) + ' com ' + CART.length + (CART.length>1?' itens':' item') + ' do cálculo rápido.' + (ORC_SUJO ? ' Toque em Salvar e fechar.' : ''));
     return;
   }
-  irParaTab('calc');
-  window.scrollTo({top:0});
-  avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado para ' + escHtml(nome) + '. Agora adicione os itens.');
+  // Abre a pasta (não a calculadora): o item só começa quando a pessoa toca em "Adicionar" (pedido da Bru, 12/11/2026)
+  abrirPasta();
+  avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado para ' + escHtml(nome) + '. Toque em <strong>Adicionar o primeiro item</strong>.');
 }
 
 // Aviso discreto no topo que some sozinho

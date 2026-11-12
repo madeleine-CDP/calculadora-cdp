@@ -976,3 +976,7 @@ select.cli-in{appearance:auto}
 
 /* "por peça" ao lado da quantidade de acessório por unidade (11/11/2026) */
 .ai-por-peca{font-size:11px;color:var(--muted,#888)}
+
+/* Orçamento vazio: "Adicionar o primeiro item" é o botão principal (12/11/2026) */
+.pasta-add.principal{border:0;background:var(--vinho);color:#fff;box-shadow:0 6px 18px rgba(110,22,38,.18)}
+.pasta-add.principal:hover{background:var(--vinho);filter:brightness(1.08)}
