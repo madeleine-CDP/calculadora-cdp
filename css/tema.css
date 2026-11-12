@@ -1038,3 +1038,8 @@ select.cli-in{appearance:auto}
 .total-faixa-op{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin:4px 0 8px}
 .total-sug-linha{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--linha);font-size:14px;font-weight:600}
 .total-sug-linha select{min-height:38px;border-radius:999px!important;padding:0 28px 0 12px!important}
+
+/* Comparar fábricas: cotar a outra como outra opção (12/11/2026) */
+.cmp-cotar{grid-column:1/-1;margin-top:6px}
+.cmp-cotar .btn{width:100%}
+.cmp-cotar-dica{font-size:12.5px;color:var(--tinta-suave);margin-top:6px;text-align:center}

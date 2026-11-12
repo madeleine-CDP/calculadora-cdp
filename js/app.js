@@ -1376,6 +1376,39 @@ function calcCmpAccCost(otherFabKey){
   return {total, lines};
 }
 
+let COTAR_OUTRA = null;   // { fab, col } da última comparação
+
+// Botão da comparação: adiciona o item atual (Opção A) e abre a calculadora na outra fábrica para a Opção B
+function cotarNaOutraFabrica(){
+  const r = STATE.lastResult;
+  if(!r || !COTAR_OUTRA || !EDITING_ORC_ID) return;
+  const amb = (r.ambiente || $('item-ambiente').value || '').trim();
+  let vao = (($('item-vao') && $('item-vao').value) || '').trim();
+  // Sem vão e com outros itens soltos no ambiente: dá um nome ao vão para as opções não se misturarem com eles
+  if(!vao && CART.some(i => (i.ambiente||'').trim().toLowerCase() === amb.toLowerCase() && !(i.vao||'').trim())){
+    const n = new Set(CART.filter(i => (i.ambiente||'').trim().toLowerCase() === amb.toLowerCase()).map(i => (i.vao||'').trim().toLowerCase())).size + 1;
+    vao = 'Vão ' + n;
+    $('item-vao').value = vao; STATE.vao = vao;
+  }
+  const antes = CART.length, dados = { cat: r.cat, prod: r.prod, fam: r.fam, w: r.w, h: r.h, qty: r.qty };
+  const destino = COTAR_OUTRA;
+  addToCart();                                  // entra o item atual (volta para a pasta)
+  if(CART.length === antes) return;             // a pessoa desistiu (ex.: "A DEFINIR")
+  adicionarItemPasta();
+  $('item-ambiente').value = amb; STATE.ambiente = amb;
+  $('item-vao').value = vao; STATE.vao = vao;
+  MODO_ITEM = 'opcao';
+  selectFab(destino.fab);
+  // medidas antes da cascata (onMedidas refaz a lista de coleções), como no editar item
+  $('i-w').value = dados.w; $('i-h').value = dados.h; $('i-qty').value = dados.qty; onMedidas();
+  $('s-cat').value = dados.cat; onCat();
+  $('s-prod').value = dados.prod; onProd();
+  $('s-fam').value = dados.fam; onFam();
+  $('s-col').value = destino.col; onCol();
+  irPasso(3, true);
+  avisoTopo('Agora a <strong>' + fabName(destino.fab) + '</strong> como outra opção: confira os acessórios e calcule.');
+}
+
 function runCompare(){
   const r = STATE.lastResult;
   if(!r) return;
@@ -1471,7 +1504,12 @@ function runCompare(){
     </div>
   </div>`;
 
-  $('cmp-results').innerHTML = origCard + otherCard;
+  // Cotar na outra fábrica como outra opção do mesmo vão (só com orçamento aberto e item novo)
+  const podeCotar = EDITING_ORC_ID && !EDITANDO_ITEM_ID && !orcTravado();
+  const botaoCotar = podeCotar ? `<div class="cmp-cotar"><button type="button" class="btn" onclick="cotarNaOutraFabrica()">${ic('mais',17)} Adicionar este e cotar na ${otherFab==='real'?'Real':'Decore'} como outra opção</button>
+    <div class="cmp-cotar-dica">Este item entra como Opção A e a calculadora abre com a ${otherFab==='real'?'Real':'Decore'}, a mesma coleção comparada e as mesmas medidas, para você conferir os acessórios e adicionar como Opção B.</div></div>` : '';
+  COTAR_OUTRA = { fab: otherFab, col: cmpCol };
+  $('cmp-results').innerHTML = origCard + otherCard + botaoCotar;
   $('cmp-results').style.display='grid';
 }
 
