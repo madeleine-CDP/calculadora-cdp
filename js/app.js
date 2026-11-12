@@ -110,7 +110,7 @@ function selectFab(fab){
   $('disc-real').style.display      = fab==='real' ? 'flex' : 'none';
   $('disc-dec-normal').style.display  = fab==='dec' ? 'flex' : 'none';
   $('disc-dec-normal2').style.display = fab==='dec' ? 'flex' : 'none';
-  $('disc-dec-promo').style.display   = fab==='dec' ? 'flex' : 'none';
+  $('disc-dec-promo').style.display   = 'none';   // não existe mais tabela promocional na Decore (a lista de promoções = tabela −12%)
 
   // Comparar com outra fábrica não faz sentido pra produção própria
   const btnCmp = $('btn-compare');
@@ -207,13 +207,57 @@ function fillColSel(data){
   sel.disabled = false;
 }
 
+// ── Cores disponíveis da coleção (12/11/2026) ──
+// Lista em js/cores.js. Tocar numa cor preenche "COR: …" no detalhamento (dá para marcar mais de uma: "BRANCO OU BEGE").
+let CORES_SEL = [];
+function coresDaColecao(){
+  if(typeof CORES_COLECAO === 'undefined' || !STATE.fab || STATE.fab === 'cdp' || !STATE.col) return null;
+  const k = STATE.fab + '|' + STATE.prod + '|' + STATE.fam + '|' + STATE.col;
+  if(CORES_COLECAO[k]) return CORES_COLECAO[k];
+  // mesma coleção em outro produto da mesma fábrica (ex.: Painel Double Vision usa os tecidos da Double Vision)
+  const nome = colLabel(STATE.col).toLowerCase();
+  const alt = Object.keys(CORES_COLECAO).find(x => x.startsWith(STATE.fab + '|') && colLabel(x.split('|').slice(3).join('|')).toLowerCase() === nome);
+  return alt ? CORES_COLECAO[alt] : null;
+}
+function renderCoresColecao(){
+  const box = $('cores-col'); if(!box) return;
+  if(!STATE.col || STATE.fab === 'cdp'){ box.hidden = true; box.innerHTML = ''; return; }
+  const cores = coresDaColecao();
+  box.hidden = false;
+  if(!cores || !cores.length){ box.innerHTML = '<div class="cores-tit">Cores</div><div class="cores-aviso">Cores desta coleção: confirmar com a fábrica.</div>'; return; }
+  CORES_SEL = CORES_SEL.filter(c => cores.includes(c));
+  box.innerHTML = '<div class="cores-tit">Cores disponíveis <span>toque para pôr no detalhamento</span></div><div class="amb-chips">'
+    + cores.map(c => `<button type="button" class="hist-chip${CORES_SEL.includes(c) ? ' on' : ''}" onclick="alternarCor(this.dataset.c)" data-c="${escHtml(c)}">${escHtml(c)}</button>`).join('')
+    + '</div><div class="cores-aviso">Cores do ' + escHtml((typeof CORES_INFO !== 'undefined' && CORES_INFO[STATE.fab]) || 'fornecedor') + '. Confirme o estoque antes de fechar.</div>';
+}
+function alternarCor(c){
+  CORES_SEL = CORES_SEL.includes(c) ? CORES_SEL.filter(x => x !== c) : CORES_SEL.concat([c]);
+  const det = $('item-detalhamento');
+  if(det){
+    const cor = CORES_SEL.length ? CORES_SEL.map(x => x.toUpperCase()).join(' OU ') : 'A DEFINIR';
+    if(/COR: [^.]*\./.test(det.value)) det.value = det.value.replace(/COR: [^.]*\./, 'COR: ' + cor + '.');
+    else if(det.value.trim()) det.value = det.value.trim() + ' COR: ' + cor + '.';
+    else updateDetalhamentoPreview();
+  }
+  renderCoresColecao();
+}
+// Ao abrir um item para editar: marca as cores que já estão no texto
+function coresDoTexto(txt){
+  const m = String(txt || '').match(/COR: ([^.]*)\./); const cores = coresDaColecao() || [];
+  if(!m) return [];
+  const partes = m[1].split(/\s+OU\s+|,|\/|\s+E\s+/).map(p => p.trim().toLowerCase());
+  return cores.filter(c => partes.includes(c.toLowerCase()));
+}
+
 function onCol(){
   STATE.col = $('s-col').value;
-  if(!STATE.col) return;
+  if(!STATE.col){ renderCoresColecao(); return; }
+  if(typeof CORES_SEL !== 'undefined'){ const det = $('item-detalhamento'); CORES_SEL = coresDoTexto(det && det.value); }
   updateChips();
   validateMedidas();
   revalidarAcc();   // acessório que depende da coleção (ex.: revestido da 25mm)
   updateDetalhamentoPreview();
+  renderCoresColecao();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -300,6 +344,16 @@ function calcSobra(){
   $('jan-sugestao').innerHTML = `${ic('ok',15)} Sugestão: <b>${w.toFixed(2)}L × ${h.toFixed(2)}A</b> (janela ${jw.toFixed(2)}×${jh.toFixed(2)}m) — ${obs.join(' · ')}`;
 }
 
+// Trecho das medidas no detalhamento: "TAMANHO JANELA: …. CORTINA FICA COM: …." · "TAMANHO CORTINA: …." ·
+// "TAMANHO PERSIANA: …." · "TAMANHO: …." · "TAMANHOS: … (CADA)." (itens antigos)
+const MEDIDAS_DETALHE_RE = /TAMANHOS?(?: JANELA| CORTINA| PERSIANA)?: [^.]*\.(?: (?:CORTINA|PERSIANA) FICA COM: [^.]*\.)?/i;
+function trocarMedidasDetalhe(texto, gerado){
+  const novo = (gerado || '').match(MEDIDAS_DETALHE_RE);
+  if(!novo) return texto;
+  if(!texto || !texto.trim()) return gerado;
+  return MEDIDAS_DETALHE_RE.test(texto) ? texto.replace(MEDIDAS_DETALHE_RE, novo[0]) : novo[0] + ' ' + texto;
+}
+
 function updateDetalhamentoPreview(){
   const box = $('item-detalhamento');
   if(!box) return;
@@ -309,7 +363,10 @@ function updateDetalhamentoPreview(){
   if(STATE.fab !== 'cdp' && !STATE.prod) return;
   const gerado = detalhamentoDoFormulario(STATE.fab==='cdp' ? 'Cortina Tradicional' : STATE.prod, w, h);
   // só sobrescreve se o campo ainda não foi editado à mão pelo usuário para esta medida
-  if(!box.dataset.editedManually){
+  if(box.dataset.editedManually){
+    // Texto editado à mão (ou item aberto para editar): troca SÓ o trecho das medidas e mantém o resto (pedido da Bru, 12/11/2026)
+    box.value = trocarMedidasDetalhe(box.value, gerado);
+  } else {
     box.value = gerado;
   }
 }
@@ -494,7 +551,7 @@ function buildAcc(){
       } else if(item.cor){
         priceStr = 'Br/Pt: '+fmtDec(item.cor.W)+'/ml' + (item.cor.C ? ' | Cor: '+fmtDec(item.cor.C)+'/ml' : ' (só branco)');
       } else if(item.p){
-        priceStr = fmtDec(item.p)+'/und';
+        priceStr = fmtDec(item.p)+' por peça';
       }
 
       // Controls
@@ -502,7 +559,7 @@ function buildAcc(){
       if(u==='m2-dif'){
         ctrl = '';   // cobra pela área da própria persiana — nada a preencher
       } else if(u==='und'){
-        ctrl = '<input type="number" id="qty_'+item.id+'" value="1" min="1" max="50" step="1" style="width:52px">';
+        ctrl = '<input type="number" id="qty_'+item.id+'" value="1" min="1" max="50" step="1" style="width:52px" title="Quantidade em CADA peça (o sistema já multiplica pelo número de peças)"><span class="ai-por-peca">por peça</span>';
       } else {
         const defVal = '';
         ctrl = (item.cor && item.cor.C)
@@ -563,6 +620,8 @@ function accIncompat(item){
       return 'Incompatível com ' + nome;
     }
   }
+  if(item.autoRed && STATE.fab==='dec' && STATE.reducao)
+    return 'Já incluída automaticamente nesta medida (não precisa marcar)';
   if(item.semReducao && STATE.fab==='dec' && STATE.reducao)
     return 'Incompatível com a redução de peso (aplicada a partir de 1,80m de largura ou 2,00m de altura)';
   return '';
@@ -1374,6 +1433,39 @@ function calcCmpAccCost(otherFabKey){
   return {total, lines};
 }
 
+let COTAR_OUTRA = null;   // { fab, col } da última comparação
+
+// Botão da comparação: adiciona o item atual (Opção A) e abre a calculadora na outra fábrica para a Opção B
+function cotarNaOutraFabrica(){
+  const r = STATE.lastResult;
+  if(!r || !COTAR_OUTRA || !EDITING_ORC_ID) return;
+  const amb = (r.ambiente || $('item-ambiente').value || '').trim();
+  let vao = (($('item-vao') && $('item-vao').value) || '').trim();
+  // Sem vão e com outros itens soltos no ambiente: dá um nome ao vão para as opções não se misturarem com eles
+  if(!vao && CART.some(i => (i.ambiente||'').trim().toLowerCase() === amb.toLowerCase() && !(i.vao||'').trim())){
+    const n = new Set(CART.filter(i => (i.ambiente||'').trim().toLowerCase() === amb.toLowerCase()).map(i => (i.vao||'').trim().toLowerCase())).size + 1;
+    vao = 'Vão ' + n;
+    $('item-vao').value = vao; STATE.vao = vao;
+  }
+  const antes = CART.length, dados = { cat: r.cat, prod: r.prod, fam: r.fam, w: r.w, h: r.h, qty: r.qty };
+  const destino = COTAR_OUTRA;
+  addToCart();                                  // entra o item atual (volta para a pasta)
+  if(CART.length === antes) return;             // a pessoa desistiu (ex.: "A DEFINIR")
+  adicionarItemPasta();
+  $('item-ambiente').value = amb; STATE.ambiente = amb;
+  $('item-vao').value = vao; STATE.vao = vao;
+  MODO_ITEM = 'opcao';
+  selectFab(destino.fab);
+  // medidas antes da cascata (onMedidas refaz a lista de coleções), como no editar item
+  $('i-w').value = dados.w; $('i-h').value = dados.h; $('i-qty').value = dados.qty; onMedidas();
+  $('s-cat').value = dados.cat; onCat();
+  $('s-prod').value = dados.prod; onProd();
+  $('s-fam').value = dados.fam; onFam();
+  $('s-col').value = destino.col; onCol();
+  irPasso(3, true);
+  avisoTopo('Agora a <strong>' + fabName(destino.fab) + '</strong> como outra opção: confira os acessórios e calcule.');
+}
+
 function runCompare(){
   const r = STATE.lastResult;
   if(!r) return;
@@ -1415,6 +1507,11 @@ function runCompare(){
 
   // Acessórios da comparação
   const cmpAcc = calcCmpAccCost(otherFab);
+  // Decore: redução de peso automática (mesma regra do cálculo normal: larg >= 1,80m ou alt >= 2,00m), sem desconto
+  if(otherFab === 'dec' && (r.prod.includes('ROLÔ') || r.prod.includes('ELEGANCE')) && (r.w >= 1.80 || r.h >= 2.00)){
+    cmpAcc.total += 75;
+    cmpAcc.lines.push({ label: 'Redução de Peso (auto)', cost: 75, discLabel: '', semDesc: true });
+  }
   const cmpTotal = (subtDesc + impostoValor + cmpAcc.total) * r.qty;
 
   // Render side by side
@@ -1464,7 +1561,12 @@ function runCompare(){
     </div>
   </div>`;
 
-  $('cmp-results').innerHTML = origCard + otherCard;
+  // Cotar na outra fábrica como outra opção do mesmo vão (só com orçamento aberto e item novo)
+  const podeCotar = EDITING_ORC_ID && !EDITANDO_ITEM_ID && !orcTravado();
+  const botaoCotar = podeCotar ? `<div class="cmp-cotar"><button type="button" class="btn" onclick="cotarNaOutraFabrica()">${ic('mais',17)} Adicionar este e cotar na ${otherFab==='real'?'Real':'Decore'} como outra opção</button>
+    <div class="cmp-cotar-dica">Este item entra como Opção A e a calculadora abre com a ${otherFab==='real'?'Real':'Decore'}, a mesma coleção comparada e as mesmas medidas, para você conferir os acessórios e adicionar como Opção B.</div></div>` : '';
+  COTAR_OUTRA = { fab: otherFab, col: cmpCol };
+  $('cmp-results').innerHTML = origCard + otherCard + botaoCotar;
   $('cmp-results').style.display='grid';
 }
 
@@ -1491,6 +1593,9 @@ function resetCalc(){
   const jsug = $('jan-sugestao'); if(jsug) jsug.innerHTML = '';
   const det = $('item-detalhamento'); if(det){ det.value=''; delete det.dataset.editedManually; }
   const amb = $('item-ambiente'); if(amb) amb.value = '';
+  const vaoEl = $('item-vao'); if(vaoEl) vaoEl.value = '';
+  STATE.vao = ''; if(typeof MODO_ITEM !== 'undefined') MODO_ITEM = null;
+  CORES_SEL = []; const cc = $('cores-col'); if(cc){ cc.hidden = true; cc.innerHTML = ''; }
   STATE = {fab:null,cat:'',prod:'',fam:'',col:'',w:0,h:0,qty:1,discReal:20,discDecNorm:12,discDecNorm2:3,discDecPromo:3,tubo:null,reducao:false,lastResult:null,cmpActive:false,cdpTipo:'',cdpCam1:'',cdpCam2:'',cdpIlhos:false,cdpCurvo:false,cdpCurvoValor:0};
   $('fb-real').className='fab-btn'; $('fb-dec').className='fab-btn'; $('fb-cdp').className='fab-btn';
   $('disc-row').style.display='none';
@@ -1825,9 +1930,19 @@ function addToCart(){
   if(!STATE.lastResult){ alert('Calcule um produto primeiro.'); return; }
   const r = STATE.lastResult;
   const itemEditado = EDITANDO_ITEM_ID ? CART.find(x => x.id === EDITANDO_ITEM_ID) : null;
-  const mesmoAmbiente = CART.filter(i => i.ambiente === r.ambiente && i !== itemEditado).length;
-  const sugestao = (itemEditado && itemEditado.ambiente === r.ambiente) ? itemEditado.label : r.ambiente + (mesmoAmbiente > 0 ? ' - Item ' + (mesmoAmbiente+1) : '');
-  const label = prompt('Nome deste item (ajuste se for outro vão/janela ou outra opção do mesmo ambiente):', sugestao) || sugestao;
+  // Ambiente · Vão · Opção (12/11/2026): o nome do item vem desses campos (não pergunta mais o nome)
+  const vao = (($('item-vao') && $('item-vao').value) || '').trim();
+  let opcao = itemEditado ? (itemEditado.opcao || '') : '';
+  if(!itemEditado && typeof modoItemAtual === 'function' && modoItemAtual() === 'opcao'){
+    const grupo = itensDoVao(r.ambiente, vao);
+    if(!grupo.some(i => i.opcao)) grupo.forEach(i => { const auto = i.label === rotuloItem(i); i.opcao = 'A'; if(auto || !i.label) i.label = rotuloItem(i); });
+    const usadas = grupo.map(i => i.opcao).filter(Boolean);
+    opcao = LETRAS_OPCAO.find(l => !usadas.includes(l)) || '';
+    if(!opcao){ alert('Este vão já tem as opções ' + LETRAS_OPCAO.join(', ') + '. Use outro vão ou remova uma opção.'); return; }
+    if(typeof COMBOS_SEL !== 'undefined') COMBOS_SEL = null;
+  }
+  const manterNomeAntigo = itemEditado && !vao && !itemEditado.vao && itemEditado.ambiente === r.ambiente && itemEditado.label && itemEditado.label !== rotuloItem(itemEditado);
+  const label = manterNomeAntigo ? itemEditado.label : rotuloItem({ ambiente: r.ambiente, vao, opcao });
   const detBox = $('item-detalhamento');
   const baseDetail = (detBox && detBox.value.trim()) ? detBox.value.trim() : detalhamentoDoFormulario(r.fab==='cdp' ? 'Cortina Tradicional' : r.prod, r.w, r.h);
   const fullDetail = baseDetail
@@ -1840,6 +1955,9 @@ function addToCart(){
     id: Date.now(),
     label,
     ambiente: r.ambiente || '',
+    vao,
+    ...(opcao ? { opcao } : {}),
+    ...(itemEditado && itemEditado.ambienteOpcional ? { ambienteOpcional: true } : {}),
     fab: r.fab,
     prod: r.prod,
     fam: r.fam,
@@ -1904,6 +2022,29 @@ function duplicarItemCarrinho(id){
   updateCartBar();
 }
 
+// Itens salvos antes de 'accSelections' existir só têm as linhas de preço dos acessórios
+// (ex.: "Bandô Box 70 7×7cm (máx 1,70m) 1.15ml (branco)", "Motor X ×2"). Reconstrói a seleção.
+function selecoesDeLinhasAntigas(lines, fab){
+  const lista = fab === 'real' ? ACC_REAL : ACC_DECORE;
+  const itens = []; lista.forEach(s => s.items.forEach(i => itens.push(i)));
+  itens.sort((a, b) => b.l.length - a.l.length);   // o nome mais completo primeiro
+  const selecoes = [], perdidos = [];
+  lines.forEach(ln => {
+    const lab = String(ln.label || '');
+    if(/^Redução de Peso \(auto/i.test(lab)) return;   // essa entra sozinha
+    const it = itens.find(i => lab === i.l || lab.startsWith(i.l + ' '));
+    if(!it){ perdidos.push(lab); return; }
+    const sel = { id: it.id };
+    if(it.unit === 'und'){ const q = lab.match(/×(\d+)\s*$/); sel.qty = q ? parseInt(q[1]) : 1; }
+    else if(it.unit !== 'm2-dif'){
+      const m = lab.match(/(\d+(?:\.\d+)?)ml/); if(m) sel.ml = parseFloat(m[1]);
+      sel.cor = /\(cor\)/.test(lab) ? 'C' : 'W';
+    }
+    selecoes.push(sel);
+  });
+  return { selecoes, perdidos };
+}
+
 function editarItemCarrinho(id){
   const item = CART.find(x => x.id === id);
   if(!item) return;
@@ -1917,6 +2058,7 @@ function editarItemCarrinho(id){
   selectFab(item.fab);
   $('item-ambiente').value = item.ambiente || '';
   STATE.ambiente = item.ambiente || '';
+  if($('item-vao')){ $('item-vao').value = item.vao || ''; STATE.vao = item.vao || ''; }
 
   // Medidas primeiro — onMedidas() reconstrói o select de coleção quando STATE.fam já
   // está preenchido, então precisa rodar ANTES da cascata categoria→produto→família→coleção
@@ -1927,7 +2069,7 @@ function editarItemCarrinho(id){
   // Avisa se o desconto usado no cálculo original é diferente do que está nos campos
   // de desconto agora (eles são globais da sessão, não por item — não mexe sozinho pra
   // não afetar outros itens que você ainda vai calcular).
-  let avisoDesconto = '';
+  let avisoDesconto = '', avisoAcc = '';
   if(item.fab === 'real' && full.discPct != null && full.discPct !== STATE.discReal){
     avisoDesconto = `\n\n⚠️ Este item foi calculado com desconto de ${full.discPct}% (campo atual: ${STATE.discReal}%). Ajuste o campo de desconto Real se quiser manter o valor original.`;
   } else if(item.fab === 'dec' && full.discPct != null){
@@ -1964,7 +2106,16 @@ function editarItemCarrinho(id){
 
     // Restaura acessórios depois do autoFillAccMl (roda em 50ms lá dentro do buildAcc),
     // senão os campos de metragem que a gente restaura seriam sobrescritos por ele.
-    setTimeout(() => restoreAccSelections(full.accSelections), 120);
+    // Itens antigos (antes de existir accSelections) só guardaram as linhas de preço:
+    // tenta reconstruir a seleção a partir delas e avisa o que não deu para recuperar.
+    let selecoes = full.accSelections;
+    if(!selecoes && full.acc && Array.isArray(full.acc.lines) && full.acc.lines.length){
+      const rec = selecoesDeLinhasAntigas(full.acc.lines, item.fab);
+      selecoes = rec.selecoes;
+      avisoAcc = rec.selecoes.length ? '\n\nℹ️ Item antigo: os acessórios foram recuperados pelo preço salvo (' + rec.selecoes.length + '). Confira se estão certos.' : '';
+      if(rec.perdidos.length) avisoAcc += '\n\n⚠️ Não consegui recuperar estes acessórios — marque de novo à mão:\n• ' + rec.perdidos.join('\n• ');
+    }
+    setTimeout(() => restoreAccSelections(selecoes), 120);
   }
 
   // Restaura peças adicionais / serviços fora de tabela
@@ -1973,13 +2124,14 @@ function editarItemCarrinho(id){
 
   $('item-detalhamento').value = item.detail || '';
   $('item-detalhamento').dataset.editedManually = '1';
+  CORES_SEL = coresDoTexto(item.detail); renderCoresColecao();
 
   // C4: o item NÃO sai mais do orçamento; "Substituir item" troca no mesmo lugar
   EDITANDO_ITEM_ID = id;
   document.querySelectorAll('button.btn[onclick="addToCart()"]').forEach(b => b.innerHTML = ic('ok',17) + ' Substituir item');
   window.scrollTo({top:0, behavior:'smooth'});
   if(typeof irPasso === 'function') irPasso(3, true);   // D1: edição abre direto em Medidas
-  alert('📝 Item carregado na Calculadora com fábrica, produto, coleção, medidas' + (item.fab!=='cdp' ? ', acessórios' : '') + ' e peças adicionais restaurados. Confira, recalcule se precisar e toque em Substituir item.' + avisoDesconto);
+  alert('📝 Item carregado na Calculadora com fábrica, produto, coleção, medidas' + (item.fab!=='cdp' ? ', acessórios' : '') + ' e peças adicionais restaurados. Confira, recalcule se precisar e toque em Substituir item.' + avisoAcc + avisoDesconto);
 }
 
 function toggleResumoOrc(){
@@ -2302,9 +2454,9 @@ async function criarOrcamento(){
     avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado para ' + escHtml(nome) + ' com ' + CART.length + (CART.length>1?' itens':' item') + ' do cálculo rápido.' + (ORC_SUJO ? ' Toque em Salvar e fechar.' : ''));
     return;
   }
-  irParaTab('calc');
-  window.scrollTo({top:0});
-  avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado para ' + escHtml(nome) + '. Agora adicione os itens.');
+  // Abre a pasta (não a calculadora): o item só começa quando a pessoa toca em "Adicionar" (pedido da Bru, 12/11/2026)
+  abrirPasta();
+  avisoTopo('<strong>' + numCDP(linha.numero) + '</strong> criado para ' + escHtml(nome) + '. Toque em <strong>Adicionar o primeiro item</strong>.');
 }
 
 // Aviso discreto no topo que some sozinho

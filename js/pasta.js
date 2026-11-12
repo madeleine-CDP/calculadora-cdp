@@ -97,18 +97,28 @@ function renderPasta(){
   $('pasta-n').textContent = CART.length ? CART.length + (CART.length>1?' itens':' item') + ' · ' + nAmb + (nAmb>1?' ambientes':' ambiente') : '';
 
   $('pasta-lista').innerHTML = !CART.length
-    ? '<div class="pasta-vazio">Nenhum item ainda.<br>Toque em <strong>Adicionar item</strong> para calcular o primeiro.</div>'
+    ? '<div class="pasta-vazio">Nenhum item ainda.<br>Toque em <strong>Adicionar o primeiro item</strong> para calcular.</div>'
     : Object.entries(grupos).map(([amb, itens]) => {
+        const temOp = itens.some(i => i.opcao);
+        // Subtotal do ambiente: com opções mostra a faixa (da opção mais em conta à mais cara), não a soma de tudo
+        const fx = temOp ? faixaAmbiente(itens) : null;
         const sub = itens.reduce((s,i)=>s+(i.avista||0),0);
         return `<div class="pasta-amb">
-          <div class="pasta-amb-topo"><span>${ic('local',15)} ${escHtml(amb)} <em>· ${itens.length} ${itens.length>1?'itens':'item'}</em></span><span>${fmt(sub)}</span></div>
+          <div class="pasta-amb-topo"><span>${ic('local',15)} ${escHtml(amb)} <em>· ${itens.length} ${itens.length>1?'itens':'item'}</em></span><span>${fx ? (fx.min === fx.max ? fmt(fx.min) : fmt(fx.min) + ' a ' + fmt(fx.max)) : fmt(sub)}</span></div>
           <label class="amb-opcional"><input type="checkbox" ${itens.some(i => i.ambienteOpcional) ? 'checked' : ''} ${orcTravado() ? 'disabled' : ''} onchange="mudarAmbOpcional('${escHtml(chaveAmb(amb))}', this.checked)"> Ambiente opcional <span>(o cliente pode não fazer)</span></label>
-          ${itens.map((item, n) => cardItemPasta(item, n)).join('')}
+          ${blocosPorVao(itens)}
         </div>`;
       }).join('');
 
   document.querySelectorAll('#pasta-lista textarea').forEach(autoAltura);
   renderEvolucao();
+  // Orçamento vazio: "Adicionar" vira o botão principal da tela
+  const add = document.querySelector('.pasta-add');
+  if(add){
+    add.classList.toggle('principal', !CART.length);
+    const txt = [...add.childNodes].find(n => n.nodeType === 3);
+    if(txt) txt.textContent = CART.length ? 'Adicionar item a este orçamento' : 'Adicionar o primeiro item';
+  }
   renderJornada();
   renderStatus();
   if(typeof renderContatoPasta === 'function') renderContatoPasta();
@@ -173,22 +183,64 @@ function avisoTabelaItem(item){
   return `<div class="pasta-alerta">${ic('alerta',14)} Calculado com a tabela de ${escHtml(item.tabelaVer)}; a vigente agora é ${escHtml(atual)}. Toque em editar ${ic('editar',13)} e adicione de novo para recalcular.</div>`;
 }
 
+// ── Pasta organizada por Vão e Opção (12/11/2026) ──
+// Dentro do ambiente: um bloco por vão; dentro do vão, os itens sem letra (entram sempre) e uma caixa por opção, com o total dela.
+function blocosPorVao(itens){
+  const vaos = [];
+  itens.forEach(i => { const v = (i.vao || '').trim(); let g = vaos.find(x => x.chave === v.toLowerCase()); if(!g){ g = { chave: v.toLowerCase(), nome: v, itens: [] }; vaos.push(g); } g.itens.push(i); });
+  const soUmSemNome = vaos.length === 1 && !vaos[0].nome;
+  return vaos.map(g => {
+    const fixos = g.itens.filter(i => !i.opcao);
+    const letras = [...new Set(g.itens.filter(i => i.opcao).map(i => i.opcao))].sort();
+    const corpo = fixos.map(cardItemPasta).join('')
+      + letras.map(l => {
+          const its = g.itens.filter(i => i.opcao === l);
+          const tot = its.reduce((s, i) => s + (i.avista || 0), 0);
+          return `<div class="pasta-opbloco"><div class="pasta-opbloco-topo"><span>Opção ${l}</span><strong>${fmt(tot)}</strong></div>${its.map(cardItemPasta).join('')}</div>`;
+        }).join('');
+    if(soUmSemNome) return corpo;
+    return `<div class="pasta-vaobloco"><div class="pasta-vao-topo">${ic('janela',14)}<span>${g.nome ? escHtml(g.nome) : 'Sem vão definido'}</span>${letras.length ? `<em>${letras.length} opç${letras.length > 1 ? 'ões' : 'ão'} · o cliente escolhe uma</em>` : ''}</div>${corpo}</div>`;
+  }).join('');
+}
+// Faixa do ambiente quando há opções (usa as mesmas regras das combinações)
+function faixaAmbiente(itens){
+  if(typeof ambientesComEscolhas !== 'function') return null;
+  const a = ambientesComEscolhas(itens)[0]; if(!a) return null;
+  const tots = a.escolhas.filter(e => e.letra !== 'sem').map(e => e.itens.reduce((s, i) => s + (i.avista || 0), 0));
+  return tots.length ? { min: Math.min(...tots), max: Math.max(...tots) } : null;
+}
+function mudarVaoItem(id, vao){
+  const it = CART.find(x => x.id === id); if(!it) return;
+  const auto = it.label === rotuloItem(it) || !it.vao;
+  it.vao = (vao || '').trim();
+  if(auto) it.label = rotuloItem(it);
+  if(typeof COMBOS_SEL !== 'undefined') COMBOS_SEL = null;
+  ORC_SUJO = true;
+  renderPasta();
+}
+
 function cardItemPasta(item, n){
   const f = item.full || {};
   const pend = (item.detail||'').toUpperCase().includes('A DEFINIR');
   const fora = item.foraDoPadrao || f.foraDoPadrao;
+  // Nome do item dentro da pasta: o produto (o ambiente, o vão e a opção já estão nos títulos dos blocos)
+  const nomeProd = [String(item.prod || f.prod || '').replace(/^(CORTINA|PERSIANA)\s+/i, '').toLowerCase().replace(/(^|\s|\/)\S/g, c => c.toUpperCase()), item.col || f.colLabel || ''].filter(Boolean).join(' · ') || item.label;
   return `<div class="pasta-item">
     <div class="pasta-item-cab">
-      <div class="pasta-item-nome"><span class="pasta-fab fab-${item.fab}">${escHtml(fabName(item.fab))}</span>${escHtml(item.label)}${item.opcao ? '<span class="pasta-opcao-selo">Opção ' + item.opcao + '</span>' : ''}</div>
-      <label class="pasta-opcao" title="Alternativa dentro do ambiente: itens com a mesma letra somam juntos">Opção
-        <select onchange="mudarOpcaoItem(${item.id}, this.value)" ${orcTravado() ? 'disabled' : ''}>
-          <option value="">—</option>${LETRAS_OPCAO.map(l => `<option value="${l}"${item.opcao === l ? ' selected' : ''}>${l}</option>`).join('')}
-        </select></label>
+      <div class="pasta-item-nome"><span class="pasta-fab fab-${item.fab}">${escHtml(fabName(item.fab))}</span>${escHtml(nomeProd)}</div>
       <span class="pasta-botoes">
         <button type="button" onclick="editarItemCarrinho(${item.id})" title="Editar" aria-label="Editar ${escHtml(item.label)}">${ic('editar',16)}</button>
         <button type="button" onclick="duplicarItemCarrinho(${item.id})" title="Duplicar" aria-label="Duplicar ${escHtml(item.label)}">${ic('copiar',16)}</button>
         <button type="button" onclick="removerItemPasta(${item.id})" title="Remover" aria-label="Remover ${escHtml(item.label)}">${ic('lixeira',16)}</button>
       </span>
+    </div>
+    <div class="pasta-item-ctrl">
+      <label class="pasta-vao" title="Janela, porta ou parede deste item">Vão
+        <input type="text" value="${escHtml(item.vao || '')}" placeholder="—" onchange="mudarVaoItem(${item.id}, this.value)" ${orcTravado() ? 'disabled' : ''}></label>
+      <label class="pasta-opcao" title="Outra opção para o mesmo vão (o cliente escolhe uma). Sem letra = entra sempre">Opção
+        <select onchange="mudarOpcaoItem(${item.id}, this.value)" ${orcTravado() ? 'disabled' : ''}>
+          <option value="">—</option>${LETRAS_OPCAO.map(l => `<option value="${l}"${item.opcao === l ? ' selected' : ''}>${l}</option>`).join('')}
+        </select></label>
     </div>
     <dl class="pasta-desc">
       ${linhasDescritivo(item).map(([k,v]) => `<div><dt>${k}</dt><dd>${escHtml(v)}</dd></div>`).join('')}
@@ -296,7 +348,7 @@ function renderEvolucao(){
   const pai = e.anteriorId ? HISTORY_CACHE.find(x => x.id === e.anteriorId) : null;
   const semRegistro = CART.some(i => !i.tabelaVer);
   const avisoCopia = (e.anteriorId && semRegistro) ? `<div class="pasta-evol-aviso aviso-preco">${ic('alerta',16)}<span>Itens copiados ${pai ? 'do <strong>' + numCDP(pai.numero) + '</strong> ' : ''}com os preços da época${pai && pai.date ? ' (' + escHtml(pai.date) + ')' : ''}. Se a tabela de alguma fábrica mudou desde então, edite o item e adicione de novo para recalcular.</span></div>` : '';
-  if(e.etapa === 'fechado' || e.etapa === 'perdido'){ box.innerHTML = avisoCopia; return; }
+  if(e.etapa === 'fechado' || e.etapa === 'perdido' || !CART.length){ box.innerHTML = avisoCopia; return; }   // sem itens não há o que evoluir
   const destino = e.etapa === 'pre_orcamento' ? 'visita / orçamento final' : 'nova versão do orçamento';
   box.innerHTML = avisoCopia + `<button type="button" class="pasta-evoluir" onclick="evoluirOrcamento()">
       ${ic('raio',18)}<span><strong>Evoluir para ${destino}</strong><em>Cria um novo orçamento com cópia dos itens; este fica guardado.</em></span></button>`;

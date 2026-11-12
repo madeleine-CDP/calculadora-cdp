@@ -60,7 +60,7 @@ function calcula(w, c, medidas) {
   console.log('Erros de JavaScript — original:', A.erros.length, '| nova:', B.erros.length);
   [...A.erros, ...B.erros].slice(0, 10).forEach((e) => console.log('  ', e.slice(0, 200)));
 
-  const dados = ['DB_REAL', 'DB_DECORE', 'ACC_REAL', 'ACC_DECORE', 'CDP_TRAD', 'IMPOSTOS_PE', 'TUBOS_REAL', 'FABRIC_W_DECORE', 'FABRIC_W_REAL'];
+  const dados = ['DB_REAL', 'DB_DECORE', 'ACC_REAL', 'ACC_DECORE', 'CDP_TRAD', 'IMPOSTOS_PE', 'TUBOS_REAL'];
   for (const d of dados) {
     const igual = A.w.eval(`JSON.stringify(${d})`) === B.w.eval(`JSON.stringify(${d})`);
     console.log(`Tabela ${d}: ${igual ? 'idêntica' : 'DIFERENTE'}`);

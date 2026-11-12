@@ -9,7 +9,11 @@
 const LETRAS_OPCAO = ['A', 'B', 'C', 'D'];
 const LIMITE_COMBINACOES = 200;
 let COMBOS_SEL = null;      // chaves das combinações marcadas para a proposta (null = escolha automática)
-let COMBOS_NOMES = {};      // chave → nome dado pela Bru (ex.: "Essencial")
+let COMBOS_NOMES = {};
+// Como o total aparece na proposta quando há opções (12/11/2026, pedido da Bru):
+//  'combos' = combinações marcadas (como antes) · 'faixa' = "a depender das escolhas" (com ou sem faixa de valores)
+//  'sugerido' = uma escolha por ambiente (TOTAL_SUG[chave do ambiente] = letra)
+let TOTAL_MODO = 'combos', TOTAL_FAIXA = true, TOTAL_SUG = {};      // chave → nome dado pela Bru (ex.: "Essencial")
 
 const chaveAmb = a => (a || 'Sem ambiente').trim().toLowerCase();
 
@@ -58,7 +62,7 @@ function gerarCombinacoes(itens){
     const variaveis = c.partes.filter(p => p.amb.escolhas.length > 1);
     const chave = c.partes.map(p => p.amb.chave + ':' + (p.escolha.letra || '-')).join('|');
     const rotulo = variaveis.length
-      ? variaveis.map(p => p.escolha.letra === 'sem' ? 'sem ' + p.amb.nome : p.amb.nome + (p.escolha.letra ? ' ' + p.escolha.letra : '')).join(' + ').replace(/ \+ sem /g, ' · sem ')
+      ? variaveis.map(p => p.escolha.letra === 'sem' ? 'sem ' + p.amb.nome : p.amb.nome + (p.escolha.letra ? ' (opção ' + p.escolha.letra + ')' : '')).join(' + ').replace(/ \+ sem /g, ' · sem ')
       : 'Proposta completa';
     return { chave, rotulo, totais: somar(c.itens), qtdItens: c.itens.length };
   }).filter(c => c.qtdItens > 0);
@@ -84,7 +88,9 @@ function combosEscolhidos(itens){
 // ── Pasta: opção do item e ambiente opcional ──
 function mudarOpcaoItem(id, letra){
   const it = CART.find(x => x.id === id); if(!it) return;
+  const auto = typeof rotuloItem === 'function' && it.label === rotuloItem(it);   // nome automático acompanha a letra
   if(letra) it.opcao = letra; else delete it.opcao;
+  if(auto) it.label = rotuloItem(it);
   COMBOS_SEL = null;
   ORC_SUJO = true;
   renderPasta();
@@ -112,7 +118,24 @@ function renderCombosProposta(){
   if(!itens.length || !temAlternativas(itens)){ box.innerHTML = ''; return; }
   const todos = gerarCombinacoes(itens).sort((x, y) => x.totais.avista - y.totais.avista);
   if(!COMBOS_SEL) COMBOS_SEL = selecaoPadrao(todos);
-  box.innerHTML = `<div class="combos-config">
+  const modo = (m, txt, sub) => `<button type="button" class="total-modo${TOTAL_MODO === m ? ' on' : ''}" onclick="TOTAL_MODO='${m}'; renderCombosProposta()"><strong>${txt}</strong><span>${sub}</span></button>`;
+  const topo = `<div class="combos-tit">Como mostrar o total para o cliente</div>
+    <div class="total-modos">${modo('faixa', 'A depender das escolhas', 'o total depende das opções')}${modo('sugerido', 'Total sugerido', 'uma escolha por ambiente')}${modo('combos', 'Combinações', 'várias somas prontas')}</div>`;
+  if(TOTAL_MODO === 'faixa'){
+    box.innerHTML = `<div class="combos-config">${topo}
+      <label class="total-faixa-op"><input type="checkbox" ${TOTAL_FAIXA ? 'checked' : ''} onchange="TOTAL_FAIXA=this.checked; renderCombosProposta()"> Mostrar a faixa de valores (das opções mais em conta às mais completas)</label>
+      <div class="combos-dica">${TOTAL_FAIXA ? 'De ' + fmtCent(todos[0].totais.avista) + ' a ' + fmtCent(todos[todos.length - 1].totais.avista) + ' à vista.' : 'A proposta mostra só a frase "o valor total depende das opções escolhidas acima".'}</div></div>`;
+    return;
+  }
+  if(TOTAL_MODO === 'sugerido'){
+    const ambs = ambientesComEscolhas(itens).filter(a => a.escolhas.length > 1);
+    const sug = comboSugerido(itens);
+    box.innerHTML = `<div class="combos-config">${topo}
+      ${ambs.map(a => `<label class="total-sug-linha"><span>${escHtml(a.nome)}</span><select onchange="TOTAL_SUG['${escHtml(a.chave)}']=this.value; renderCombosProposta()">${a.escolhas.map(e => `<option value="${e.letra}"${escolhaSugerida(a) === e.letra ? ' selected' : ''}>${e.letra === 'sem' ? 'Sem este ambiente' : 'Opção ' + e.letra}</option>`).join('')}</select></label>`).join('')}
+      <div class="combos-dica">Total sugerido: <strong>${sug ? fmtCent(sug.totais.avista) : '—'}</strong> à vista.</div></div>`;
+    return;
+  }
+  box.innerHTML = `<div class="combos-config">${topo}
     <div class="combos-tit">Combinações para a proposta <span>${todos.length}${todos.length > LIMITE_COMBINACOES ? '+' : ''} possíveis · ${COMBOS_SEL.length} marcadas</span></div>
     <div class="combos-dica">Marque as que vão aparecer para o cliente. Dê um nome se quiser (ex.: Essencial, Completa).</div>
     <div class="combos-lista">${todos.map(c => `
@@ -122,10 +145,34 @@ function renderCombosProposta(){
         <input type="text" class="combo-nome" placeholder="nome (opcional)" value="${escHtml(COMBOS_NOMES[c.chave] || '')}" oninput="COMBOS_NOMES['${escHtml(c.chave)}'] = this.value" onclick="event.stopPropagation()">
         <span class="combo-val">${fmtCent(c.totais.avista)}</span>
       </label>`).join('')}</div>
-    <div class="combos-acoes"><button type="button" class="btn-outline" onclick="COMBOS_SEL = null; renderCombosProposta()">Sugestão automática</button>
+    <div class="combos-acoes"><button type="button" class="btn-outline" onclick="atalhoCombos('A')">Todas A</button>
+      <button type="button" class="btn-outline" onclick="atalhoCombos('barata')">Mais em conta</button>
+      <button type="button" class="btn-outline" onclick="atalhoCombos('cara')">Mais completa</button>
+      <button type="button" class="btn-outline" onclick="COMBOS_SEL = null; renderCombosProposta()">Sugestão automática</button>
       <button type="button" class="btn-outline" onclick="COMBOS_SEL = gerarCombinacoes(CART).map(c => c.chave).slice(0, 30); renderCombosProposta()">Marcar todas</button></div>
   </div>`;
 }
+// Atalhos: acrescentam (ou tiram, se já marcada) uma combinação
+function atalhoCombos(tipo){
+  const todos = gerarCombinacoes(CART).sort((x, y) => x.totais.avista - y.totais.avista);
+  if(!todos.length) return;
+  let alvo = tipo === 'barata' ? todos[0] : tipo === 'cara' ? todos[todos.length - 1]
+    : todos.find(c => c.chave.split('|').every(p => /:(A|-)$/.test(p)));
+  if(!alvo) return;
+  COMBOS_SEL = COMBOS_SEL || [];
+  if(!COMBOS_SEL.includes(alvo.chave)) COMBOS_SEL.push(alvo.chave);
+  renderCombosProposta();
+}
+function escolhaSugerida(a){
+  const v = TOTAL_SUG[a.chave];
+  return a.escolhas.some(e => e.letra === v) ? v : a.escolhas[0].letra;
+}
+function comboSugerido(itens){
+  const ambs = ambientesComEscolhas(itens);
+  const chave = ambs.map(a => a.chave + ':' + (a.escolhas.length > 1 ? (escolhaSugerida(a) || '-') : (a.escolhas[0].letra || '-'))).join('|');
+  return gerarCombinacoes(itens).find(c => c.chave === chave) || null;
+}
+
 function marcarCombo(chave, on){
   COMBOS_SEL = (COMBOS_SEL || []).filter(k => k !== chave);
   if(on) COMBOS_SEL.push(chave);
@@ -134,8 +181,10 @@ function marcarCombo(chave, on){
 
 // ── Na proposta (documento): rótulo do ambiente e quadro de totais ──
 function rotuloItemProposta(item){
-  let r = item.label || item.ambiente || 'Item';
-  if(item.opcao) r += ' (OPÇÃO ' + item.opcao + ')';
+  // Ambiente · Vão · Opção (o nome automático já traz a opção)
+  const auto = typeof rotuloItem === 'function' && (item.vao || item.label === rotuloItem(item));
+  let r = escHtml(auto ? rotuloItem(item) : (item.label || item.ambiente || 'Item'));
+  if(item.opcao && !auto) r += ' (OPÇÃO ' + item.opcao + ')';
   if(item.ambienteOpcional) r += '<br><span style="font-weight:400">(OPCIONAL)</span>';
   return r;
 }
@@ -164,6 +213,16 @@ function quadroTotaisProposta(itens, somaTabela, somaCartao, somaAvista){
             </tr>`;
   if(!temAlternativas(itens)){
     return `<table style="width:100%;border-collapse:collapse">${cab}${linha({ tabela: somaTabela, cartao: somaCartao, avista: somaAvista })}</table>`;
+  }
+  if(TOTAL_MODO === 'faixa'){
+    const todos = gerarCombinacoes(itens).sort((x, y) => x.totais.avista - y.totais.avista);
+    const frase = `<tr><td colspan="3" style="padding:10px;border:1px solid #DDD;background:#F2F2F2;font-family:Poppins,sans-serif;font-size:11.5px;font-weight:700;color:#5B3E3B;text-align:center">O VALOR TOTAL DEPENDE DAS OPÇÕES ESCOLHIDAS ACIMA</td></tr>`;
+    if(!TOTAL_FAIXA || !todos.length) return `<table style="width:100%;border-collapse:collapse">${frase}</table>`;
+    return `<table style="width:100%;border-collapse:collapse">${frase}${cab}${linha(todos[0].totais, 'A PARTIR DE (OPÇÕES MAIS EM CONTA)')}${todos.length > 1 ? linha(todos[todos.length - 1].totais, 'ATÉ (OPÇÕES MAIS COMPLETAS)') : ''}</table>`;
+  }
+  if(TOTAL_MODO === 'sugerido'){
+    const c = comboSugerido(itens);
+    if(c) return `<table style="width:100%;border-collapse:collapse">${cab}${linha(c.totais, 'TOTAL SUGERIDO · ' + escHtml(c.rotulo.toUpperCase()))}</table>`;
   }
   const combos = combosEscolhidos(itens);
   return `<table style="width:100%;border-collapse:collapse">${cab}${combos.map((c, n) => {

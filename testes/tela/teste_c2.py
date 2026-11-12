@@ -40,6 +40,8 @@ with sync_playwright() as p:
     # adiciona um item e salva → deve ATUALIZAR o CDP-0009 (PATCH id 50), não criar outro
     def escolher(sel,k):
         o=pg.eval_on_selector(sel,'s=>[...s.options].filter(o=>o.value&&!o.disabled).map(o=>o.value)'); a=[x for x in o if k and k in x] or o; pg.select_option(sel,a[0]); pg.wait_for_timeout(120)
+    print('   botão principal:', pg.inner_text('.pasta-add'), '| destaque:', pg.evaluate("document.querySelector('.pasta-add').classList.contains('principal')"), '| evoluir aparece:', pg.locator('.pasta-evoluir').count())
+    pg.locator('.pasta-add').click(); pg.wait_for_timeout(300)   # desde 12/11/2026 a pasta abre primeiro
     pg.fill('#item-ambiente','Sala'); pg.dispatch_event('#item-ambiente','input'); pg.evaluate("selectFab('real')")
     escolher('#s-cat','CORTINAS'); escolher('#s-prod','ROL'); escolher('#s-fam','BLACK'); escolher('#s-col','')
     pg.fill('#i-w','2.40'); pg.fill('#i-h','2.60'); pg.dispatch_event('#i-h','input'); pg.evaluate('calcular()'); pg.wait_for_timeout(300)

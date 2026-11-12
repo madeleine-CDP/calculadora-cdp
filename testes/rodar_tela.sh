@@ -7,7 +7,7 @@ set -u
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
 FOTOS=/tmp/cdp-fotos; mkdir -p "$FOTOS/shotsB" "$FOTOS/shotsT" "$FOTOS/shotsN"
 # servidor local do site na porta 8766 (os testes abrem http://localhost:8766/)
-if ! curl -s localhost:8766 >/dev/null; then (cd "$RAIZ" && setsid nohup python3 -m http.server 8766 >/dev/null 2>&1 < /dev/null &); sleep 1; fi
+if ! curl -s localhost:8766 >/dev/null; then (cd "$RAIZ" && setsid nohup python3 -m http.server 8766 >/dev/null 2>&1 < /dev/null &) >/dev/null 2>&1; sleep 1; fi
 cd "$FOTOS"
 LISTA=${1:-}
 for t in "$RAIZ"/testes/tela/teste_*.py; do

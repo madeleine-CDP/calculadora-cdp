@@ -97,11 +97,13 @@
 </div>
 
 <!-- ═══════════ TAB: CALCULADORA ═══════════ -->
+<div id="gaveta-fundo" aria-hidden="true"></div>
 <div id="tab-calc" class="tab-panel" data-passo-atual="1">
 <div class="wrap">
 
 <!-- D1 · CABEÇALHO DOS PASSOS -->
 <div class="passos-topo">
+  <button type="button" id="gaveta-x" class="gaveta-x" onclick="fecharGaveta()" aria-label="Fechar e voltar ao orçamento" title="Fechar e voltar ao orçamento"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="passos-contexto" id="passos-contexto"></div>
   <ol class="passos" id="passos">
     <li data-p="1"><button type="button" onclick="irPasso(1)"><span>1</span>Ambiente</button></li>
@@ -116,9 +118,21 @@
 <!-- AMBIENTE -->
 <div class="card" id="ambiente-card" data-passo="1" style="border-color:var(--gold)">
   <div class="card-title"><span class="ic-tile"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>Ambiente deste item</div>
-  <div class="card-sub">Todo cálculo pertence a um ambiente — preencha antes de calcular (ex: Quarto Casal, Sala)</div>
-  <input type="text" id="item-ambiente" list="ambientes-datalist" placeholder="Ex: Quarto Casal" oninput="STATE.ambiente=this.value" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);font-size:13.5px;font-family:inherit;margin-top:6px">
+  <div class="card-sub">Onde vai este item: ambiente, vão (janela/porta) e, se for o caso, outra opção para o mesmo vão</div>
+  <label class="amb-rotulo" for="item-ambiente">Ambiente</label>
+  <input type="text" id="item-ambiente" list="ambientes-datalist" placeholder="Ex: Quarto Casal" oninput="STATE.ambiente=this.value; renderPassos()" autocomplete="off" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);font-size:13.5px;font-family:inherit;margin-top:6px">
   <datalist id="ambientes-datalist"></datalist>
+  <div class="amb-chips" id="amb-chips"></div>
+  <label class="amb-rotulo" for="item-vao">Vão <em>(opcional)</em></label>
+  <input type="text" id="item-vao" placeholder="Ex: Janela 1, Porta da varanda" oninput="STATE.vao=this.value; renderPassos()" autocomplete="off" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r2);font-size:13.5px;font-family:inherit;margin-top:6px">
+  <div class="amb-chips" id="vao-chips"></div>
+  <div class="amb-modo" id="amb-modo" hidden>
+    <div class="amb-modo-tit" id="amb-modo-tit"></div>
+    <div class="amb-modo-ops" role="radiogroup">
+      <button type="button" role="radio" data-modo="soma" onclick="escolherModoItem('soma')"><strong>Mais um item</strong><span>soma junto no total</span></button>
+      <button type="button" role="radio" data-modo="opcao" onclick="escolherModoItem('opcao')"><strong>Outra opção</strong><span>o cliente escolhe uma</span></button>
+    </div>
+  </div>
 </div>
 
 <!-- FÁBRICA -->
@@ -183,6 +197,7 @@
     <div class="fl"><label>Coleção</label>
       <select id="s-col" onchange="onCol()" disabled><option value="">— Selecione —</option></select></div>
   </div>
+  <div class="cores-col" id="cores-col" hidden></div>
   <div id="comando-chip" class="chip chip-blue" style="display:none"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span id="comando-txt"></span></div>
   <div id="reducao-chip" class="chip chip-orange" style="display:none"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span id="reducao-txt"></span></div>
   <div class="obs-box" id="obs-box"><h4><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Informações importantes</h4><ul id="obs-list"></ul></div>
@@ -642,6 +657,7 @@
 
 <script src="js/icones.js"></script>
 <script src="js/precos.js"></script>
+<script src="js/cores.js"></script>
 <script src="js/app.js"></script>
 <script src="js/pasta.js"></script>
 <script src="js/passos.js"></script>

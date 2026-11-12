@@ -973,3 +973,80 @@ select.cli-in{appearance:auto}
 .rg-sub{font-size:12.5px;font-weight:600;color:var(--tinta-suave);margin:4px 2px 8px}
 .ret-pessoas{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-2px 0 12px}
 .ret-pessoas-rot{font-size:12.5px;color:var(--tinta-suave);margin-right:2px}
+
+/* "por peça" ao lado da quantidade de acessório por unidade (11/11/2026) */
+.ai-por-peca{font-size:11px;color:var(--muted,#888)}
+
+/* Orçamento vazio: "Adicionar o primeiro item" é o botão principal (12/11/2026) */
+.pasta-add.principal{border:0;background:var(--vinho);color:#fff;box-shadow:0 6px 18px rgba(110,22,38,.18)}
+.pasta-add.principal:hover{background:var(--vinho);filter:brightness(1.08)}
+
+/* ═══ Gaveta (12/11/2026, pedido da Bru): no computador, adicionar/editar item abre a calculadora numa
+   gaveta à direita, por cima do orçamento (que fica visível e esmaecido atrás). No celular nada muda. ═══ */
+.gaveta-x,#gaveta-fundo{display:none}
+@media (min-width:1100px){
+  body.lado-a-lado #tab-orc{right:0;width:auto;border-right:0;pointer-events:none;user-select:none}
+  body.lado-a-lado #tab-orc .pasta-wrap{max-width:760px;margin:0 auto}
+  body.lado-a-lado .pasta-barra{display:none!important}
+  body.lado-a-lado #gaveta-fundo{display:block;position:fixed;left:0;right:0;top:var(--topo-lado,140px);bottom:0;background:rgba(40,16,22,.30);z-index:40}
+  body.lado-a-lado #tab-calc{left:auto;width:min(780px,62vw);z-index:41;background:var(--fundo,#F7F4F1);border-left:1px solid var(--linha);box-shadow:-18px 0 44px rgba(40,16,22,.20);animation:gavetaEntra .22s ease-out}
+  body.lado-a-lado .passos-topo{position:relative;padding-right:52px}
+  body.lado-a-lado .gaveta-x{display:flex;position:absolute;top:0;right:0;width:44px;height:44px;align-items:center;justify-content:center;border-radius:999px;border:1px solid var(--linha);background:#fff;color:var(--tinta);cursor:pointer}
+  body.lado-a-lado .gaveta-x:hover{border-color:var(--vinho);color:var(--vinho)}
+}
+@keyframes gavetaEntra{from{transform:translateX(48px);opacity:.3}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){ body.lado-a-lado #tab-calc{animation:none} }
+
+/* ═══ Passo Ambiente: Ambiente · Vão · Opção (12/11/2026) ═══ */
+.amb-rotulo{display:block;margin-top:14px;font-size:13px;font-weight:700;color:var(--tinta)}
+.amb-rotulo em{font-style:normal;font-weight:500;color:var(--tinta-suave)}
+.amb-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.amb-chips:empty{display:none}
+.amb-chips>span{font-size:12.5px;color:var(--tinta-suave);margin-right:2px}
+.amb-chips .hist-chip{min-height:40px}
+.amb-chips .hist-chip.on{background:var(--vinho);color:#fff;border-color:var(--vinho)}
+.amb-modo{margin-top:16px;padding:12px;border-radius:14px;background:#fff;border:1px solid var(--linha)}
+.amb-modo-tit{font-size:13.5px;font-weight:600;margin-bottom:10px}
+.amb-modo-ops{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.amb-modo-ops button{min-height:56px;border-radius:12px;border:1.5px solid var(--linha);background:var(--fundo,#F7F4F1);text-align:left;padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-family:inherit;color:var(--tinta)}
+.amb-modo-ops button strong{font-size:14.5px}
+.amb-modo-ops button span{font-size:12.5px;color:var(--tinta-suave)}
+.amb-modo-ops button.on{border-color:var(--vinho);background:var(--vinho-suave)}
+
+/* ═══ Pasta por Vão e Opção (12/11/2026) ═══ */
+.pasta-vaobloco{margin:10px 0 4px;padding:4px 0 0}
+.pasta-vao-topo{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13.5px;font-weight:700;color:var(--tinta);padding:6px 0 2px}
+.pasta-vao-topo em{font-style:normal;font-weight:500;font-size:12.5px;color:var(--tinta-suave)}
+.pasta-opbloco{margin:10px 0;padding:4px 12px 2px;border:1.5px solid #E4DAEE;border-radius:14px;background:#FBF9FD}
+.pasta-opbloco-topo{display:flex;justify-content:space-between;align-items:center;padding:8px 0 4px;font-size:13px;font-weight:700;color:#5B3F7A}
+.pasta-opbloco-topo strong{font-size:15px;color:var(--tinta)}
+.pasta-opbloco .pasta-item:last-child{border-bottom:0}
+.pasta-vao{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--tinta-suave);font-weight:600}
+.pasta-vao input{width:118px;min-height:34px;border-radius:999px!important;padding:0 12px!important;font-size:13.5px}
+
+.pasta-item-ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:8px 0 2px}
+.pasta-item-ctrl .pasta-vao input{width:150px}
+@media (max-width:420px){ .pasta-item-ctrl .pasta-vao input{width:130px} }
+
+/* ═══ Proposta: como mostrar o total (12/11/2026) ═══ */
+.total-modos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+@media (max-width:560px){ .total-modos{grid-template-columns:1fr} }
+.total-modo{min-height:56px;border-radius:12px;border:1.5px solid var(--linha);background:#fff;text-align:left;padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-family:inherit;color:var(--tinta)}
+.total-modo strong{font-size:14px}
+.total-modo span{font-size:12px;color:var(--tinta-suave)}
+.total-modo.on{border-color:var(--vinho);background:var(--vinho-suave)}
+.total-faixa-op{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin:4px 0 8px}
+.total-sug-linha{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--linha);font-size:14px;font-weight:600}
+.total-sug-linha select{min-height:38px;border-radius:999px!important;padding:0 28px 0 12px!important}
+
+/* Comparar fábricas: cotar a outra como outra opção (12/11/2026) */
+.cmp-cotar{grid-column:1/-1;margin-top:6px}
+.cmp-cotar .btn{width:100%}
+.cmp-cotar-dica{font-size:12.5px;color:var(--tinta-suave);margin-top:6px;text-align:center}
+
+/* Cores disponíveis da coleção (12/11/2026) */
+.cores-col{margin:12px 0 4px;padding:12px;border-radius:14px;background:#fff;border:1px solid var(--linha)}
+.cores-tit{font-size:13.5px;font-weight:700;color:var(--tinta)}
+.cores-tit span{font-weight:500;font-size:12.5px;color:var(--tinta-suave);margin-left:6px}
+.cores-col .amb-chips{margin-top:8px}
+.cores-aviso{font-size:12px;color:var(--tinta-suave);margin-top:8px}
