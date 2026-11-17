@@ -13,6 +13,7 @@
 //   POST posvenda  → lê as OS "Entregue" de 5 a 13 meses atrás e guarda a data real da instalação na tabela posvenda (equipe)
 //   POST os        → lê as OS em andamento (aberta → entregue nos últimos 30 dias, com a nota fiscal) e guarda em os_acompanhamento (equipe)
 //   POST os_numero → { numero } → OS do Tiny por número: valor, situação, cliente (para conferir com o orçamento) (equipe)
+//   POST pedido    → { id } → pedido de venda completo (cliente, itens, totais, pagamento, parcelas, observações) para a tela de detalhe (equipe)
 //   POST renovar   → renova a autorização (agendamento a cada 3h)  (aberto; não devolve dados)
 // Só leitura no Tiny: nada é criado nem alterado lá.
 // ═══════════════════════════════════════════════════════
@@ -334,6 +335,44 @@ async function osPorNumero(numero: string) {
   };
 }
 
+// Detalhe do pedido de venda (= OS da loja) para a tela "Pedido nº …" na aba Pedidos. Só leitura.
+const num = (v: unknown) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+const nomeDe = (v: any) => (v && typeof v === "object" ? (v.nome ?? v.descricao ?? "") : String(v ?? ""));
+async function pedidoDetalhe(id: number) {
+  const d = await tiny(`/pedidos/${id}`);
+  if (!d?.id) return null;
+  let c = cliente(d.cliente ?? {});
+  // o pedido às vezes traz o cliente resumido (sem endereço/celular): completa pelo cadastro
+  if (d.cliente?.id && (!c.endereco || !(c.celular || c.telefone))) {
+    try { const k = await tiny(`/contatos/${d.cliente.id}`); if (k?.id) { const kc = cliente(k); c = Object.fromEntries(Object.entries(c).map(([a, v]) => [a, v || (kc as any)[a]])) as typeof c; } } catch { /* fica o que veio */ }
+  }
+  const itens = (d.itens ?? []).map((i: any) => {
+    const p = i.produto ?? {};
+    const qtd = num(i.quantidade), unit = num(i.valorUnitario ?? i.valor);
+    return {
+      descricao: p.descricao ?? i.descricao ?? "", sku: p.sku ?? p.codigo ?? "", tipo: p.tipo ?? "",
+      unidade: i.unidade ?? p.unidade ?? "", quantidade: qtd, valorUnitario: unit,
+      total: num(i.valorTotal) || Math.round(qtd * unit * 100) / 100, detalhe: i.infoAdicional ?? i.informacoesAdicionais ?? "",
+    };
+  });
+  const subtotal = num(d.valorTotalProdutos) || itens.reduce((t: number, i: any) => t + i.total, 0);
+  const pg = d.pagamento ?? {};
+  const parcelas = (pg.parcelas ?? []).map((x: any) => ({
+    data: soData(x.data ?? x.dataVencimento), valor: num(x.valor), dias: x.dias ?? null,
+    forma: nomeDe(x.formaRecebimento) || nomeDe(x.formaPagamento), meio: nomeDe(x.meioPagamento), obs: x.observacoes ?? x.obs ?? "",
+  }));
+  return {
+    id: d.id, numero: String(d.numeroPedido ?? ""), situacao: SITUACAO[String(d.situacao)] ?? String(d.situacao ?? ""), situacaoCod: Number(d.situacao),
+    data: soData(d.data ?? d.dataCriacao), dataPrevista: soData(d.dataPrevista), dataEntrega: soData(d.dataEntrega), dataEnvio: soData(d.dataEnvio),
+    vendedor: nomeDe(d.vendedor), numeroFabrica: numeroFabrica(d), ordemCompra: d.numeroOrdemCompra ?? "",
+    cliente: c, itens,
+    subtotal, desconto: num(d.valorDesconto), frete: num(d.valorFrete ?? d.transportador?.valorFrete), outras: num(d.valorOutrasDespesas),
+    total: num(d.valorTotalPedido) || subtotal - num(d.valorDesconto),
+    pagamento: { forma: nomeDe(pg.formaRecebimento) || nomeDe(pg.formaPagamento), meio: nomeDe(pg.meioPagamento), condicao: pg.condicaoPagamento ?? d.condicaoPagamento ?? "", parcelas },
+    observacoes: d.observacoes ?? "", observacoesInternas: d.observacoesInternas ?? "",
+  };
+}
+
 // ── Rotas ──
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
@@ -399,6 +438,11 @@ Deno.serve(async (req) => {
     if (rota === "pedidos") return json(req, { pedidos: await pedidos(String(corpo.cpfCnpj ?? ""), String(corpo.nome ?? "")) });
     if (rota === "posvenda") return json(req, await sincronizarPosvenda());
     if (rota === "os") return json(req, await sincronizarOS());
+    if (rota === "pedido") {
+      const id = Number(corpo.id);
+      if (!Number.isInteger(id) || id <= 0) return json(req, { erro: "id" }, 400);
+      return json(req, { pedido: await pedidoDetalhe(id) });
+    }
     if (rota === "os_numero") return json(req, { os: await osPorNumero(String(corpo.numero ?? "")) });
 
     return json(req, { erro: "rota" }, 404);

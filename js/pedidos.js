@@ -231,7 +231,7 @@ function cardOS(o, fase){
     acoes = nfBloco + aval;
   }
   return `<div class="ped-card${atrasado ? ' atrasado' : ''}">
-    <div class="gar-topo"><strong>${escHtml(o.cliente || 'Cliente')}</strong><span class="ped-os">OS ${escHtml(o.numero || '')}</span></div>
+    <div class="gar-topo"><strong>${escHtml(o.cliente || 'Cliente')}</strong><button type="button" class="ped-ver" onclick="abrirPedidoVenda(${o.pedido_id})">OS ${escHtml(o.numero || '')} · ver pedido ›</button></div>
     <div class="gar-meta">${[o.numero_fabrica ? '🏷️ ' + escHtml(o.numero_fabrica) : '', o.valor ? reais(o.valor) : '', fase === 'entregue' && o.data_entrega ? 'instalado em ' + diaBR(o.data_entrega) : (desde ? 'nesta fase há ' + desde + (desde > 1 ? ' dias' : ' dia') : 'nesta fase desde hoje'),
       fase === 'producao' && prevista ? (atrasado ? '🔴 previsão ' + prevista.toLocaleDateString('pt-BR') + ' (atrasado)' : 'previsão ' + prevista.toLocaleDateString('pt-BR')) : '', orc ? numCDP(orc.numero) : ''].filter(Boolean).join(' · ')}</div>
     ${acoes}
@@ -269,4 +269,141 @@ async function carregarPedidosInicio(){
   if(PED_CARREGADO) desenharPedidosInicio();
   try{ await carregarPedidos(); desenharPedidosInicio(); }catch(e){ return; }
   try{ await sincronizarPedidos(); await carregarPedidos(); desenharPedidosInicio(); }catch(e){}
+}
+
+// ═════════ DETALHE DO PEDIDO DE VENDA (lido do Olist na hora, só leitura) ═════════
+let PEDV_ATUAL = null, PEDV_SEQ = 0;
+const PEDV_IC = { cliente: 'usuario', datas: 'calendario', itens: 'documento', pagamento: 'cartao', obs: 'chat' };
+const pedvTit = (k, t, extra) => `<div class="pedv-tit"><span class="pedv-ic">${ic(PEDV_IC[k], 17)}</span><h2>${t}</h2>${extra || ''}</div>`;
+const pedvFone = (t) => { const d = String(t || '').replace(/\D/g, ''); return d.length === 11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d.length === 10 ? `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}` : String(t || ''); };
+const pedvQtd = (n) => Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+const pedvTxt = (t) => escHtml(String(t || '').trim()).replace(/\n/g, '<br>');
+async function abrirPedidoVenda(id){
+  const seq = ++PEDV_SEQ;
+  irParaTab('pedv'); window.scrollTo({ top: 0 });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'ped'));
+  const box = $('pedv-conteudo'); if(!box) return;
+  const o = PED_OS.find(x => Number(x.pedido_id) === Number(id)) || null;
+  box.innerHTML = pedvVoltar() + `<div class="hist-empty">Lendo o pedido${o && o.numero ? ' nº ' + escHtml(o.numero) : ''} no Olist…</div>`;
+  try{
+    const d = await olistChamar('pedido', { id });
+    if(seq !== PEDV_SEQ) return;
+    if(!d || !d.pedido){ box.innerHTML = pedvVoltar() + '<div class="hist-empty">Não achei este pedido no Olist.</div>'; return; }
+    PEDV_ATUAL = d.pedido;
+    box.innerHTML = desenharPedidoVenda(d.pedido, o);
+  }catch(e){
+    if(seq !== PEDV_SEQ) return;
+    box.innerHTML = pedvVoltar() + `<div class="ag-aviso">${ic('info',16)} <span>${e.codigo === 'desconectado' ? 'Olist desconectado (Configurações → Conexões).' : 'O Olist não respondeu agora.'}</span></div>
+      <div style="margin-top:10px"><button type="button" class="btn-outline" onclick="abrirPedidoVenda(${Number(id)})">Tentar de novo</button></div>`;
+  }
+}
+function pedvVoltar(){ return `<button type="button" class="pedv-voltar" onclick="abrirPedidos()">‹ Pedidos</button>`; }
+function desenharPedidoVenda(p, o){
+  const c = p.cliente || {};
+  const fase = o ? pedFase(o) : null;
+  const orc = o ? orcDaOS(o) : null;
+  const cel = String(c.celular || c.telefone || '').replace(/\D/g, '');
+  const wa = cel ? 'https://wa.me/55' + (cel.length <= 9 ? '81' + cel : cel) : '';
+  const fone = pedvFone(c.celular || c.telefone);
+  const end = [c.endereco, c.bairro, c.cidade].filter(Boolean).join(' – ') + (c.cep ? ' · CEP ' + c.cep : '');
+  const fab = p.numeroFabrica || (o && o.numero_fabrica) || '';
+  const fech = orc && typeof FECH_MAPA !== 'undefined' ? FECH_MAPA[orc.id] : null;
+  const parc = (p.pagamento && p.pagamento.parcelas) || [];
+  const linhaCli = (r, v) => v ? `<dt>${r}</dt><dd>${v}</dd>` : '';
+  const itens = p.itens || [];
+  const descontoPct = p.subtotal > 0 && p.desconto > 0 ? Math.round(p.desconto / p.subtotal * 1000) / 10 : 0;
+  return pedvVoltar() + `
+  <div class="pedv-topo">
+    <div class="pedv-cab">
+      <div class="pedv-sobre">Pedido de venda · Olist</div>
+      <h1>Pedido nº ${escHtml(p.numero)}</h1>
+      <div class="pedv-chips">
+        <span class="pedv-fase">${fase ? fase.em + ' ' + escHtml(fase.tit.split(' · ')[0]) : escHtml(p.situacao)}</span>
+        ${fab ? `<span>Fábrica: <b>${escHtml(fab)}</b></span>` : ''}
+        ${orc ? `<span>· Orçamento <button type="button" class="conf-link" onclick="reopenOrc(${orc.id})">${numCDP(orc.numero)}</button></span>` : ''}
+      </div>
+    </div>
+    <div class="pedv-botoes">
+      <button type="button" class="btn-outline pedv-bt" onclick="pedvCopiarResumo(this)">${ic('copiar',16)} Copiar resumo</button>
+    </div>
+  </div>
+  <div class="pedv-total-cel"><div><span>Total do pedido</span><b>${reais(p.total)}</b></div><div><span>Previsão</span><b>${p.dataPrevista ? diaBR(p.dataPrevista) : '—'}</b></div></div>
+
+  <div class="pedv-grade">
+    <section class="pedv-q">
+      ${pedvTit('cliente', 'Cliente')}
+      <div class="pedv-nome">${escHtml(c.nome || (o && o.cliente) || 'Cliente')}</div>
+      <dl class="pedv-dl">
+        ${linhaCli(c.cpfCnpj && String(c.cpfCnpj).replace(/\D/g,'').length > 11 ? 'CNPJ' : 'CPF', escHtml(c.cpfCnpj))}
+        ${linhaCli('WhatsApp', fone ? (wa ? `<a href="${wa}" target="_blank" rel="noopener">${escHtml(fone)}</a>` : escHtml(fone)) : '')}
+        ${linhaCli('E-mail', escHtml(c.email))}
+        ${linhaCli('Endereço', escHtml(end))}
+      </dl>
+    </section>
+    <section class="pedv-q">
+      ${pedvTit('datas', 'Datas')}
+      <div class="pedv-datas">
+        <div><span>Pedido</span><b>${p.data ? diaBR(p.data) : '—'}</b></div>
+        <div class="dest"><span>Previsão de entrega</span><b>${p.dataPrevista ? diaBR(p.dataPrevista) : '—'}</b></div>
+        <div><span>Entregue em</span><b>${p.dataEntrega ? diaBR(p.dataEntrega) : '—'}</b></div>
+      </div>
+      ${p.vendedor ? `<div class="pedv-nota">Vendedor(a): <b>${escHtml(p.vendedor)}</b></div>` : ''}
+    </section>
+  </div>
+
+  <section class="pedv-q">
+    ${pedvTit('itens', 'Itens', `<span class="pedv-cont">${itens.length} ${itens.length === 1 ? 'item' : 'itens'}</span>`)}
+    ${itens.length ? `<div class="pedv-tabela-wrap"><table class="pedv-tabela">
+      <thead><tr><th>Produto ou serviço</th><th>Detalhamento</th><th class="n">Qtd.</th><th>Un.</th><th class="n">Preço unit.</th><th class="n">Total</th></tr></thead>
+      <tbody>${itens.map(i => `<tr>
+        <td class="pedv-prod"><b>${escHtml(i.descricao)}</b>${i.sku ? `<span>SKU ${escHtml(i.sku)}${i.tipo === 'S' ? ' · serviço' : ''}</span>` : ''}</td>
+        <td class="pedv-det${i.detalhe ? '' : ' vazio'}">${pedvTxt(i.detalhe) || '<span class="pedv-nada">—</span>'}</td>
+        <td class="n" data-r="Qtd.">${pedvQtd(i.quantidade)}</td><td data-r="Un.">${escHtml(i.unidade || '')}</td>
+        <td class="n" data-r="Preço unit.">${reais(i.valorUnitario)}</td><td class="n pedv-tot" data-r="Total">${reais(i.total)}</td></tr>`).join('')}</tbody>
+    </table></div>` : '<div class="pedv-nota">O pedido não tem itens no Olist.</div>'}
+    <dl class="pedv-totais">
+      <dt>Subtotal</dt><dd>${reais(p.subtotal)}</dd>
+      ${p.desconto ? `<dt>Desconto${descontoPct ? ' (' + String(descontoPct).replace('.', ',') + '%)' : ''}</dt><dd class="desc">− ${reais(p.desconto)}</dd>` : '<dt>Desconto</dt><dd>R$ 0,00</dd>'}
+      ${p.frete ? `<dt>Frete</dt><dd>${reais(p.frete)}</dd>` : ''}
+      ${p.outras ? `<dt>Outras despesas</dt><dd>${reais(p.outras)}</dd>` : ''}
+      <dt class="tot">Total</dt><dd class="tot">${reais(p.total)}</dd>
+    </dl>
+  </section>
+
+  <div class="pedv-grade">
+    <section class="pedv-q">
+      ${pedvTit('pagamento', 'Pagamento')}
+      <div class="pedv-forma">${[p.pagamento && p.pagamento.forma, p.pagamento && p.pagamento.meio].filter(Boolean).map(escHtml).join(' · ') || 'Forma de pagamento não informada no Olist'}${p.pagamento && p.pagamento.condicao ? ` <span class="pedv-nota">· ${escHtml(p.pagamento.condicao)}</span>` : ''}</div>
+      ${parc.length ? `<div class="pedv-parcelas">${parc.map((x, n) => `
+        <div class="pedv-parc">
+          <span class="pedv-parc-n">${n + 1}ª</span>
+          <div><b>${x.data ? diaBR(x.data) : 'sem data'}${x.forma ? ' · ' + escHtml(x.forma) : ''}</b>${x.obs ? `<span>${escHtml(x.obs)}</span>` : ''}</div>
+          <b class="pedv-parc-v">${reais(x.valor)}</b>
+        </div>`).join('')}</div>` : '<div class="pedv-nota">Sem parcelas lançadas no Olist.</div>'}
+      ${fech ? `<div class="pedv-nota">${fech.validado_em ? '✅ Pagamento conferido no extrato pela ' + escHtml(fech.validado_por || 'Madeleine') + ' em ' + new Date(fech.validado_em).toLocaleDateString('pt-BR') : fech.comprovante_em ? '🧾 Comprovante recebido · aguardando conferência da Madeleine' : '⏳ Pagamento ainda não conferido no extrato (Fechamento)'}</div>` : ''}
+    </section>
+    <section class="pedv-q">
+      ${pedvTit('obs', 'Observações')}
+      <div class="pedv-obs"><span>Observações do pedido</span><p>${pedvTxt(p.observacoes) || '<span class="pedv-nada">Nenhuma.</span>'}</p></div>
+      <div class="pedv-obs"><span>Internas</span><p>${pedvTxt(p.observacoesInternas) || '<span class="pedv-nada">Nenhuma.</span>'}</p></div>
+    </section>
+  </div>
+  <div class="pedv-rodape">Lido do Olist agora · para mudar algo, altere o pedido no Tiny.</div>`;
+}
+function pedvResumoTexto(p){
+  const c = p.cliente || {};
+  const l = [`*Pedido nº ${p.numero}*${p.numeroFabrica ? ' · Fábrica ' + p.numeroFabrica : ''}`, `Cliente: ${c.nome || ''}`];
+  const fone = pedvFone(c.celular || c.telefone); if(fone) l.push('WhatsApp: ' + fone);
+  const end = [c.endereco, c.bairro, c.cidade].filter(Boolean).join(' – '); if(end) l.push('Endereço: ' + end);
+  l.push(`Pedido: ${p.data ? diaBR(p.data) : '—'} · Previsão: ${p.dataPrevista ? diaBR(p.dataPrevista) : '—'}`, '', '*Itens*');
+  (p.itens || []).forEach(i => { l.push(`• ${pedvQtd(i.quantidade)} ${i.unidade || ''} ${i.descricao}`.replace(/\s+/g, ' ')); if(i.detalhe) l.push('  ' + String(i.detalhe).trim()); });
+  l.push('', `Total: ${reais(p.total)}${p.desconto ? ' (desconto ' + reais(p.desconto) + ')' : ''}`);
+  if(p.observacoes) l.push('', 'Obs.: ' + String(p.observacoes).trim());
+  return l.join('\n');
+}
+async function pedvCopiarResumo(botao){
+  if(!PEDV_ATUAL) return;
+  const ok = await copiarTexto(pedvResumoTexto(PEDV_ATUAL));
+  if(ok){ botao.innerHTML = ic('ok',16) + ' Copiado'; avisoTopo('Resumo copiado. Cole no grupo ou no WhatsApp.'); }
+  else avisoTopo('Não consegui copiar sozinho.');
 }
