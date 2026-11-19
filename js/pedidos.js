@@ -19,7 +19,7 @@ const PED_FASES = [
   { k: 'entregue', sit: [6],    em: '✅', tit: 'Entregues · avaliação e nota fiscal' },
 ];
 const PED_FABRICAS = [['decore', 'Decore', 'D'], ['real', 'Real', 'R']];
-let PED_OS = [], PED_CONF = [], PED_CARREGADO = false, PED_SINC_EM = 0, PED_FILTRO = 'todos', PED_AGENDA = null;
+let PED_OS = [], PED_NUMS = [], PED_CONF = [], PED_CARREGADO = false, PED_SINC_EM = 0, PED_FILTRO = 'todos', PED_AGENDA = null;
 const PED_ABERTO = new Set();
 const PED_MARCADAS = new Set();   // marcadas agora: continuam na tela (com desfazer) até recarregar a página
 
@@ -31,12 +31,14 @@ async function sincronizarPedidos(forcar){
 }
 async function carregarPedidos(){
   const desde = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
-  const [r1, r2] = await Promise.all([
+  const [r1, r2, r3] = await Promise.all([
     sbFetch('/rest/v1/os_acompanhamento?select=*&or=(situacao.in.(0,3,4,7,5,1),and(situacao.eq.6,data_entrega.gte.' + desde + '))&order=situacao_desde.asc'),
     sbFetch('/rest/v1/conferencias_fabrica?select=*&order=conferido_em.desc&limit=30'),
+    // todos os nºs de fábrica já usados (inclusive OS canceladas e entregues há mais tempo), para o próximo nº
+    sbFetch('/rest/v1/os_acompanhamento?select=numero,numero_fabrica&numero_fabrica=not.is.null&order=data_venda.desc.nullslast&limit=400'),
   ]);
   if(!r1.ok) throw new Error('os');
-  PED_OS = await r1.json(); PED_CONF = r2.ok ? await r2.json() : [];
+  PED_OS = await r1.json(); PED_CONF = r2.ok ? await r2.json() : []; PED_NUMS = r3.ok ? await r3.json() : [];
   PED_CARREGADO = true;
 }
 async function carregarAgendaPedidos(){
@@ -76,11 +78,14 @@ function pedNaAgenda(o){
   const alvo = ch.slice(0, 2);
   return PED_AGENDA.find(ev => { const t = pedNomeChave(ev.titulo).join(' '); return alvo.every(p => t.includes(p)); }) || null;
 }
-// próximo nº de pedido na fábrica: maior nº usado + 1 (a sequência da CDP é a mesma para D e R)
-function proximoNumeroFabrica(){
-  const nums = PED_OS.flatMap(o => String(o.numero_fabrica || '').match(/[DR]\d{3,5}/g) || []).map(x => Number(x.slice(1)));
-  return nums.length ? Math.max(...nums) + 1 : null;
+// próximo nº de pedido na fábrica: maior nº já usado NAQUELA fábrica + 1. Decore (D) e Real (R) têm sequências separadas
+// (conferido nos pedidos do Olist em 19/11/2026: D2325 e R2301 eram os últimos). Lê todas as OS, inclusive canceladas.
+function maiorNumeroFabrica(letra){
+  const fonte = (PED_NUMS.length ? PED_NUMS : PED_OS);
+  const nums = fonte.flatMap(o => String(o.numero_fabrica || '').toUpperCase().match(new RegExp('\\b' + letra + '\\d{3,5}\\b', 'g')) || []).map(x => Number(x.slice(1)));
+  return nums.length ? Math.max(...nums) : null;
 }
+function proximoNumeroFabrica(letra){ const m = maiorNumeroFabrica(letra); return m ? m + 1 : null; }
 function fabricasDaOS(o){ const t = String(o.numero_fabrica || ''); return PED_FABRICAS.filter(([, , l]) => new RegExp('\\b' + l + '\\d').test(t)).map(([k]) => k); }
 function ultimaConferencia(fab){ return PED_CONF.find(c => c.fabrica === fab) || null; }
 function orcDaOS(o){ return (typeof HISTORY_CACHE !== 'undefined' ? HISTORY_CACHE : []).find(e => e.pedidoTiny && String(e.pedidoTiny) === String(o.numero)) || null; }
@@ -248,8 +253,10 @@ function desenharPedidos(aviso){
     </section>`).join('');
 }
 function pedBlocoProximoNumero(){
-  const n = proximoNumeroFabrica();
-  return n ? `<div class="ped-num">🔢 Próximo nº de pedido: <b>D${n}</b> (Decore) ou <b>R${n}</b> (Real) <span class="conf-nota">maior nº já usado: ${n - 1} · confira no Tiny se outra pessoa acabou de usar</span></div>` : '';
+  const d = proximoNumeroFabrica('D'), r = proximoNumeroFabrica('R');
+  if(!d && !r) return '';
+  return `<div class="ped-num">🔢 Próximo nº de pedido: ${d ? `<b>D${d}</b> (Decore)` : ''}${d && r ? ' · ' : ''}${r ? `<b>R${r}</b> (Real)` : ''}
+    <span class="conf-nota">último usado: ${[d ? 'D' + (d - 1) : '', r ? 'R' + (r - 1) : ''].filter(Boolean).join(' e ')} · cada fábrica tem a sua sequência · confira no Tiny se outra pessoa acabou de usar</span></div>`;
 }
 function pedBlocoConferencia(lista){
   return `<div class="ped-conf">${PED_FABRICAS.map(([k, nome]) => {
@@ -338,7 +345,7 @@ function desenharPedidosInicio(){
   const linhas = [
     saldoConferir.length && ['todos', '💳', saldoConferir.length + (saldoConferir.length > 1 ? ' saldos para conferir no extrato' : ' saldo para conferir no extrato'), 'comprovante recebido · ' + saldoConferir.map(o => primeiroNome(o.cliente)).slice(0, 3).join(', '), true],
     travadas.length && ['todos', '⛔', travadas.length + (travadas.length > 1 ? ' instalações sem pagamento completo' : ' instalação sem pagamento completo'), 'não confirmar antes de conferir o saldo', true],
-    fabrica.length && ['fabrica', '🏭', fabrica.length + (fabrica.length > 1 ? ' OS para pedir na fábrica' : ' OS para pedir na fábrica'), 'próximo nº: ' + (proximoNumeroFabrica() || '—'), true],
+    fabrica.length && ['fabrica', '🏭', fabrica.length + (fabrica.length > 1 ? ' OS para pedir na fábrica' : ' OS para pedir na fábrica'), 'próximo nº: ' + ([proximoNumeroFabrica('D') && 'D' + proximoNumeroFabrica('D'), proximoNumeroFabrica('R') && 'R' + proximoNumeroFabrica('R')].filter(Boolean).join(' · ') || '—'), true],
     conferir.length && ['producao', '🔎', 'Conferir ' + conferir.map(c => c[1]).join(' e '), 'pedidos em produção · a cada 2 dias', true],
     pronto.length && ['pronto', '📦', pronto.length + (pronto.length > 1 ? ' prontos para agendar' : ' pronto para agendar'), semMaos.length ? semMaos.length + ' sem conferência em mãos' : 'itens conferidos', false],
     nfEmitir.length && ['entregue', '🧾', nfEmitir.length + (nfEmitir.length > 1 ? ' notas fiscais para emitir' : ' nota fiscal para emitir'), 'pedidos entregues sem NF no Tiny', true],
