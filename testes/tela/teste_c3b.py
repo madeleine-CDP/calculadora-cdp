@@ -73,7 +73,7 @@ with sync_playwright() as p:
     print('   aviso:', pg.inner_text('#aviso-topo'), '| barra escura:', pg.is_visible('#orc-resumo-bar'))
     pg.screenshot(path=f'{S}/c3b-salvo.png')
     # fluxo novo orçamento → item → pasta → salvar
-    pg.locator('.btn-novo-orc').click(); pg.fill('#novo-nome','Ana'); pg.fill('#novo-tel','(81) 99999-0000'); pg.fill('#novo-bairro','Boa Viagem'); pg.locator('.novo-opcao').first.click(); pg.locator('#novo-criar').click(); pg.wait_for_timeout(500)
+    pg.locator('.btn-novo-orc:visible, .fab-novo:visible').first.click(); pg.fill('#novo-nome','Ana'); pg.fill('#novo-tel','(81) 99999-0000'); pg.fill('#novo-bairro','Boa Viagem'); pg.locator('.novo-opcao').first.click(); pg.locator('#novo-criar').click(); pg.wait_for_timeout(500)
     print('11 criado → tela:', tela(pg), '| botão:', pg.inner_text('.pasta-add'))   # desde 12/11/2026 abre a pasta, não a calculadora
     print('   pasta vazia:', pg.inner_text('#pasta-lista').replace('\n',' '), '| etapa:', pg.input_value('#pasta-etapa'))
     pg.locator('#pasta-salvar').click(); pg.wait_for_timeout(400)
