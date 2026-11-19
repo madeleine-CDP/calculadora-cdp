@@ -14,6 +14,7 @@
 //   POST os        → lê as OS em andamento (aberta → entregue nos últimos 30 dias, com a nota fiscal) e guarda em os_acompanhamento (equipe)
 //   POST os_numero → { numero } → OS do Tiny por número: valor, situação, cliente (para conferir com o orçamento) (equipe)
 //   POST historico → { id?, cpfCnpj?, celular?, nome? } → cadastro + TODOS os pedidos de venda do cliente (os 12 mais recentes com itens e entrega) (equipe)
+//   POST vendas    → { meses } → pedidos de venda criados nos últimos N meses (valor final, situação) para o painel Financeiro (equipe)
 //   POST pedido    → { id } → pedido de venda completo (cliente, itens, totais, pagamento, parcelas, observações) para a tela de detalhe (equipe)
 //   POST renovar   → renova a autorização (agendamento a cada 3h)  (aberto; não devolve dados)
 // Só leitura no Tiny: nada é criado nem alterado lá.
@@ -415,6 +416,23 @@ async function historicoCliente(c: { id?: number; cpfCnpj?: string; celular?: st
   return { cliente: cad, pedidos };
 }
 
+// Vendas (painel Financeiro e vendas): pedidos de venda criados nos últimos N meses (1 a 13), com o valor final. Só leitura.
+async function vendasPeriodo(meses: number) {
+  const n = Math.min(Math.max(Math.trunc(meses) || 6, 1), 13);
+  const hoje = new Date();
+  const ini = new Date(hoje.getFullYear(), hoje.getMonth() - (n - 1), 1);
+  const lista: any[] = [];
+  for (let off = 0; off < 3000; off += 100) {
+    const d = await tiny(`/pedidos?dataInicial=${isoDia(ini)}&dataFinal=${isoDia(hoje)}&limit=100&offset=${off}`);
+    const it = d?.itens ?? []; lista.push(...it);
+    if (it.length < 100) break;
+  }
+  return {
+    desde: isoDia(ini),
+    pedidos: lista.map((p: any) => ({ id: Number(p.id), numero: String(p.numeroPedido ?? ""), data: soData(p.dataCriacao), valor: Number(p.valor ?? 0), situacao: Number(p.situacao), cliente: p.cliente?.nome ?? "" })),
+  };
+}
+
 // ── Rotas ──
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
@@ -480,6 +498,7 @@ Deno.serve(async (req) => {
     if (rota === "pedidos") return json(req, { pedidos: await pedidos(String(corpo.cpfCnpj ?? ""), String(corpo.nome ?? "")) });
     if (rota === "posvenda") return json(req, await sincronizarPosvenda());
     if (rota === "os") return json(req, await sincronizarOS());
+    if (rota === "vendas") return json(req, await vendasPeriodo(Number(corpo.meses ?? 6)));
     if (rota === "historico") {
       const id = Number(corpo.id);
       return json(req, await historicoCliente({ id: Number.isInteger(id) && id > 0 ? id : undefined, cpfCnpj: String(corpo.cpfCnpj ?? ""), celular: String(corpo.celular ?? ""), nome: String(corpo.nome ?? "") }));

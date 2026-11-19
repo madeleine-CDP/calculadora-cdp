@@ -77,6 +77,8 @@ print('  tentativa de validar pela Mirelle (direto no banco):', pg.evaluate("fet
 b.close()
 # ── Madeleine valida ──
 b,pg=sessao('Madeleine','dona')
+print('Madeleine abre em:', pg.evaluate('document.body.dataset.tela'))   # desde 19/11/2026 a Madeleine abre no Financeiro
+pg.click('.painel-abas >> text=Meu dia'); pg.wait_for_timeout(1500)
 print('INÍCIO Madeleine:', pg.inner_text('#inicio-fechamento').replace('\n',' / ')[:180])
 pg.locator('#inicio-fechamento .inicio-pend-item').first.click(); pg.wait_for_timeout(800)
 pg.locator('#pasta-fechamento >> text=Conferi no extrato').click(); pg.wait_for_timeout(300)

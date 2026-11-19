@@ -63,6 +63,7 @@ function pendenciasDoDia(){
 }
 
 async function renderInicio(atualizar){
+  if(typeof finAbrirSeDona === 'function' && finAbrirSeDona()) return;   // a Madeleine abre direto no Financeiro
   const box = $('inicio-conteudo');
   if(atualizar && HIST_CARREGADO){ try{ HISTORY_CACHE = await sbFetchHistory(); }catch(err){} }
   if(typeof carregarRetornos === 'function' && (atualizar || !RET_CARREGADO)){ try{ await carregarRetornos(); }catch(err){} }
@@ -91,7 +92,7 @@ async function renderInicio(atualizar){
 
   const pend = pendenciasDoDia();
 
-  box.innerHTML = `
+  box.innerHTML = `${typeof abasPainel === 'function' ? abasPainel('inicio') : ''}
     <div class="inicio-topo">
       <div class="inicio-data">${escHtml(hoje)}</div>
       <div class="hist-titulo">${saudacao()}${nome ? ', ' + escHtml(nome) : ''}</div>
