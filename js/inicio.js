@@ -103,6 +103,8 @@ async function renderInicio(atualizar){
       ${typeof novaGarantia === 'function' ? `<button type="button" class="btn-outline" onclick="novaGarantia()"><span class="at-em">🛡️</span> Garantia / problema</button>` : ''}
     </div>
 
+    <div id="inicio-meudia"></div>
+
     <div class="inicio-secao">📌 Para fazer hoje</div>
     <div id="inicio-fechamento"></div>
     <div id="inicio-pedidos"></div>
@@ -122,6 +124,7 @@ async function renderInicio(atualizar){
 
     <div id="inicio-agenda"></div>
     <div id="inicio-posvenda"></div>
+    <div id="inicio-notas"></div>
 
     <div class="inicio-secao">📊 Números</div>
     <section class="inicio-bloco">
@@ -148,6 +151,7 @@ async function renderInicio(atualizar){
   if(typeof carregarPedidosInicio === 'function') carregarPedidosInicio();
   if(typeof carregarAgendaHoje === 'function') carregarAgendaHoje();
   if(typeof carregarLinksInicio === 'function') carregarLinksInicio();
+  if(typeof carregarMeuDiaInicio === 'function') carregarMeuDiaInicio();
   if(typeof carregarBlocosGarantia === 'function') carregarBlocosGarantia();
   if(typeof carregarConfirmarAmanha === 'function'){
     if(typeof CONF_DIAS !== 'undefined' && CONF_DIAS.length && !atualizar) desenharBlocoConfirmar($('inicio-confirmar'));

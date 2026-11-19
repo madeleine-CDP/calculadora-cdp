@@ -1221,3 +1221,32 @@ button.cli-aberto{cursor:pointer} button.cli-aberto:hover{border-color:var(--vin
   .cli-ev{grid-template-columns:36px 1fr} .cli-ev-data{display:none} .cli-ev-m{display:block}
   .cli-ev-t::after{content:none}
 }
+
+/* ── Meu dia: mural, minhas tarefas, bloco de notas (19/11/2026) ── */
+.md-recados{display:flex;flex-direction:column;gap:8px}
+.md-recado{background:var(--superficie);border:1px solid var(--linha);border-radius:16px;padding:11px 14px;display:flex;flex-direction:column;gap:5px}
+.md-recado.fixado,.md-recado.lembrete{background:#FFF6DA;border-color:#EAD9A7}
+.md-recado p{margin:0;font-size:14.5px;line-height:1.45;color:var(--tinta)}
+.md-recado-m{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--tinta-suave)} .md-recado.fixado .md-recado-m{color:var(--dourado-texto)}
+.md-recado-acoes{display:flex;gap:12px}
+.md-form-recado{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.md-form-recado textarea,.md-notas textarea{width:100%;box-sizing:border-box;padding:11px 13px;border-radius:14px;border:1px solid var(--linha);background:var(--superficie);font:inherit;font-size:15px;line-height:1.5;resize:vertical;color:var(--tinta)}
+.md-form-linha{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.md-form-linha .btn{margin-left:auto;min-height:42px}
+.md-check,.md-data{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--tinta-suave);min-height:40px}
+.md-data input,.md-form-tarefa input[type=date]{min-height:40px;padding:0 8px;border-radius:10px;border:1px solid var(--linha);background:var(--superficie);font:inherit;font-size:14px;color:var(--tinta)}
+.md-barra{height:9px;border-radius:999px;background:var(--vinho-suave);overflow:hidden;margin-bottom:10px} .md-barra div{height:9px;background:var(--vinho);border-radius:0 4px 4px 0;transition:width .3s}
+.md-form-tarefa{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.md-form-tarefa input:not([type=date]){flex:1 1 200px;min-width:0;min-height:44px;padding:0 13px;border-radius:12px;border:1px solid var(--linha);background:var(--superficie);font:inherit;font-size:15px;color:var(--tinta)}
+.md-form-tarefa .btn{min-height:44px}
+.md-lista{display:flex;flex-direction:column;gap:6px}
+.md-tarefa{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:6px;background:var(--superficie);border:1px solid var(--linha);border-radius:14px;padding:4px 4px 4px 2px}
+.md-tarefa.atrasada{border-color:#F0B9B3;background:#FFF8F7} .md-tarefa.atrasada em{color:#7E2A22;font-weight:600}
+.md-tarefa.futura{opacity:.75}
+.md-tarefa.feita{background:var(--fundo);border-style:dashed} .md-tarefa.feita b{text-decoration:line-through;color:var(--tinta-fraca)}
+.md-ck{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:0;background:none;cursor:pointer;padding:0;color:#fff}
+.md-ck::before{content:"";width:22px;height:22px;border-radius:50%;border:2px solid #CFC7C0;box-sizing:border-box;grid-area:1/1}
+.md-ck{display:grid;place-items:center} .md-ck svg{grid-area:1/1;position:relative}
+.md-ck.on::before{background:var(--verde);border-color:var(--verde)}
+.md-tarefa-txt{display:flex;flex-direction:column;min-width:0;padding:6px 0} .md-tarefa-txt b{font-size:14.5px;font-weight:600;word-break:break-word} .md-tarefa-txt em{font-style:normal;font-size:12.5px;color:var(--tinta-suave)}
+.md-x{width:40px;height:40px;border:0;background:none;color:var(--tinta-fraca);font-size:22px;cursor:pointer;border-radius:10px} .md-x:hover{background:var(--fundo);color:var(--tinta)}
