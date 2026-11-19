@@ -15,6 +15,7 @@ function abasPainel(atual){
   if(!finPode()) return '';
   return `<div class="painel-abas" role="tablist" aria-label="Painéis">
     <button type="button" role="tab" aria-selected="${atual === 'inicio'}" class="hist-chip${atual === 'inicio' ? ' on' : ''}" onclick="switchTab('inicio')">☀️ Meu dia</button>
+    <button type="button" role="tab" aria-selected="${atual === 'ges'}" class="hist-chip${atual === 'ges' ? ' on' : ''}" onclick="abrirGestao()">🧭 Gestão</button>
     <button type="button" role="tab" aria-selected="${atual === 'fin'}" class="hist-chip${atual === 'fin' ? ' on' : ''}" onclick="abrirFinanceiro()">💰 Financeiro e vendas</button>
   </div>`;
 }
