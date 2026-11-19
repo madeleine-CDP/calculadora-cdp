@@ -193,14 +193,16 @@ function controleConfirmacao(ev){
   const aberto = CONF_ABERTO.has(ev.id);
   const botaoVer = (rotulo) => `<button type="button" class="conf-btn conf-wa${aberto ? ' on' : ''}" onclick="verMensagem(${idJs})">${ic('chat',15)} ${escHtml(rotulo)}</button>`;
   const painel = aberto ? painelMensagem(ev, idJs, contatos) : '';
-  if(!c) return `<div class="conf-ctrl">${botaoVer('Mensagem de confirmação')}</div>${painel}`;
+  // instalação: confere o pagamento da OS antes de confirmar (pedido da Bru, 19/11/2026)
+  const avisoPg = typeof pedAvisoInstalacao === 'function' ? pedAvisoInstalacao(ev, (lerTitulo(ev.titulo) || {}).tipo) : '';
+  if(!c) return `${avisoPg}<div class="conf-ctrl">${botaoVer('Mensagem de confirmação')}</div>${painel}`;
   const quem = (c.atualizado_por || c.enviado_por || '') + (c.atualizado_em ? ' · ' + horaCurta(c.atualizado_em) : '');
-  if(c.status === 'confirmado') return `<div class="conf-ctrl"><span class="conf-st ok">✅ Confirmado</span><span class="conf-nota">${escHtml(quem)}</span>
+  if(c.status === 'confirmado') return `${avisoPg}<div class="conf-ctrl"><span class="conf-st ok">✅ Confirmado</span><span class="conf-nota">${escHtml(quem)}</span>
       <button type="button" class="conf-link" onclick="marcarConfirmacao(${idJs},'enviado')">desfazer</button></div>`;
-  if(c.status === 'reagendar') return `<div class="conf-ctrl"><span class="conf-st reag">↺ Quer reagendar</span><span class="conf-nota">${escHtml(quem)} · ajuste no Google Agenda</span>
+  if(c.status === 'reagendar') return `${avisoPg}<div class="conf-ctrl"><span class="conf-st reag">↺ Quer reagendar</span><span class="conf-nota">${escHtml(quem)} · ajuste no Google Agenda</span>
       <button type="button" class="conf-link" onclick="marcarConfirmacao(${idJs},'confirmado')">confirmou</button>
       <button type="button" class="conf-link" onclick="marcarConfirmacao(${idJs},'enviado')">desfazer</button></div>`;
-  return `<div class="conf-ctrl"><span class="conf-st env">📨 Lembrete enviado</span><span class="conf-nota">${escHtml((c.enviado_por || '') + ' · ' + horaCurta(c.enviado_em))}</span>
+  return `${avisoPg}<div class="conf-ctrl"><span class="conf-st env">📨 Lembrete enviado</span><span class="conf-nota">${escHtml((c.enviado_por || '') + ' · ' + horaCurta(c.enviado_em))}</span>
       <span class="conf-acoes"><button type="button" class="conf-btn ok" onclick="marcarConfirmacao(${idJs},'confirmado')">Confirmou</button>
       <button type="button" class="conf-btn" onclick="marcarConfirmacao(${idJs},'reagendar')">Quer reagendar</button>
       <button type="button" class="conf-link" onclick="verMensagem(${idJs})">${aberto ? 'fechar mensagem' : 'ver mensagem'}</button>

@@ -12,6 +12,9 @@ const FECH_ABERTO = new Set();          // mensagens abertas
 let FECH_OLIST = {};                    // cadastro/OS lidos do Olist, por orçamento (só na tela)
 
 const fechEhDona = () => { const a = (typeof AUTH !== 'undefined' && AUTH) || {}; return a.papel === 'dona'; };
+// conferir no extrato: a Madeleine, ou a Bruna quando a Madeleine avisa (fica "Madeleine (marcado por Bruna)") — pedido da Bru, 19/11/2026
+const fechPodeConferir = () => { const a = (typeof AUTH !== 'undefined' && AUTH) || {}; return a.papel === 'dona' || a.papel === 'admin'; };
+const fechRotuloConferir = () => fechEhDona() ? 'Conferi no extrato: pagamento entrou' : 'Madeleine conferiu: pagamento entrou';
 const reais = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // ── banco ──
@@ -193,9 +196,9 @@ async function renderFechamentoPasta(){
     <div class="conf-nota">⚠️ Comprovante não é pagamento: a Madeleine confere no extrato antes da produção.</div>`]);
   // 5 · validação (só a Madeleine)
   const prazo = f.comprovante_em ? somarHorasUteis(f.comprovante_em, 4) : null;
-  passos.push(['💳', 'Pagamento conferido no extrato', !!f.validado_em, f.validado_em ? (fechEhDona() ? feito('validado', 'Conferido no extrato') : `<div class="fc-feito">✅ Conferido no extrato <span>${escHtml([f.validado_por, new Date(f.validado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })].join(' · '))}</span></div>`) : `
+  passos.push(['💳', 'Pagamento conferido no extrato', !!f.validado_em, f.validado_em ? (fechPodeConferir() ? feito('validado', 'Conferido no extrato') : `<div class="fc-feito">✅ Conferido no extrato <span>${escHtml([f.validado_por, new Date(f.validado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })].join(' · '))}</span></div>`) : `
     ${f.comprovante_em ? `<div class="fc-sub ${prazo < new Date() ? 'fc-atraso' : ''}">Prazo da Madeleine: até ${prazo.toLocaleString('pt-BR', { weekday: 'short', hour: '2-digit', minute: '2-digit' })} (4h úteis).</div>` : '<div class="fc-sub">Depois do comprovante.</div>'}
-    ${fechEhDona() ? `<div class="conf-acoes"><button type="button" class="conf-btn ok" ${f.comprovante_em ? '' : 'disabled'} onclick="fechMarcar(${id},'validado',true)">${ic('ok',15)} Conferi no extrato: pagamento entrou</button></div>` : '<div class="conf-nota">Só a Madeleine marca este passo.</div>'}`]);
+    ${fechPodeConferir() ? `<div class="conf-acoes"><button type="button" class="conf-btn ok" onclick="fechMarcar(${id},'validado',true)">${ic('ok',15)} ${fechRotuloConferir()}</button></div>${f.comprovante_em ? '' : '<div class="conf-nota">Ainda sem comprovante marcado: confira se o pagamento entrou mesmo.</div>'}` : '<div class="conf-nota">Só a Madeleine (ou a Bruna, avisada por ela) marca este passo.</div>'}`]);
   // 6 · confirmado
   passos.push(['✅', 'Pagamento confirmado ao cliente', !!f.confirmado_em, f.confirmado_em ? feito('confirmado', 'Cliente avisado') + '<div class="fc-sub">Agora: OS no grupo da equipe e status <b>"Aprovado"</b> no Tiny. A OS aparece em 📦 Pedidos → "Fazer pedido na fábrica".</div>' : `
     ${f.validado_em ? `${msgBox('confirmado', fechMsgConfirmado(e), 'Já enviei', 'confirmado')}
@@ -297,12 +300,12 @@ function desenharFechamentosInicio(){
       <span class="inicio-pend-txt"><strong>${escHtml(e.client)}</strong><span>${escHtml(numCDP(e.numero))} · passo ${p.n} de 6</span><em>${escHtml(p.txt)}${p.n === 5 ? ' · até ' + somarHorasUteis(f.comprovante_em, 4).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</em></span>
       <span class="inicio-pend-seta">›</span></button>`;
   };
-  box.innerHTML = `${fechEhDona() && validar.length ? `<section class="inicio-bloco">
+  box.innerHTML = `${fechPodeConferir() && validar.length ? `<section class="inicio-bloco">
       <div class="inicio-bloco-tit"><span>💳 Validar pagamentos</span><strong>${validar.length} · prazo 4h úteis</strong></div>
       <div class="inicio-pend">${validar.map(item).join('')}</div></section>` : ''}
     <section class="inicio-bloco">
       <div class="inicio-bloco-tit"><span>🤝 Fechamentos em andamento</span><strong>${l.length}${cobrar ? ' · ' + cobrar + ' para cobrar' : ''}</strong></div>
-      <div class="inicio-pend">${l.filter(e => !(fechEhDona() && validar.includes(e))).slice(0, 6).map(item).join('') || '<div class="conf-nota">Os que dependem de você estão acima.</div>'}</div>
+      <div class="inicio-pend">${l.filter(e => !(fechPodeConferir() && validar.includes(e))).slice(0, 6).map(item).join('') || '<div class="conf-nota">Os que dependem de você estão acima.</div>'}</div>
     </section>`;
 }
 async function carregarFechamentosInicio(){

@@ -94,6 +94,93 @@ function pedMsgAvaliacao(o){
   return `*✅ Entrega e instalação finalizadas com sucesso!*\n\nSe puder nos avaliar no Google agradecemos imensamente, ${primeiroNome(o.cliente)}!\n\nA sua opinião é muito importante para nós — e nos ajuda a continuar evoluindo! 🚀\nSe quiser compartilhar a sua experiência, é só clicar aqui no link do Google:\n\n👉 ${link}\n\n> Estamos sempre à disposição — foi um prazer cuidar do seu espaço! 🤝`;
 }
 
+// ── pagamento de cada OS: entrada (ou total) libera a produção; saldo libera a instalação (pedido da Bru, 19/11/2026) ──
+// Entrada conferida = passo 5 do Fechamento OU marcada aqui (OS sem Fechamento no sistema).
+// Saldo: PIX/transferência/dinheiro = 50% + 50% (tem saldo); cartão = 100% na entrada (sem saldo). saldo_modo muda à mão ('tem'/'nao').
+// Conferir no extrato: Madeleine, ou Bruna avisada por ela (o banco grava "Madeleine (marcado por Bruna)").
+const pedPodeConferir = () => typeof fechPodeConferir === 'function' ? fechPodeConferir() : false;
+function pedPagamento(o){
+  const orc = orcDaOS(o), fech = orc && typeof FECH_MAPA !== 'undefined' ? FECH_MAPA[orc.id] : null;
+  const forma = fech && fech.forma_pagamento || null;
+  const daOS = !!o.entrada_validado_em;
+  const entradaOk = daOS || !!(fech && fech.validado_em);
+  const temSaldo = o.saldo_modo ? o.saldo_modo === 'tem' : forma !== 'cartao';
+  const total = Number(o.valor) || 0;
+  return {
+    orc, fech, forma, entradaOk, entradaDaOS: daOS,
+    entradaPor: daOS ? o.entrada_validado_por : fech && fech.validado_por, entradaEm: daOS ? o.entrada_validado_em : fech && fech.validado_em,
+    comprovanteEntrada: !!(fech && fech.comprovante_em),
+    temSaldo, saldoAuto: !o.saldo_modo, saldoValor: temSaldo && total ? Math.round(total / 2 * 100) / 100 : 0,
+    saldoComp: !!o.saldo_comprovante_em, saldoOk: !!o.saldo_validado_em,
+    producao: entradaOk, instalacao: entradaOk && (!temSaldo || !!o.saldo_validado_em),
+  };
+}
+const pedQuando = (por, em) => escHtml([por, em ? new Date(em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''].filter(Boolean).join(' · '));
+// faixa curta (uma linha) para os cartões
+function pedFaixaPagamento(o){
+  const g = pedPagamento(o);
+  const ent = g.entradaOk ? `<span class="pg-ok">✅ ${g.temSaldo ? 'Entrada' : 'Total'}</span>` : `<span class="pg-pend">⏳ ${g.temSaldo ? 'Entrada' : 'Total'}</span>`;
+  const sal = !g.temSaldo ? '' : g.saldoOk ? '<span class="pg-ok">✅ Saldo</span>' : g.saldoComp ? '<span class="pg-meio">🧾 Saldo · falta conferir</span>' : '<span class="pg-pend">⏳ Saldo</span>';
+  return `<div class="pg-faixa">💳 ${ent}${sal}${g.forma ? `<span class="pg-forma">${g.forma === 'cartao' ? 'cartão' : 'PIX'}</span>` : ''}</div>`;
+}
+// bloco completo (fases em que o pagamento decide o próximo passo, e na tela do pedido)
+function pedBlocoPagamento(o, fase){
+  const g = pedPagamento(o), id = o.pedido_id, pode = pedPodeConferir();
+  const rotConf = (typeof fechEhDona === 'function' && fechEhDona()) ? 'Conferi no extrato' : 'Madeleine conferiu';
+  const nomeEnt = g.temSaldo ? 'Entrada' : 'Pagamento total';
+  const linhaEnt = g.entradaOk
+    ? `<div class="pg-linha ok"><span>✅ ${nomeEnt} conferid${g.temSaldo ? 'a' : 'o'} no extrato</span><em>${pedQuando(g.entradaPor, g.entradaEm)}${g.entradaDaOS ? '' : ' · pelo Fechamento'}</em>
+        ${g.entradaDaOS && pode ? `<button type="button" class="conf-link" onclick="pedPag(${id},{entrada_validado_em:null},'Desfeito.')">desfazer</button>` : ''}</div>`
+    : `<div class="pg-linha pend"><span>⏳ ${nomeEnt} ainda não conferid${g.temSaldo ? 'a' : 'o'} no extrato</span>${g.comprovanteEntrada ? '<em>comprovante recebido (Fechamento)</em>' : ''}
+        ${pode ? `<button type="button" class="conf-btn ok" onclick="pedPag(${id},{entrada_validado_em:new Date().toISOString()},'${g.temSaldo ? 'Entrada conferida' : 'Pagamento total conferido'}: pode ir para a produção.')">${ic('ok',15)} ${rotConf}</button>` : '<em>a Madeleine (ou a Bruna) marca</em>'}</div>`;
+  let linhaSal;
+  if(!g.temSaldo){
+    linhaSal = `<div class="pg-linha neutro"><span>💳 Sem saldo: ${g.forma === 'cartao' && g.saldoAuto ? 'cartão, 100% na entrada' : 'pago 100% na entrada'}</span>
+      <button type="button" class="conf-link" onclick="pedPag(${id},{saldo_modo:'tem'},'Anotado: este pedido tem saldo a pagar.')">tem saldo a pagar?</button></div>`;
+  } else if(g.saldoOk){
+    linhaSal = `<div class="pg-linha ok"><span>✅ Saldo conferido no extrato</span><em>${pedQuando(o.saldo_validado_por, o.saldo_validado_em)}</em>
+      ${pode ? `<button type="button" class="conf-link" onclick="pedPag(${id},{saldo_validado_em:null},'Desfeito.')">desfazer</button>` : ''}</div>`;
+  } else if(fase === 'fabrica' && !g.saldoComp){
+    linhaSal = `<div class="pg-linha neutro"><span>💳 Saldo${g.saldoValor ? ' de ' + reais(g.saldoValor) : ''}: cobrar antes da instalação</span>
+      <button type="button" class="conf-link" onclick="pedPag(${id},{saldo_modo:'nao'},'Anotado: pago 100% na entrada.')">pago 100% na entrada?</button></div>`;
+  } else {
+    linhaSal = `<div class="pg-linha ${g.saldoComp ? 'meio' : 'pend'}"><span>${g.saldoComp ? '🧾 Comprovante do saldo recebido · falta conferir' : '⏳ Saldo' + (g.saldoValor ? ' de ' + reais(g.saldoValor) : '') + ' aguardando o cliente'}</span>
+      ${g.saldoComp ? `<em>${pedQuando(o.saldo_comprovante_por, o.saldo_comprovante_em)}</em><button type="button" class="conf-link" onclick="pedPag(${id},{saldo_comprovante_em:null},'Desfeito.')">desfazer</button>`
+        : `<button type="button" class="conf-btn" onclick="pedPag(${id},{saldo_comprovante_em:new Date().toISOString()},'Comprovante do saldo anotado. Agora a Madeleine confere no extrato.')">🧾 Cliente mandou o comprovante</button>`}
+      ${pode ? `<button type="button" class="conf-btn ok" onclick="pedPag(${id},{saldo_validado_em:new Date().toISOString()},'Saldo conferido: pode confirmar a instalação.')">${ic('ok',15)} ${rotConf}</button>` : ''}
+      ${g.saldoComp ? '' : `<button type="button" class="conf-link" onclick="pedPag(${id},{saldo_modo:'nao'},'Anotado: pago 100% na entrada.')">pago 100% na entrada?</button>`}</div>`;
+  }
+  let trava = '';
+  if(fase === 'fabrica' && !g.producao) trava = `<div class="pg-trava">⛔ Não fazer o pedido na fábrica: ${nomeEnt.toLowerCase()} ainda não conferid${g.temSaldo ? 'a' : 'o'} no extrato. Comprovante não é pagamento.</div>`;
+  if(['pronto', 'agendado'].includes(fase) || fase === 'detalhe') trava = g.instalacao
+    ? (fase === 'detalhe' ? '' : '<div class="pg-livre">✅ Pagamento completo: pode confirmar a instalação.</div>')
+    : `<div class="pg-trava">⛔ Não confirmar a instalação: ${!g.entradaOk ? nomeEnt.toLowerCase() + ' ainda não conferid' + (g.temSaldo ? 'a' : 'o') : 'saldo' + (g.saldoValor ? ' de ' + reais(g.saldoValor) : '') + ' ainda não conferido'} no extrato.</div>`;
+  return `<div class="pg-bloco">${trava}${linhaEnt}${linhaSal}</div>`;
+}
+async function pedPag(id, campos, msg){
+  const r = await sbFetch('/rest/v1/os_acompanhamento?pedido_id=eq.' + id, { method: 'PATCH', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(campos) });
+  if(!r.ok){ avisoTopo(r.status === 403 || r.status === 401 ? 'Só a Madeleine (ou a Bruna) marca o pagamento como conferido.' : 'Não foi possível registrar agora. Tente de novo.'); return; }
+  const l = (await r.json())[0]; const i = PED_OS.findIndex(o => o.pedido_id === id); if(l && i >= 0) PED_OS[i] = l;
+  PED_MARCADAS.add(id); avisoTopo(msg);
+  pedRedesenhar();
+  if(document.body.dataset.tela === 'pedv' && PEDV_ATUAL && Number(PEDV_ATUAL.id) === Number(id)){ const o = PED_OS.find(x => x.pedido_id === id); const box = $('pedv-conteudo'); if(box) box.innerHTML = desenharPedidoVenda(PEDV_ATUAL, o); }
+  if(typeof redesenharConfirmacoes === 'function') redesenharConfirmacoes();
+}
+// instalação na agenda → OS do cliente (nome e sobrenome no título) e aviso de pagamento
+function pedOSDoEvento(ev){
+  const t = pedNomeChave(ev.titulo).join(' ');
+  return PED_OS.find(o => Number(o.situacao) !== 6 && Number(o.situacao) !== 2 && (() => { const ch = pedNomeChave(o.cliente).slice(0, 2); return ch.length && ch.every(p => t.includes(p)); })()) || null;
+}
+function pedAvisoInstalacao(ev, tipo){
+  if(!PED_CARREGADO || !/instala|entrega/i.test(tipo || '') || /manuten|lavagem/i.test(tipo || '')) return '';
+  const o = pedOSDoEvento(ev);
+  if(!o) return '<div class="pg-nota">💳 Não achei a OS deste cliente para conferir o pagamento: confira no Tiny antes de confirmar.</div>';
+  const g = pedPagamento(o);
+  return g.instalacao ? `<div class="pg-livre">✅ OS ${escHtml(o.numero)}: pagamento completo conferido.</div>`
+    : `<div class="pg-trava">⛔ OS ${escHtml(o.numero)}: ${!g.entradaOk ? 'entrada não conferida' : 'saldo' + (g.saldoValor ? ' de ' + reais(g.saldoValor) : '') + (g.saldoComp ? ' com comprovante, falta a Madeleine conferir' : ' não conferido')}. Não confirmar a instalação.
+       <button type="button" class="conf-link" onclick="abrirPedidoVenda(${o.pedido_id})">ver pedido ›</button></div>`;
+}
+
 // ── ações ──
 async function pedMarcar(id, campo, feito){
   const r = await sbFetch('/rest/v1/os_acompanhamento?pedido_id=eq.' + id, { method: 'PATCH', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify({ [campo]: feito ? new Date().toISOString() : null }) });
@@ -198,12 +285,12 @@ function cardOS(o, fase){
       : cb && cb.avisarDona ? `<span class="ped-alerta">⚠️ ${cb.dias} dias úteis sem pagamento: avisar a Madeleine</span>`
       : cb && cb.devida ? `<span class="conf-st env">📣 Cobrar retorno do cliente hoje</span>`
       : `<span class="conf-nota">📤 OS enviada · próxima cobrança ${cb ? fechDataCurta(cb.proxima) : ''}</span>`;
-    acoes = orc ? `<div class="conf-ctrl">${st}<button type="button" class="conf-link" onclick="reopenOrc(${orc.id})">ver fechamento ›</button></div>` : '';
+    acoes = pedFaixaPagamento(o) + (orc ? `<div class="conf-ctrl">${st}<button type="button" class="conf-link" onclick="reopenOrc(${orc.id})">ver fechamento ›</button></div>` : '');
   }
-  if(fase === 'fabrica') acoes = (fech && !fech.validado_em ? `<div class="ped-alerta">⚠️ Pagamento ainda não conferido no extrato pela Madeleine (Fechamento). Comprovante não é pagamento.</div>` : '') +
+  if(fase === 'fabrica') acoes = pedBlocoPagamento(o, 'fabrica') +
     `<div class="conf-nota">Faça o pedido no sistema da fábrica (Guia das Fábricas), anote o nº na OS do Tiny e mude para <b>"Preparando envio"</b>.</div>`;
-  if(fase === 'producao') acoes = !o.numero_fabrica ? '<div class="ped-alerta">⚠️ OS sem nº da fábrica (D/R) no Tiny.</div>' : '';
-  if(fase === 'pronto') acoes = `
+  if(fase === 'producao') acoes = pedFaixaPagamento(o) + (!o.numero_fabrica ? '<div class="ped-alerta">⚠️ OS sem nº da fábrica (D/R) no Tiny.</div>' : '');
+  if(fase === 'pronto') acoes = pedBlocoPagamento(o, 'pronto') + `
     <div class="conf-ctrl">${o.em_maos_em
       ? `<span class="conf-st ok">🖐️ Conferido em mãos</span><span class="conf-nota">${escHtml((o.em_maos_por || '') + ' · ' + new Date(o.em_maos_em).toLocaleDateString('pt-BR'))}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'em_maos_em',false)">desfazer</button>`
       : `<button type="button" class="conf-btn" onclick="pedMarcar(${o.pedido_id},'em_maos_em',true)">🖐️ Itens conferidos em mãos</button>`}</div>
@@ -211,7 +298,7 @@ function cardOS(o, fase){
       <button type="button" class="conf-btn conf-wa" onclick="pedVer(${o.pedido_id},'agendar')">${ic('chat',15)} Mensagem: propor data</button></div>
     ${msgPainel('agendar', pedMsgAgendar(o), '', '')}
     <div class="conf-nota">Instalação só se confirma com o saldo pago (até 1 dia útil antes) e os itens conferidos em mãos. Agendado e confirmado → <b>"Enviado"</b> no Tiny.</div>`;
-  if(fase === 'agendado') acoes = ag ? `<div class="conf-ctrl"><span class="conf-st env">📅 ${new Date(ag.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span></div>` : '<span class="conf-nota">Não achei o compromisso na agenda dos próximos 45 dias.</span>';
+  if(fase === 'agendado') acoes = pedBlocoPagamento(o, 'agendado') + (ag ? `<div class="conf-ctrl"><span class="conf-st env">📅 ${new Date(ag.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span></div>` : '<span class="conf-nota">Não achei o compromisso na agenda dos próximos 45 dias.</span>');
   if(fase === 'entregue'){
     const quando = (por, em) => escHtml([por, em ? new Date(em).toLocaleDateString('pt-BR') : ''].filter(Boolean).join(' · '));
     const nf = nfEstado(o);
@@ -246,7 +333,11 @@ function desenharPedidosInicio(){
   const nfEmitir = n('entregue').filter(o => nfEstado(o) === 'emitir'), nfEnviar = n('entregue').filter(o => nfEstado(o) === 'enviar');
   const conferir = PED_FABRICAS.filter(([k]) => producao.some(o => fabricasDaOS(o).includes(k)) && (() => { const u = ultimaConferencia(k); return !u || pedDias(u.conferido_em) >= 2; })());
   const semMaos = pronto.filter(o => !o.em_maos_em);
+  const travadas = PED_OS.filter(o => [7, 5, 1].includes(Number(o.situacao)) && !pedPagamento(o).instalacao);
+  const saldoConferir = pedPodeConferir() ? PED_OS.filter(o => Number(o.situacao) !== 2 && o.saldo_comprovante_em && !o.saldo_validado_em) : [];
   const linhas = [
+    saldoConferir.length && ['todos', '💳', saldoConferir.length + (saldoConferir.length > 1 ? ' saldos para conferir no extrato' : ' saldo para conferir no extrato'), 'comprovante recebido · ' + saldoConferir.map(o => primeiroNome(o.cliente)).slice(0, 3).join(', '), true],
+    travadas.length && ['todos', '⛔', travadas.length + (travadas.length > 1 ? ' instalações sem pagamento completo' : ' instalação sem pagamento completo'), 'não confirmar antes de conferir o saldo', true],
     fabrica.length && ['fabrica', '🏭', fabrica.length + (fabrica.length > 1 ? ' OS para pedir na fábrica' : ' OS para pedir na fábrica'), 'próximo nº: ' + (proximoNumeroFabrica() || '—'), true],
     conferir.length && ['producao', '🔎', 'Conferir ' + conferir.map(c => c[1]).join(' e '), 'pedidos em produção · a cada 2 dias', true],
     pronto.length && ['pronto', '📦', pronto.length + (pronto.length > 1 ? ' prontos para agendar' : ' pronto para agendar'), semMaos.length ? semMaos.length + ' sem conferência em mãos' : 'itens conferidos', false],
@@ -375,12 +466,12 @@ function desenharPedidoVenda(p, o){
       ${pedvTit('pagamento', 'Pagamento')}
       <div class="pedv-forma">${[p.pagamento && p.pagamento.forma, p.pagamento && p.pagamento.meio].filter(Boolean).map(escHtml).join(' · ') || 'Forma de pagamento não informada no Olist'}${p.pagamento && p.pagamento.condicao ? ` <span class="pedv-nota">· ${escHtml(p.pagamento.condicao)}</span>` : ''}</div>
       ${parc.length ? `<div class="pedv-parcelas">${parc.map((x, n) => `
-        <div class="pedv-parc">
-          <span class="pedv-parc-n">${n + 1}ª</span>
+        <div class="pedv-parc${/\bok\b/i.test(x.obs || '') ? ' ok' : ''}">
+          <span class="pedv-parc-n">${/\bok\b/i.test(x.obs || '') ? '✅' : (n + 1) + 'ª'}</span>
           <div><b>${x.data ? diaBR(x.data) : 'sem data'}${x.forma ? ' · ' + escHtml(x.forma) : ''}</b>${x.obs ? `<span>${escHtml(x.obs)}</span>` : ''}</div>
           <b class="pedv-parc-v">${reais(x.valor)}</b>
         </div>`).join('')}</div>` : '<div class="pedv-nota">Sem parcelas lançadas no Olist.</div>'}
-      ${fech ? `<div class="pedv-nota">${fech.validado_em ? '✅ Pagamento conferido no extrato pela ' + escHtml(fech.validado_por || 'Madeleine') + ' em ' + new Date(fech.validado_em).toLocaleDateString('pt-BR') : fech.comprovante_em ? '🧾 Comprovante recebido · aguardando conferência da Madeleine' : '⏳ Pagamento ainda não conferido no extrato (Fechamento)'}</div>` : ''}
+      ${o ? pedBlocoPagamento(o, 'detalhe') : ''}
     </section>
     <section class="pedv-q">
       ${pedvTit('obs', 'Observações')}
