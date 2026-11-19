@@ -13,6 +13,7 @@
 //   POST posvenda  → lê as OS "Entregue" de 5 a 13 meses atrás e guarda a data real da instalação na tabela posvenda (equipe)
 //   POST os        → lê as OS em andamento (aberta → entregue nos últimos 30 dias, com a nota fiscal) e guarda em os_acompanhamento (equipe)
 //   POST os_numero → { numero } → OS do Tiny por número: valor, situação, cliente (para conferir com o orçamento) (equipe)
+//   POST historico → { id?, cpfCnpj?, celular?, nome? } → cadastro + TODOS os pedidos de venda do cliente (os 12 mais recentes com itens e entrega) (equipe)
 //   POST pedido    → { id } → pedido de venda completo (cliente, itens, totais, pagamento, parcelas, observações) para a tela de detalhe (equipe)
 //   POST renovar   → renova a autorização (agendamento a cada 3h)  (aberto; não devolve dados)
 // Só leitura no Tiny: nada é criado nem alterado lá.
@@ -373,6 +374,47 @@ async function pedidoDetalhe(id: number) {
   };
 }
 
+// Histórico do cliente (busca + histórico): cadastro e todos os pedidos de venda. Só leitura.
+const semAcento = (t: unknown) => String(t ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
+async function historicoCliente(c: { id?: number; cpfCnpj?: string; celular?: string; nome?: string }) {
+  let cad: ReturnType<typeof cliente> | null = null;
+  if (c.id) { try { const k = await tiny(`/contatos/${c.id}`); if (k?.id) cad = cliente(k); } catch { /* segue */ } }
+  if (!cad && (so(c.cpfCnpj).length >= 11 || so(c.celular).length >= 8)) {
+    try { const l = await buscar(so(c.cpfCnpj).length >= 11 ? String(c.cpfCnpj) : String(c.celular)); cad = l[0] ?? null; } catch { /* segue */ }
+  }
+  if (!cad && String(c.nome ?? "").trim().length >= 3) {
+    try { const l = await buscar(String(c.nome)); cad = l.find((x) => semAcento(x.nome) === semAcento(c.nome)) ?? null; } catch { /* segue */ }
+  }
+  if (cad?.id) { try { const k = await tiny(`/contatos/${cad.id}`); if (k?.id) cad = cliente(k); } catch { /* fica o resumo */ } }
+  const doc = String(cad?.cpfCnpj || c.cpfCnpj || "");
+  const nome = String(cad?.nome || c.nome || "");
+  if (!so(doc) && nome.trim().length < 3) return { cliente: cad, pedidos: [] };
+  const q = so(doc) ? "cpfCnpj=" + encodeURIComponent(doc) : "nomeCliente=" + encodeURIComponent(nome);
+  const lista: any[] = [];
+  for (let off = 0; off < 200; off += 100) {
+    const d = await tiny(`/pedidos?${q}&orderBy=desc&limit=100&offset=${off}`);
+    const it = d?.itens ?? []; lista.push(...it);
+    if (it.length < 100) break;
+  }
+  // pela busca por nome, só os do mesmo nome (o Olist acha nomes parecidos)
+  const doCliente = so(doc) ? lista : lista.filter((p) => semAcento(p.cliente?.nome) === semAcento(nome));
+  const pedidos = doCliente.map((p: any) => ({
+    id: Number(p.id), numero: String(p.numeroPedido ?? ""), data: soData(p.dataCriacao), valor: Number(p.valor ?? 0),
+    situacaoCod: Number(p.situacao), situacao: SITUACAO[String(p.situacao)] ?? String(p.situacao ?? ""),
+    itens: null as any, dataEntrega: null as string | null, dataPrevista: soData(p.dataPrevista), numeroFabrica: null as string | null, nf: false,
+  })).sort((a: any, b: any) => String(b.data).localeCompare(String(a.data)));
+  // detalhe (itens e data de entrega) dos 12 mais recentes, sem estourar o limite do Olist (60 por minuto)
+  for (const p of pedidos.slice(0, 12)) {
+    try {
+      const d = await tiny(`/pedidos/${p.id}`);
+      p.itens = (d?.itens ?? []).map((i: any) => ({ descricao: i.produto?.descricao ?? i.descricao ?? "", tipo: i.produto?.tipo ?? "", quantidade: num(i.quantidade) }));
+      p.dataEntrega = soData(d?.dataEntrega); p.numeroFabrica = numeroFabrica(d); p.nf = !!d?.idNotaFiscal;
+      if (d?.valorTotalPedido != null) p.valor = num(d.valorTotalPedido);
+    } catch { /* fica sem detalhe */ }
+  }
+  return { cliente: cad, pedidos };
+}
+
 // ── Rotas ──
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
@@ -438,6 +480,10 @@ Deno.serve(async (req) => {
     if (rota === "pedidos") return json(req, { pedidos: await pedidos(String(corpo.cpfCnpj ?? ""), String(corpo.nome ?? "")) });
     if (rota === "posvenda") return json(req, await sincronizarPosvenda());
     if (rota === "os") return json(req, await sincronizarOS());
+    if (rota === "historico") {
+      const id = Number(corpo.id);
+      return json(req, await historicoCliente({ id: Number.isInteger(id) && id > 0 ? id : undefined, cpfCnpj: String(corpo.cpfCnpj ?? ""), celular: String(corpo.celular ?? ""), nome: String(corpo.nome ?? "") }));
+    }
     if (rota === "pedido") {
       const id = Number(corpo.id);
       if (!Number.isInteger(id) || id <= 0) return json(req, { erro: "id" }, 400);

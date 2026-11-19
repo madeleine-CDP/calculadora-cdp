@@ -58,6 +58,15 @@
 <header class="site-header">
   <div class="site-header-in">
     <img src="assets/logo-11663b57.png" alt="Central das Persianas">
+    <div class="busca-topo">
+      <label for="busca-in" class="sr-only">Buscar cliente, telefone, CPF, nº CDP, OS ou nº da fábrica</label>
+      <div class="busca-campo">
+        <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input id="busca-in" type="search" autocomplete="off" placeholder="Buscar cliente, telefone, CPF, CDP, OS ou D/R" oninput="buscaDigitou(this)" onfocus="if(this.value.trim().length>1) buscaDigitou(this)" onkeydown="buscaTeclas(event)">
+      </div>
+      <div id="busca-lista" class="busca-lista" hidden></div>
+    </div>
+    <button type="button" class="busca-bt-cel" onclick="abrirBuscaTela()" aria-label="Buscar"><svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
     <div class="usuario">
       <button type="button" class="usuario-nome" onclick="abrirConfig()" title="Configurações e minha conta"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span id="usuario-logado"></span></button>
       <button class="btn-sair" onclick="logout()"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button>
@@ -458,6 +467,24 @@
 </div>
 </div>
 
+<div id="tab-busca" class="tab-panel">
+<div class="wrap">
+  <div class="busca-tela-topo">
+    <label for="busca-tela-in" class="sr-only">Buscar</label>
+    <div class="busca-campo"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="busca-tela-in" type="search" inputmode="search" autocomplete="off" placeholder="Nome, telefone, CPF, CDP, OS ou D/R" oninput="buscaDigitou(this)" onkeydown="buscaTeclas(event)"></div>
+    <button type="button" class="conf-link" onclick="switchTab('inicio')">Cancelar</button>
+  </div>
+  <div id="busca-tela-lista" class="busca-tela-lista"></div>
+</div>
+</div>
+
+<div id="tab-cli" class="tab-panel">
+<div class="wrap">
+  <div id="cli-conteudo"></div>
+</div>
+</div>
+
 <div id="tab-pedv" class="tab-panel">
 <div class="wrap">
   <div id="pedv-conteudo"></div>
@@ -680,6 +707,7 @@
 <script src="js/garantia.js"></script>
 <script src="js/fechamento.js"></script>
 <script src="js/pedidos.js"></script>
+<script src="js/busca.js"></script>
 <script src="js/config.js"></script>
 
 <!-- RESUMO DO ORÇAMENTO — sempre visível, expande pra ver por ambiente -->
