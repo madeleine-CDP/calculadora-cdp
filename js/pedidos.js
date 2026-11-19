@@ -296,7 +296,7 @@ function cardOS(o, fase){
   }
   if(fase === 'fabrica') acoes = pedBlocoPagamento(o, 'fabrica') +
     `<div class="conf-nota">Faça o pedido no sistema da fábrica (Guia das Fábricas), anote o nº na OS do Tiny e mude para <b>"Preparando envio"</b>.</div>`;
-  if(fase === 'producao') acoes = pedFaixaPagamento(o) + (!o.numero_fabrica ? '<div class="ped-alerta">⚠️ OS sem nº da fábrica (D/R) no Tiny.</div>' : '');
+  if(fase === 'producao') acoes = pedFaixaPagamento(o) + (!o.numero_fabrica ? '<div class="pg-nota">🧵 Sem nº de fábrica (D/R): produção própria (tradicional em tecido) ou serviço.</div>' : '');
   if(fase === 'pronto') acoes = pedBlocoPagamento(o, 'pronto') + `
     <div class="conf-ctrl">${o.em_maos_em
       ? `<span class="conf-st ok">🖐️ Conferido em mãos</span><span class="conf-nota">${escHtml((o.em_maos_por || '') + ' · ' + new Date(o.em_maos_em).toLocaleDateString('pt-BR'))}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'em_maos_em',false)">desfazer</button>`
