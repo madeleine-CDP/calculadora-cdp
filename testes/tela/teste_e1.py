@@ -32,7 +32,7 @@ with sync_playwright() as p:
             pg.locator('button.tab-btn[data-tab=inicio]').click(); pg.wait_for_timeout(400)
             pg.locator('.inicio-pend-item').first.click(); pg.wait_for_timeout(400)
             print('  toque na 1ª pendência → tela:', pg.evaluate('document.body.dataset.tela'), '|', pg.inner_text('#pasta-nome'))
-            pg.locator('button.tab-btn[data-tab=inicio]').click(); pg.wait_for_timeout(400)
+            pg.evaluate("switchTab('inicio')"); pg.wait_for_timeout(400)   # no celular a barra de baixo some dentro da pasta (tem "‹ Orçamentos")
             print('  aba Início com orçamento aberto → tela:', pg.evaluate('document.body.dataset.tela'))
         pg.close()
     b.close()

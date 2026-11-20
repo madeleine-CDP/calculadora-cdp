@@ -32,7 +32,7 @@ with sync_playwright() as p:
     t=pg.inner_text('#inicio-conteudo')
     print('1 Início → bloco retornos:', 'Retornos para hoje' in t, '| Beto (combinado atrasado):', 'Contato combinado atrasado' in t, '| Ana follow-up:', 'Follow-up do pré-orçamento' in t, '| badge:', pg.inner_text('#ret-badge'))
     pg.screenshot(path='shotsT/ret-inicio.png', full_page=True)
-    pg.click('.tab-btn[data-tab=ret]'); pg.wait_for_timeout(1000)
+    pg.locator('.ret-topo:visible, .tab-btn[data-tab=ret]:visible').first.click(); pg.wait_for_timeout(1000)
     print('2 aba Retornos (meus) →', pg.locator('.ret-card').count(), 'card(s) | grupos:', pg.locator('.ret-grupo').all_inner_texts(), '| filtros:', pg.locator('#ret-filtros .hist-chip').all_inner_texts())
     pg.click('#ret-filtros .hist-chip >> nth=1'); pg.wait_for_timeout(300)
     print('3 todos abertos →', pg.locator('.ret-card').count(), '| link orçamento:', pg.locator('.ret-card .ret-link').first.inner_text())

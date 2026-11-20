@@ -75,3 +75,58 @@ function celObservar(){
     .observe(box, { childList: true, subtree: true });
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', celObservar); else celObservar();
+
+// ═══════════════════════════════════════════════════════
+// MENU (visual profissional, etapa 2 — aprovado pela Bru em 20/11/2026)
+// Computador: o menu de abas vira um menu lateral fixo, com a logo, os itens de gestão e quem está logado.
+// Celular: barra fixa embaixo (Início · Orçamentos · + · Pedidos · Agenda); o "+" abre o menu de criar.
+// Quase tudo é CSS (visual.css); aqui só o nome de quem está logado e o menu do "+".
+// ═══════════════════════════════════════════════════════
+const NAV_PAPEL = { dona: 'Dona', admin: 'Administradora', atendimento: 'Atendimento', vendas: 'Vendas' };
+function navPreencher(){
+  const a = (typeof AUTH !== 'undefined' && AUTH) || {};
+  const nome = a.nome || '', ini = nome.split(/\s+/).filter(Boolean).map(p => p[0]).join('').slice(0, 2).toUpperCase();
+  const set = (id, v) => { const el = document.getElementById(id); if(el && el.textContent !== v) el.textContent = v; };
+  set('nav-nome', nome); set('nav-av', ini); set('nav-papel', NAV_PAPEL[a.papel] || '');
+  const gestora = typeof fechPodeConferir === 'function' && fechPodeConferir();
+  document.querySelectorAll('.tabs-nav .so-gestora').forEach(el => { el.hidden = !gestora; });
+}
+(function navObservar(){
+  const ligar = () => {
+    navPreencher();
+    const alvo = document.getElementById('usuario-logado');
+    if(alvo) new MutationObserver(navPreencher).observe(alvo, { childList: true, characterData: true, subtree: true });
+  };
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar); else ligar();
+})();
+
+// menu do "+" (celular): criar orçamento, cálculo rápido, retorno, chamado de garantia ou tarefa
+function abrirMenuCriar(){
+  fecharMenuCriar();
+  const op = (icone, tit, sub, acao) => `<button type="button" class="criar-op" data-acao="${acao}"><span class="criar-ic">${ic(icone, 20)}</span><span><b>${tit}</b><span>${sub}</span></span></button>`;
+  const m = document.createElement('div'); m.id = 'menu-criar'; m.className = 'menu-criar';
+  m.innerHTML = `<div class="criar-fundo" data-acao="fechar"></div>
+    <div class="criar-folha" role="dialog" aria-label="Criar">
+      <div class="criar-puxa"></div>
+      ${op('novo', 'Novo orçamento', 'Busca o cliente no Olist', 'orc')}
+      ${op('calculadora', 'Cálculo rápido', 'Calcular sem abrir orçamento', 'calc')}
+      ${op('chat', 'Retorno', 'Algo para responder a um cliente', 'ret')}
+      ${typeof novaGarantia === 'function' ? op('escudo', 'Chamado de garantia', 'Defeito ou problema em produto', 'gar') : ''}
+      ${op('ok', 'Tarefa minha', 'Só você vê', 'tarefa')}
+    </div>`;
+  m.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-acao]'); if(!b) return;
+    const acao = b.dataset.acao; fecharMenuCriar();
+    if(acao === 'orc') novoOrcamento();
+    else if(acao === 'calc') switchTab('calc');
+    else if(acao === 'ret') novoRetorno();
+    else if(acao === 'gar') novaGarantia();
+    else if(acao === 'tarefa'){
+      switchTab('inicio');
+      setTimeout(() => { const i = document.getElementById('md-tarefa-txt'); if(i){ const sec = i.closest('.inicio-bloco.fechado'); if(sec) celAlternar(sec); i.scrollIntoView({ block: 'center' }); i.focus(); } }, 400);
+    }
+  });
+  document.body.appendChild(m);
+}
+function fecharMenuCriar(){ const m = document.getElementById('menu-criar'); if(m) m.remove(); }
+document.addEventListener('keydown', (ev) => { if(ev.key === 'Escape') fecharMenuCriar(); });

@@ -19,7 +19,7 @@ with sync_playwright() as p:
     pg.add_init_script("document.addEventListener('DOMContentLoaded',()=>{const st=document.createElement('style');st.textContent='#tab-calc#tab-calc[data-passo-atual] [data-passo][data-passo]:not(.zz):not(.zz){display:revert!important}';document.head.appendChild(st)})")  # TESTE_TODOS_PASSOS
     pg.add_init_script("localStorage.setItem('cdp_auth', JSON.stringify({access_token:'tk-teste',refresh_token:'rf',expires_at:4102444800,email:'contato@centraldaspersianas.com',nome:'Bru',papel:'admin',provisoria:false}))")
     pg.goto('http://localhost:8766/'); pg.wait_for_timeout(1000); pg.evaluate("typeof switchTab==='function' && switchTab('hist')"); pg.wait_for_timeout(400)  # IR_LISTA
-    pg.locator('.btn-novo-orc:visible, .fab-novo:visible').first.click(); pg.wait_for_timeout(200)
+    (pg.click('.tab-mais'), pg.click('.criar-op[data-acao=orc]')) if pg.is_visible('.tab-mais') else pg.locator('.btn-topo.pri:visible, .btn-novo-orc:visible').first.click(); pg.wait_for_timeout(200)
     print('tela:', pg.evaluate("document.querySelector('.tab-panel.active').id"), '| barra cliente visível:', pg.is_visible('.cli-bar'), '| aba ativa:', pg.evaluate("(document.querySelector('.tab-btn.active')||{}).dataset"))
     pg.screenshot(path=f'{S}/c2-vazio.png', full_page=True)
     pg.locator('#novo-criar').click(); pg.wait_for_timeout(100)
@@ -50,13 +50,13 @@ with sync_playwright() as p:
     pg.evaluate('saveOrcamento()'); pg.wait_for_timeout(600)
     print('POSTs totais:', len(posts), '| PATCH:', [(i, len(b['items']), b['total_avista'], b.get('telefone'), b.get('bairro')) for i,b in patches])
     # novo de novo, e cancelar
-    pg.locator('.btn-novo-orc:visible, .fab-novo:visible').first.click(); pg.wait_for_timeout(150)
+    (pg.click('.tab-mais'), pg.click('.criar-op[data-acao=orc]')) if pg.is_visible('.tab-mais') else pg.locator('.btn-topo.pri:visible, .btn-novo-orc:visible').first.click(); pg.wait_for_timeout(150)
     print('form limpo:', pg.input_value('#novo-nome')=='' and pg.input_value('#novo-tel')=='', '| opção marcada:', pg.locator('.novo-opcao.on').count())
     pg.locator('#tab-novo .novo-voltar').click(); pg.wait_for_timeout(300)
     print('cancelar → tela:', pg.evaluate("document.querySelector('.tab-panel.active').id"), '| largura:', pg.evaluate('document.documentElement.scrollWidth'))
     # erro de conexão ao criar
     pg.unroute('**/rest/v1/orcamentos**'); pg.route('**/rest/v1/orcamentos**', lambda r: r.fulfill(status=500, body='x'))
-    pg.locator('.btn-novo-orc:visible, .fab-novo:visible').first.click(); pg.fill('#novo-nome','X'); pg.fill('#novo-tel','(81) 99999-9999'); pg.locator('.novo-opcao[data-comeco=visita_direta]').click()
+    (pg.click('.tab-mais'), pg.click('.criar-op[data-acao=orc]')) if pg.is_visible('.tab-mais') else pg.locator('.btn-topo.pri:visible, .btn-novo-orc:visible').first.click(); pg.fill('#novo-nome','X'); pg.fill('#novo-tel','(81) 99999-9999'); pg.locator('.novo-opcao[data-comeco=visita_direta]').click()
     pg.locator('#novo-criar').click(); pg.wait_for_timeout(400)
     print('falha de conexão:', pg.inner_text('#novo-erro'), '| ainda na tela:', pg.evaluate("document.querySelector('.tab-panel.active').id"), '| botão ok:', pg.is_enabled('#novo-criar'))
     ctx.close(); b.close()

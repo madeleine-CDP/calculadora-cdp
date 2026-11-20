@@ -89,3 +89,94 @@ body{font-size:14.5px;font-variant-numeric:tabular-nums;letter-spacing:-.003em}
 .inicio-bloco-tit > span{display:inline-flex;align-items:center;gap:8px}
 .inicio-bloco-tit > span .ic,.ped-filtro .ic,.pedv-fase .ic,.fin-fase .ic{color:var(--tinta-fraca)}
 .inicio-secao{letter-spacing:.06em!important}
+
+/* ═══ ETAPA 2 · MENU (20/11/2026) ═══
+   computador (≥1000px): menu lateral fixo · tablet: abas em cima como antes · celular (≤720px): barra embaixo com "+" */
+.nav-logo,.nav-grupo,.nav-eu,.tab-mais,.topo-acoes,.ret-topo{display:none}
+.fab-novo{display:none!important}
+
+@media (min-width:1000px){
+  body{padding-left:232px}
+  .tabs-nav{position:fixed!important;left:0;top:0;bottom:0;width:232px;max-width:none!important;margin:0!important;z-index:210;
+    display:flex!important;flex-direction:column;align-items:stretch;gap:2px!important;padding:16px 12px 12px!important;
+    background:var(--superficie)!important;border-right:1px solid var(--linha)!important;overflow-y:auto}
+  .tabs-nav .btn-novo-orc{display:none!important}
+  .nav-logo{display:block;height:36px;width:auto;align-self:flex-start;margin:4px 8px 18px}
+  .tabs-nav .tab-btn{width:100%;height:36px!important;flex-shrink:0;justify-content:flex-start!important;gap:10px!important;padding:0 10px!important;border-radius:7px!important;font-size:13.5px!important;border:0!important}
+  .tabs-nav .tab-btn .ic{color:var(--tinta-fraca)}
+  .tabs-nav .tab-btn:hover:not(.active){background:var(--hover)!important;color:var(--tinta)!important}
+  .tabs-nav .tab-btn.active{font-weight:600!important}
+  .tabs-nav .tab-btn .tab-badge{margin-left:auto}
+  .nav-grupo{display:block;font-size:11px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-fraca);padding:16px 10px 6px}
+  .nav-grupo[hidden]{display:none}
+  .nav-eu{display:flex;align-items:center;gap:10px;margin-top:auto;padding:12px 6px 2px;border-top:1px solid var(--linha)}
+  .nav-av{width:30px;height:30px;border-radius:50%;background:var(--linho);color:var(--vinho);display:grid;place-items:center;font-size:11.5px;font-weight:650;flex:none}
+  .nav-eu-txt{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+  .nav-eu-txt b{font-size:13px;font-weight:600;color:var(--tinta)}
+  .nav-eu-txt span{font-size:12px;color:var(--tinta-fraca)}
+  .nav-sair{margin-left:auto;width:32px;height:32px;border-radius:7px;border:0;background:none;color:var(--tinta-fraca);display:grid;place-items:center;cursor:pointer}
+  .nav-sair:hover{background:var(--hover);color:var(--vinho)}
+  /* cabeçalho: sem logo (está no menu), busca à esquerda, ações à direita */
+  .site-header-in{max-width:none!important;padding:10px 24px!important}
+  .site-header-in > img{display:none!important}
+  .site-header .usuario{display:none!important}
+  .topo-acoes{display:flex;gap:8px;margin-left:auto}
+  .btn-topo{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:var(--r2);border:1px solid var(--linha);background:var(--superficie);color:var(--tinta);font:inherit;font-size:13.5px;font-weight:550;cursor:pointer;white-space:nowrap}
+  .btn-topo:hover{background:var(--hover)}
+  .btn-topo.pri{background:var(--vinho);border-color:var(--vinho);color:#fff}
+  .btn-topo.pri:hover{background:var(--vinho-escuro)}
+  /* a pasta e a calculadora lado a lado começam depois do menu */
+  body.lado-a-lado #tab-orc{left:232px!important}
+  .inicio-atalhos > .btn:first-child{display:none!important}
+  body.lado-a-lado #gaveta-fundo{left:232px!important}
+  #orc-resumo-bar{left:244px!important}
+}
+@media (min-width:721px) and (max-width:999px){
+  .tabs-nav .tab-extra{display:none!important}
+}
+
+@media (max-width:720px){
+  /* barra de navegação embaixo */
+  .tabs-nav{position:fixed!important;left:0;right:0;bottom:0;z-index:240;margin:0!important;max-width:none!important;
+    display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;align-items:center;gap:0!important;
+    padding:6px max(4px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))!important;
+    background:rgba(255,255,255,.97)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--linha)!important}
+  .tabs-nav > *{display:none!important}
+  .tabs-nav .tab-btn[data-tab=inicio],.tabs-nav .tab-btn[data-tab=hist],.tabs-nav .tab-btn[data-tab=ped],.tabs-nav .tab-btn[data-tab=agenda]{display:flex!important}
+  .tabs-nav .tab-mais{display:grid!important;order:3}
+  .tabs-nav .tab-btn[data-tab=inicio]{order:1}.tabs-nav .tab-btn[data-tab=hist]{order:2}.tabs-nav .tab-btn[data-tab=ped]{order:4}.tabs-nav .tab-btn[data-tab=agenda]{order:5}
+  .tabs-nav .tab-btn{flex-direction:column;align-items:center;justify-content:center;gap:2px!important;height:50px!important;padding:0!important;border:0!important;background:none!important;
+    font-size:10.5px!important;font-weight:500!important;color:var(--tinta-fraca)!important;border-radius:8px!important;position:relative}
+  .tabs-nav .tab-btn .ic{width:22px;height:22px}
+  .tabs-nav .tab-btn.active{color:var(--vinho)!important;font-weight:650!important;background:none!important}
+  .tabs-nav .lbl-full{display:none!important}.tabs-nav .lbl-curto{display:inline!important}
+  .tab-mais{width:48px;height:48px;margin:0 auto;border-radius:13px;border:0;background:var(--vinho);color:#fff;place-items:center;cursor:pointer;box-shadow:0 4px 12px rgba(90,21,36,.28)}
+  .tab-mais .ic{width:24px;height:24px}
+  .tab-mais:active{transform:scale(.96)}
+  /* some nas telas de trabalho (pasta, calculadora, proposta, novo orçamento, busca) */
+  body[data-tela=orc] .tabs-nav,body[data-tela=calc] .tabs-nav{display:none!important}
+  body:not([data-tela=orc]):not([data-tela=calc]) .wrap{padding-bottom:96px!important}
+  #orc-resumo-bar{bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
+  body[data-tela=calc] #orc-resumo-bar,body[data-tela=proposta] #orc-resumo-bar{bottom:78px!important}
+  /* Retornos ganha um atalho no topo (com o número dos seus) */
+  .ret-topo{display:inline-flex;position:relative;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--r2);border:1px solid var(--linha);background:var(--superficie);color:var(--tinta-suave);cursor:pointer;margin-left:8px}
+  .ret-topo .tab-badge{position:absolute;top:-5px;right:-5px}
+  .busca-bt-cel{border-radius:var(--r2)!important;width:40px!important;height:40px!important}
+  .inicio-atalhos > .btn:first-child{display:none}
+  .btn-sair{font-size:0!important;width:40px;padding:0!important;justify-content:center;border-radius:var(--r2)!important}
+  .btn-sair .ic{width:18px;height:18px}
+}
+
+/* menu do "+" (folha que sobe de baixo) */
+.menu-criar{position:fixed;inset:0;z-index:600}
+.criar-fundo{position:absolute;inset:0;background:rgba(26,25,23,.36);animation:criarFundo .15s}
+.criar-folha{position:absolute;left:0;right:0;bottom:0;background:var(--superficie);border-radius:16px 16px 0 0;padding:8px 16px max(16px,env(safe-area-inset-bottom,0px));box-shadow:var(--sombra-alta);animation:criarSobe .2s cubic-bezier(.2,.8,.2,1);max-width:560px;margin:0 auto}
+.criar-puxa{width:36px;height:4px;border-radius:2px;background:#D6D2CA;margin:4px auto 8px}
+.criar-op{display:flex;align-items:center;gap:14px;width:100%;padding:12px 4px;border:0;border-bottom:1px solid var(--linha-suave);background:none;text-align:left;font:inherit;color:var(--tinta);cursor:pointer}
+.criar-op:last-child{border-bottom:0}
+.criar-ic{width:40px;height:40px;border-radius:10px;background:var(--vinho-suave);color:var(--vinho);display:grid;place-items:center;flex:none}
+.criar-op b{display:block;font-size:15px;font-weight:600}
+.criar-op span span{font-size:12.5px;color:var(--tinta-fraca)}
+@keyframes criarSobe{from{transform:translateY(30px);opacity:.4}}
+@keyframes criarFundo{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){.criar-folha,.criar-fundo{animation:none}}

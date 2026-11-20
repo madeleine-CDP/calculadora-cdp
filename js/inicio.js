@@ -171,7 +171,7 @@ function blocoRetornosInicio(){
   const l = retornosParaHoje(), eu = meuNome();
   const badge = document.getElementById('ret-badge');
   const meus = l.filter(r => r.responsavel === eu).length;
-  if(badge){ badge.hidden = !meus; badge.textContent = meus; }
+  [badge, document.getElementById('ret-badge-topo')].forEach(b => { if(b){ b.hidden = !meus; b.textContent = meus; } });
   const pn = (typeof painelRetornos === 'function') ? painelRetornos() : { linhas: [] };
   if(!l.length && !pn.linhas.length) return '';
   const cel = (nome, filtro, n, cls) => `<button type="button" class="rg-n${n ? ' ' + cls : ' zero'}" onclick="abrirRetornos('${nome}','${filtro}')" aria-label="${n}">${n}</button>`;

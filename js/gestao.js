@@ -9,7 +9,6 @@ async function abrirGestao(){
   if(!(typeof finPode === 'function' && finPode())) return;
   if(typeof orcamentoAberto === 'function' && orcamentoAberto()){ if(!(await confirmarSairOrc())) return; limparOrcamentoEmAndamento(); }
   irParaTab('ges'); window.scrollTo({ top: 0 });
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'inicio'));
   renderGestao();
 }
 async function renderGestao(){

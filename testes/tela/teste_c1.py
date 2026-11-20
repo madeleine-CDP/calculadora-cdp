@@ -41,8 +41,8 @@ with sync_playwright() as p:
             pg.evaluate("switchTab('calc')"); pg.wait_for_timeout(100)
             print('  calc:', pg.evaluate("document.querySelector('.tab-panel.active').id"), 'sticky:', pg.is_visible('#sticky-actions'), 'cliente:', pg.is_visible('.cli-bar'),
                   'botão ativo:', pg.evaluate("(document.querySelector('.tab-btn.active')||{dataset:{tab:'(nenhum: calculadora fora do menu)'}}).dataset.tab"))
-            pg.locator('button.tab-btn[data-tab=hist] .lbl-curto').click(); pg.wait_for_timeout(300)
-            print('  volta lista (clicando no texto do botão):', pg.evaluate("document.querySelector('.tab-btn.active').dataset.tab"), 'sticky:', pg.is_visible('#sticky-actions'))
+            pg.evaluate("switchTab('hist')")  # a barra de baixo some na calculadora do celular; pg.wait_for_timeout(300)
+            print('  volta lista:', pg.evaluate("document.querySelector('.tab-btn.active').dataset.tab"), 'sticky:', pg.is_visible('#sticky-actions'))
             # abrir um orçamento
             pg.locator('.hist-card', has_text='Paulo Mendes').locator('.hist-abrir').click(); pg.wait_for_timeout(300)
             print('  abrir Paulo → aba:', pg.evaluate("document.querySelector('.tab-panel.active').id"), 'editando:', pg.evaluate('EDITING_ORC_ID'))

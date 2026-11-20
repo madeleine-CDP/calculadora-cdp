@@ -30,7 +30,6 @@ async function abrirFinanceiro(){
   if(!finPode()) return;
   if(typeof orcamentoAberto === 'function' && orcamentoAberto()){ if(!(await confirmarSairOrc())) return; limparOrcamentoEmAndamento(); }
   irParaTab('fin'); window.scrollTo({ top: 0 });
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'inicio'));
   renderFinanceiro();
 }
 async function renderFinanceiro(forcar){

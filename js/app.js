@@ -2551,7 +2551,8 @@ function irParaTab(t){
 function ajustarLado(){
   if(!document.body.classList.contains('lado-a-lado')) return;
   window.scrollTo(0, 0);
-  const nav = document.querySelector('.tabs-nav'), cli = document.querySelector('.cli-bar');
+  let nav = document.querySelector('.tabs-nav'); const cli = document.querySelector('.cli-bar');
+  if(nav && getComputedStyle(nav).position === 'fixed') nav = document.querySelector('.site-header');
   let topo = nav ? nav.getBoundingClientRect().bottom : 120;
   if(cli && getComputedStyle(cli).display !== 'none') topo = Math.max(topo, cli.getBoundingClientRect().bottom);
   document.documentElement.style.setProperty('--topo-lado', Math.round(topo + 8) + 'px');
