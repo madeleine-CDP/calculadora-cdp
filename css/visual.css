@@ -180,3 +180,76 @@ body{font-size:14.5px;font-variant-numeric:tabular-nums;letter-spacing:-.003em}
 @keyframes criarSobe{from{transform:translateY(30px);opacity:.4}}
 @keyframes criarFundo{from{opacity:0}}
 @media (prefers-reduced-motion:reduce){.criar-folha,.criar-fundo{animation:none}}
+
+/* ═══ ETAPA 3 · INÍCIO NOVO (20/11/2026) ═══
+   números do dia no topo; no computador duas colunas: "Para fazer hoje" à esquerda, agenda/meu dia à direita;
+   cada bloco vira uma caixa com título e linhas (em vez de cartões soltos) */
+.inicio-wrap{max-width:1180px!important}
+.ini-cab{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:2px 0 14px!important}
+.ini-cab .hist-titulo{font-size:26px!important}
+.inicio-data{font-size:12px!important;letter-spacing:.06em!important;color:var(--tinta-fraca)!important;margin-bottom:4px!important}
+.ini-atalhos-pc{display:none;gap:8px}
+@media (min-width:1000px){
+  .ini-atalhos-pc{display:flex}
+  .ini-atalhos-pc .btn-topo .ic{color:var(--tinta-fraca)}
+  .inicio-atalhos{display:none!important}
+}
+@media (max-width:720px){ .inicio-atalhos{display:none!important} }
+
+/* números */
+.ini-numeros{background:var(--superficie);border:1px solid var(--linha);border-radius:var(--r);margin-bottom:20px;overflow:hidden}
+.ini-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.ini-kpi{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px 18px;border:0;border-right:1px solid var(--linha);background:none;text-align:left;font:inherit;color:var(--tinta);cursor:pointer;min-width:0}
+.ini-kpi:last-child{border-right:0}
+.ini-kpi:hover{background:var(--cab)}
+.ini-kpi-r{font-size:12.5px;color:var(--tinta-fraca);font-weight:500}
+.ini-kpi-v{font-size:26px;font-weight:650;letter-spacing:-.02em;line-height:1.2}
+.ini-kpi.ok .ini-kpi-v{color:var(--ok)}
+.ini-kpi-s{font-size:12.5px;color:var(--tinta-fraca);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ini-etapas{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-top:1px solid var(--linha);background:var(--cab)}
+.ini-etapa{display:inline-flex;align-items:baseline;gap:6px;height:30px;padding:0 10px;border-radius:7px;border:1px solid var(--linha);background:var(--superficie);font:inherit;font-size:13px;color:var(--tinta-suave);cursor:pointer;white-space:nowrap}
+.ini-etapa b{color:var(--tinta);font-weight:650}
+.ini-etapa em{font-style:normal;font-size:12px;color:var(--tinta-fraca)}
+.ini-etapa:hover{border-color:var(--border2)}
+
+/* colunas */
+.ini-grade{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.ini-fila,.ini-lado{display:flex;flex-direction:column;min-width:0}
+@media (min-width:1100px){ .ini-grade{grid-template-columns:minmax(0,1fr) 340px} .ini-lado{position:sticky;top:76px} }
+.ini-fila > .inicio-secao{margin:0 2px 10px!important}
+
+/* blocos em caixa */
+#inicio-conteudo .inicio-bloco{background:var(--superficie);border:1px solid var(--linha);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
+#inicio-conteudo .inicio-bloco > .inicio-bloco-tit{margin:0!important;padding:12px 16px;border-bottom:1px solid var(--linha);align-items:center}
+#inicio-conteudo .inicio-bloco-tit > span{font-size:14px!important;font-weight:650!important}
+#inicio-conteudo .inicio-bloco-tit strong{font-size:12.5px!important;color:var(--tinta-fraca)!important}
+#inicio-conteudo .inicio-bloco > :not(.inicio-bloco-tit){margin:12px 16px}
+#inicio-conteudo .inicio-bloco > .inicio-pend{margin:0;gap:0!important}
+#inicio-conteudo .inicio-pend-item{border:0!important;border-top:1px solid var(--linha-suave)!important;border-radius:0!important;padding:11px 16px!important;box-shadow:none!important;background:none}
+#inicio-conteudo .inicio-pend-item:first-child{border-top:0!important}
+#inicio-conteudo .inicio-pend-item:hover{background:var(--cab)}
+#inicio-conteudo .inicio-pend-txt strong{font-size:14px}
+#inicio-conteudo .inicio-pend-ic{width:30px!important;height:30px!important}
+#inicio-conteudo .inicio-pend-item.pend-atrasado{box-shadow:inset 3px 0 0 var(--atr)!important}
+#inicio-conteudo .inicio-ok{border-radius:var(--r2);padding:10px 12px;font-size:13.5px;background:var(--ok-bg);color:var(--ok)}
+#inicio-conteudo .inicio-bloco > .inicio-ok{margin:12px 16px}
+/* links e notas também ganham caixa */
+#inicio-conteudo #inicio-notas textarea{border-radius:var(--r2)}
+
+@media (max-width:720px){
+  .ini-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ini-kpi{padding:11px 12px;border-bottom:1px solid var(--linha)}
+  .ini-kpi:nth-child(2n){border-right:0}
+  .ini-kpi:nth-child(n+3){border-bottom:0}
+  .ini-kpi-v{font-size:20px}
+  .ini-etapas{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .ini-etapas::-webkit-scrollbar{display:none}
+  .ini-cab .hist-titulo{font-size:22px!important}
+  #inicio-conteudo .inicio-bloco{margin-bottom:12px}
+}
+
+/* abas Meu dia · Gestão · Financeiro como seletor (segmented) */
+.painel-abas{display:inline-flex!important;flex-wrap:nowrap!important;gap:2px!important;padding:3px!important;background:var(--hover);border:1px solid var(--linha);border-radius:9px;margin-bottom:14px!important;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.painel-abas::-webkit-scrollbar{display:none}
+.painel-abas .hist-chip{height:30px!important;padding:0 12px!important;border:0!important;background:none!important;color:var(--tinta-suave)!important;font-size:13px!important;font-weight:500!important;border-radius:6px!important;white-space:nowrap}
+.painel-abas .hist-chip.on{background:var(--superficie)!important;color:var(--tinta)!important;font-weight:650!important;box-shadow:0 1px 2px rgba(26,25,23,.1)}
