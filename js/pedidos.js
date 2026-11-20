@@ -19,7 +19,7 @@ const PED_FASES = [
   { k: 'entregue', sit: [6],    em: '✅', tit: 'Entregues · avaliação e nota fiscal' },
 ];
 const PED_FABRICAS = [['decore', 'Decore', 'D'], ['real', 'Real', 'R']];
-let PED_OS = [], PED_NUMS = [], PED_CONF = [], PED_CARREGADO = false, PED_SINC_EM = 0, PED_FILTRO = 'todos', PED_AGENDA = null;
+let PED_OS = [], PED_NUMS = [], PED_CONF = [], SVC_MAPA = {}, PED_CARREGADO = false, PED_SINC_EM = 0, PED_FILTRO = 'todos', PED_AGENDA = null;
 const PED_ABERTO = new Set();
 const PED_MARCADAS = new Set();   // marcadas agora: continuam na tela (com desfazer) até recarregar a página
 
@@ -31,14 +31,16 @@ async function sincronizarPedidos(forcar){
 }
 async function carregarPedidos(){
   const desde = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
-  const [r1, r2, r3] = await Promise.all([
+  const [r1, r2, r3, r4] = await Promise.all([
     sbFetch('/rest/v1/os_acompanhamento?select=*&or=(situacao.in.(0,3,4,7,5,1),and(situacao.eq.6,data_entrega.gte.' + desde + '))&order=situacao_desde.asc'),
     sbFetch('/rest/v1/conferencias_fabrica?select=*&order=conferido_em.desc&limit=30'),
     // todos os nºs de fábrica já usados (inclusive OS canceladas e entregues há mais tempo), para o próximo nº
     sbFetch('/rest/v1/os_acompanhamento?select=numero,numero_fabrica&numero_fabrica=not.is.null&order=data_venda.desc.nullslast&limit=400'),
+    sbFetch('/rest/v1/servicos_os?select=*'),
   ]);
   if(!r1.ok) throw new Error('os');
   PED_OS = await r1.json(); PED_CONF = r2.ok ? await r2.json() : []; PED_NUMS = r3.ok ? await r3.json() : [];
+  SVC_MAPA = {}; if(r4 && r4.ok) (await r4.json()).forEach(x => SVC_MAPA[x.pedido_id] = x);
   PED_CARREGADO = true;
 }
 async function carregarAgendaPedidos(){
@@ -67,7 +69,7 @@ function avaliacaoPendente(o){
 }
 // OS de cada fase; nas entregues, só as que ainda pedem alguma ação (avaliação ou nota fiscal)
 function pedNaFase(f){
-  return PED_OS.filter(o => f.sit.includes(Number(o.situacao)) && (f.k !== 'entregue' || avaliacaoPendente(o) || nfEstado(o) !== 'ok' || PED_MARCADAS.has(o.pedido_id)));
+  return PED_OS.filter(o => f.sit.includes(Number(o.situacao)) && (f.k === 'entregue' || !svcSoServico(o)) && (f.k !== 'entregue' || avaliacaoPendente(o) || nfEstado(o) !== 'ok' || PED_MARCADAS.has(o.pedido_id)));
 }
 const pedDias = (iso) => iso ? Math.floor((Date.now() - new Date(iso)) / 864e5) : 0;
 const pedNomeChave = (n) => String(n || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/\s+/).filter(x => x.length > 2);
@@ -186,6 +188,116 @@ function pedAvisoInstalacao(ev, tipo){
        <button type="button" class="conf-link" onclick="abrirPedidoVenda(${o.pedido_id})">ver pedido ›</button></div>`;
 }
 
+// ═════════ OS DE SERVIÇO (acompanhamento; pedido urgente da Bru, 20/11/2026; sql/2026-11-servicos-os.sql) ═════════
+// É OS de serviço: correção à mão (servicos_os.eh_servico) ou, automático, a tag "SERVIÇO" no Olist, ou item de serviço sem
+// cortina/persiana nova (o servidor lê os itens: servico_tipos, tem_produto, marcado_servico). Com produto novo junto,
+// a OS aparece nos dois lugares (fases de produto e Serviços); só serviço, sai das fases de produto (menos Entregues).
+function svcEhServico(o){
+  const s = SVC_MAPA[o.pedido_id];
+  if(s && s.eh_servico !== null && s.eh_servico !== undefined) return !!s.eh_servico;
+  return !!(o.marcado_servico || (o.servico_tipos && o.tem_produto === false));
+}
+const svcSoServico = (o) => svcEhServico(o) && !o.tem_produto;
+const svcTipos = (o) => String(o.servico_tipos || '').split(',').map(t => t.trim()).filter(Boolean);
+function svcEmAndamento(){
+  return PED_OS.filter(o => svcEhServico(o) && Number(o.situacao) !== 2 && !(SVC_MAPA[o.pedido_id] || {}).concluido_em)
+    .sort((a, b) => String(a.data_venda || '').localeCompare(String(b.data_venda || '')));
+}
+// etapas conforme as respostas (onde é feito; se precisa de peça)
+function svcEtapas(s){
+  const peca = s.precisa_peca ? [['peca_pedida', '🔩 Peça pedida'], ['peca_chegou', '📦 Peça chegou na loja']] : [];
+  if(s.local === 'loja') return [['retirada', '🚚 Retirada (está na loja)'], ...peca, ['feito', '🛠️ Serviço feito na loja'], ['devolvido', '🏠 Devolvido / instalado no cliente']];
+  return [...peca, ['feito', '🛠️ Serviço feito no local']];
+}
+const svcDias = (iso) => iso ? Math.floor((Date.now() - new Date(iso)) / 864e5) : 0;
+function svcSituacao(o){
+  const s = SVC_MAPA[o.pedido_id] || {};
+  if(!s.local || s.precisa_peca === null || s.precisa_peca === undefined) return { cls: 'novo', txt: '🆕 Responder: onde é feito e se precisa de peça' };
+  const et = svcEtapas(s), prox = et.find(([k]) => !s[k + '_em']);
+  if(!prox) return { cls: 'ok', txt: '✅ Tudo feito · falta concluir' };
+  if(prox[0] === 'peca_chegou') return { cls: svcDias(s.peca_pedida_em) >= 7 ? 'atras' : 'espera', txt: '⏳ Aguardando ' + (s.peca_desc || 'a peça') + (s.peca_fabrica ? ' (' + s.peca_fabrica + ')' : '') + (svcDias(s.peca_pedida_em) ? ' há ' + svcDias(s.peca_pedida_em) + (svcDias(s.peca_pedida_em) === 1 ? ' dia' : ' dias') : ' · pedida hoje') };
+  if(prox[0] === 'peca_pedida') return { cls: 'agir', txt: '🔩 Pedir a peça: ' + (s.peca_desc || 'definir qual') };
+  if(prox[0] === 'retirada') return { cls: 'agir', txt: '🚚 Agendar a retirada' };
+  if(prox[0] === 'feito') return s.local === 'loja' ? { cls: 'agir', txt: '🧺 Na loja: fazer o serviço' } : { cls: 'agir', txt: s.precisa_peca ? '📅 Peça chegou: agendar a visita' : '📅 Agendar a visita' };
+  if(prox[0] === 'devolvido') return { cls: 'agir', txt: '🏠 Pronto: agendar a devolução' };
+  return { cls: 'agir', txt: prox[1] };
+}
+async function svcSalvar(id, campos, msg){
+  const r = await sbFetch('/rest/v1/servicos_os?on_conflict=pedido_id', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify(Object.assign({ pedido_id: id }, campos)) });
+  if(!r.ok){ avisoTopo('Não foi possível registrar agora. Tente de novo.'); return false; }
+  const l = (await r.json())[0]; if(l) SVC_MAPA[id] = l;
+  PED_MARCADAS.add(id);
+  if(msg) avisoTopo(msg);
+  pedRedesenhar(); return true;
+}
+function svcMarcar(id, etapa, feito){
+  const rot = (svcEtapas(SVC_MAPA[id] || {}).find(([k]) => k === etapa) || [, etapa])[1].replace(/^\S+\s/, '');
+  svcSalvar(id, { [etapa + '_em']: feito ? new Date().toISOString() : null }, feito ? rot + ': registrado. <button type="button" class="aviso-desfazer" onclick="svcMarcar(' + id + ',\'' + etapa + '\',false)">desfazer</button>' : 'Desfeito.');
+}
+function svcSalvarPeca(id){
+  const g = (k) => (($('svc-' + k + '-' + id) || {}).value || '').trim() || null;
+  if(!g('desc')){ avisoTopo('Escreva qual peça, componente ou acessório.'); return; }
+  svcSalvar(id, { precisa_peca: true, peca_desc: g('desc'), peca_fabrica: g('fab'), peca_pedido: g('ped') }, 'Peça anotada.');
+}
+function cardServico(o){
+  const s = SVC_MAPA[o.pedido_id] || {}, id = o.pedido_id, sit = svcSituacao(o);
+  const tipos = svcTipos(o), lavagem = tipos.includes('lavagem');
+  const ag = typeof pedNaAgenda === 'function' ? pedNaAgenda(o) : null;
+  const quando = (k) => escHtml([s[k + '_por'], s[k + '_em'] ? new Date(s[k + '_em']).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''].filter(Boolean).join(' · '));
+  // pergunta 1: onde
+  const q1 = s.local
+    ? `<div class="svc-resp"><span>${s.local === 'loja' ? '🚚 Retirar e fazer na loja' : '🏠 Feito no local (na casa do cliente)'}</span><button type="button" class="conf-link" onclick="svcSalvar(${id},{local:null})">mudar</button></div>`
+    : `<div class="svc-perg"><b>Onde vai ser feito?</b><div class="svc-bts">
+        <button type="button" class="conf-btn${lavagem ? '' : ' ok'}" onclick="svcSalvar(${id},{local:'local'})">🏠 No local</button>
+        <button type="button" class="conf-btn${lavagem ? ' ok' : ''}" onclick="svcSalvar(${id},{local:'loja'})">🚚 Retirar e fazer na loja</button></div>
+        ${lavagem ? '<span class="conf-nota">Lavagem: a cortina sempre é retirada.</span>' : ''}</div>`;
+  // pergunta 2: peça
+  let q2;
+  if(s.precisa_peca === false) q2 = `<div class="svc-resp"><span>✔️ Não precisa de peça</span><button type="button" class="conf-link" onclick="svcSalvar(${id},{precisa_peca:null})">mudar</button></div>`;
+  else if(s.precisa_peca === true && s.peca_desc && !s.editPeca) q2 = `<div class="svc-resp"><span>🔩 ${escHtml(s.peca_desc)}${s.peca_fabrica ? ' · ' + escHtml(s.peca_fabrica) : ''}${s.peca_pedido ? ' · pedido ' + escHtml(s.peca_pedido) : ''}</span><button type="button" class="conf-link" onclick="SVC_MAPA[${id}].editPeca=true;pedRedesenhar()">editar</button></div>`;
+  else if(s.precisa_peca === true) q2 = `<form class="svc-peca" onsubmit="event.preventDefault();svcSalvarPeca(${id})">
+      <b>Qual peça, componente ou acessório?</b>
+      <label class="sr-only" for="svc-desc-${id}">Peça</label><input id="svc-desc-${id}" maxlength="300" placeholder="Ex.: corda do mecanismo, suporte, motor" value="${escHtml(s.peca_desc || '')}">
+      <div class="svc-peca-l"><label class="sr-only" for="svc-fab-${id}">De onde</label><select id="svc-fab-${id}">${['', 'Decore', 'Real', 'Ateliê', 'Outro fornecedor'].map(f => `<option value="${f}"${(s.peca_fabrica || '') === f ? ' selected' : ''}>${f || 'De onde?'}</option>`).join('')}</select>
+        <label class="sr-only" for="svc-ped-${id}">Nº do pedido</label><input id="svc-ped-${id}" maxlength="60" placeholder="Nº do pedido (ex.: D2330)" value="${escHtml(s.peca_pedido || '')}">
+        <button type="submit" class="conf-btn ok">Salvar</button><button type="button" class="conf-link" onclick="svcSalvar(${id},{precisa_peca:null})">cancelar</button></div></form>`;
+  else q2 = `<div class="svc-perg"><b>Precisa de peça, componente ou acessório?</b><div class="svc-bts">
+      <button type="button" class="conf-btn" onclick="svcSalvar(${id},{precisa_peca:false})">Não</button>
+      <button type="button" class="conf-btn" onclick="svcSalvar(${id},{precisa_peca:true})">Sim</button></div></div>`;
+  // etapas
+  let etapas = '';
+  if(s.local && (s.precisa_peca === false || (s.precisa_peca === true && s.peca_desc))){
+    const et = svcEtapas(s), iProx = et.findIndex(([k]) => !s[k + '_em']);
+    const precisaAgenda = (k) => (k === 'retirada' || k === 'devolvido' || (k === 'feito' && s.local === 'local'));
+    etapas = `<div class="svc-etapas">${et.map(([k, rot], i) => {
+      if(s[k + '_em']) return `<div class="svc-et ok"><span>✅ ${escHtml(rot.replace(/^\S+\s/, ''))}</span><em>${quando(k)}</em><button type="button" class="conf-link" onclick="svcMarcar(${id},'${k}',false)">desfazer</button></div>`;
+      if(i === iProx) return `<div class="svc-et prox"><button type="button" class="conf-btn ok" onclick="svcMarcar(${id},'${k}',true)">${escHtml(rot)}</button>
+        ${precisaAgenda(k) ? (ag ? `<span class="conf-st env">📅 Na agenda: ${escHtml(new Date(ag.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</span>` : '<span class="conf-nota">Agende na Agenda CLIENTES CDP com o nome do cliente no título.</span>') : ''}</div>`;
+      return `<div class="svc-et depois"><span>${escHtml(rot)}</span></div>`; }).join('')}
+      ${iProx === -1 ? `<div class="svc-et prox"><button type="button" class="conf-btn ok" onclick="svcMarcar(${id},'concluido',true)">✅ Concluir · garantia de 3 meses a partir de hoje</button></div>` : ''}</div>`;
+  }
+  return `<div class="ped-card svc-card svc-${sit.cls}">
+    <div class="gar-topo"><strong>${escHtml(o.cliente || 'Cliente')}</strong><button type="button" class="ped-ver" onclick="abrirPedidoVenda(${id})">OS ${escHtml(o.numero || '')} · ver pedido ›</button></div>
+    <div class="svc-tags">${(tipos.length ? tipos : ['serviço']).map(t => `<span>${escHtml(t)}</span>`).join('')}${o.tem_produto ? '<span class="prod">+ produto novo</span>' : ''}${o.marcado_servico ? '<span class="olist">tag SERVIÇO</span>' : ''}</div>
+    ${o.itens_resumo ? `<div class="svc-itens">${escHtml(o.itens_resumo)}</div>` : ''}
+    <div class="svc-sit">${escHtml(sit.txt)}</div>
+    ${typeof pedFaixaPagamento === 'function' ? pedFaixaPagamento(o) : ''}
+    ${q1}${q2}${etapas}
+    <div class="svc-rodape"><span class="conf-nota">${escHtml(buscaSituacaoTiny(o))}${o.data_venda ? ' · OS de ' + escHtml(new Date(o.data_venda + 'T12:00:00').toLocaleDateString('pt-BR')) : ''}</span>
+      <button type="button" class="conf-link" onclick="svcSalvar(${id},{eh_servico:false},'Tirado de Serviços. <button type=&quot;button&quot; class=&quot;aviso-desfazer&quot; onclick=&quot;svcSalvar(${id},{eh_servico:null})&quot;>desfazer</button>')">não é OS de serviço</button></div>
+  </div>`;
+}
+const SIT_TINY = { 0: 'Em aberto no Tiny', 3: 'Aprovada no Tiny', 4: 'Preparando envio no Tiny', 7: 'Pronto para envio no Tiny', 5: 'Enviada no Tiny', 1: 'Faturada no Tiny', 6: 'Entregue no Tiny' };
+const buscaSituacaoTiny = (o) => SIT_TINY[Number(o.situacao)] || '';
+function pedBlocoServicos(){
+  const l = svcEmAndamento();
+  return `<section class="ped-grupo" id="ped-servicos">
+    <div class="inicio-bloco-tit"><span>🛠️ Serviços em andamento</span><strong>${l.length}</strong></div>
+    <div class="conf-nota svc-explica">OS com a tag SERVIÇO no Olist, ou com serviço e sem cortina/persiana nova. Responda onde é feito e se precisa de peça; o sistema monta as etapas.</div>
+    ${l.length ? `<div class="ped-lista">${l.map(cardServico).join('')}</div>` : '<div class="conf-nota ped-vazio">Nenhuma OS de serviço em andamento.</div>'}
+  </section>`;
+}
+
 // ── ações ──
 async function pedMarcar(id, campo, feito){
   const r = await sbFetch('/rest/v1/os_acompanhamento?pedido_id=eq.' + id, { method: 'PATCH', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify({ [campo]: feito ? new Date().toISOString() : null }) });
@@ -241,10 +353,11 @@ function desenharPedidos(aviso){
   const grupos = PED_FASES.map(f => ({ f, l: pedNaFase(f) }));
   const lido = PED_OS.reduce((m, o) => o.lido_em > m ? o.lido_em : m, '');
   $('ped-sub').textContent = (PED_OS.filter(o => Number(o.situacao) !== 6).length) + ' OS em andamento' + (lido ? ' · lido do Olist às ' + new Date(lido).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
-  $('ped-filtros').innerHTML = [['todos', '📋 Tudo', grupos.reduce((t, g) => t + g.l.length, 0)]].concat(grupos.map(g => [g.f.k, g.f.em + ' ' + g.f.tit.split(' · ')[0], g.l.length]))
+  const nSvc = svcEmAndamento().length;
+  $('ped-filtros').innerHTML = [['todos', '📋 Tudo', grupos.reduce((t, g) => t + g.l.length, 0) + nSvc], ['servicos', '🛠️ Serviços', nSvc]].concat(grupos.map(g => [g.f.k, g.f.em + ' ' + g.f.tit.split(' · ')[0], g.l.length]))
     .map(([k, t, n]) => `<button type="button" class="hist-chip${PED_FILTRO === k ? ' on' : ''}" onclick="PED_FILTRO='${k}';desenharPedidos()">${t} <span>${n}</span></button>`).join('');
   const mostrar = grupos.filter(g => PED_FILTRO === 'todos' || g.f.k === PED_FILTRO);
-  box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + mostrar.map(g => `
+  box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + ((PED_FILTRO === 'todos' || PED_FILTRO === 'servicos') ? pedBlocoServicos() : '') + mostrar.map(g => `
     <section class="ped-grupo">
       <div class="inicio-bloco-tit"><span>${g.f.em} ${g.f.tit}</span><strong>${g.l.length}</strong></div>
       ${g.f.k === 'fabrica' && g.l.length ? pedBlocoProximoNumero() : ''}
@@ -324,6 +437,8 @@ function cardOS(o, fase){
       : avaliacaoPendente(o) ? `<div class="conf-ctrl"><button type="button" class="conf-btn conf-wa" onclick="pedVer(${o.pedido_id},'avaliacao')">⭐ Mensagem: finalização e avaliação</button></div>${msgPainel('avaliacao', pedMsgAvaliacao(o), 'Já enviei', 'avaliacao_em')}` : '';
     acoes = nfBloco + aval;
   }
+  if(o.servico_tipos && !svcEhServico(o)) acoes += `<div class="conf-ctrl"><span class="conf-nota">Tem serviço (${escHtml(o.servico_tipos)}) junto</span><button type="button" class="conf-link" onclick="svcSalvar(${o.pedido_id},{eh_servico:true},'Agora aparece em 🛠️ Serviços.')">acompanhar como serviço</button></div>`;
+  else if(svcEhServico(o)) acoes += `<div class="conf-ctrl"><span class="conf-nota">🛠️ Também em Serviços</span><button type="button" class="conf-link" onclick="PED_FILTRO='servicos';desenharPedidos();window.scrollTo({top:0})">ver ›</button></div>`;
   return `<div class="ped-card${atrasado ? ' atrasado' : ''}">
     <div class="gar-topo"><strong>${escHtml(o.cliente || 'Cliente')}</strong><button type="button" class="ped-ver" onclick="abrirPedidoVenda(${o.pedido_id})">OS ${escHtml(o.numero || '')} · ver pedido ›</button></div>
     <div class="gar-meta">${[o.numero_fabrica ? '🏷️ ' + escHtml(o.numero_fabrica) : '', o.valor ? reais(o.valor) : '', fase === 'entregue' && o.data_entrega ? 'instalado em ' + diaBR(o.data_entrega) : (desde ? 'nesta fase há ' + desde + (desde > 1 ? ' dias' : ' dia') : 'nesta fase desde hoje'),
@@ -340,9 +455,12 @@ function desenharPedidosInicio(){
   const nfEmitir = n('entregue').filter(o => nfEstado(o) === 'emitir'), nfEnviar = n('entregue').filter(o => nfEstado(o) === 'enviar');
   const conferir = PED_FABRICAS.filter(([k]) => producao.some(o => fabricasDaOS(o).includes(k)) && (() => { const u = ultimaConferencia(k); return !u || pedDias(u.conferido_em) >= 2; })());
   const semMaos = pronto.filter(o => !o.em_maos_em);
+  const svc = svcEmAndamento(), svcSit = svc.map(svcSituacao);
+  const svcN = (cls) => svcSit.filter(x => x.cls === cls).length;
   const travadas = PED_OS.filter(o => [7, 5, 1].includes(Number(o.situacao)) && !pedPagamento(o).instalacao);
   const saldoConferir = pedPodeConferir() ? PED_OS.filter(o => Number(o.situacao) !== 2 && o.saldo_comprovante_em && !o.saldo_validado_em) : [];
   const linhas = [
+    svc.length && ['servicos', '🛠️', svc.length + (svc.length > 1 ? ' OS de serviço em andamento' : ' OS de serviço em andamento'), [svcN('novo') && svcN('novo') + ' para responder', svcN('agir') && svcN('agir') + ' com próximo passo', svcN('espera') + svcN('atras') ? (svcN('espera') + svcN('atras')) + ' aguardando peça' : 0].filter(Boolean).join(' · ') || 'em dia', svcN('atras') + svcN('novo') > 0],
     saldoConferir.length && ['todos', '💳', saldoConferir.length + (saldoConferir.length > 1 ? ' saldos para conferir no extrato' : ' saldo para conferir no extrato'), 'comprovante recebido · ' + saldoConferir.map(o => primeiroNome(o.cliente)).slice(0, 3).join(', '), true],
     travadas.length && ['todos', '⛔', travadas.length + (travadas.length > 1 ? ' instalações sem pagamento completo' : ' instalação sem pagamento completo'), 'não confirmar antes de conferir o saldo', true],
     fabrica.length && ['fabrica', '🏭', fabrica.length + (fabrica.length > 1 ? ' OS para pedir na fábrica' : ' OS para pedir na fábrica'), 'próximo nº: ' + ([proximoNumeroFabrica('D') && 'D' + proximoNumeroFabrica('D'), proximoNumeroFabrica('R') && 'R' + proximoNumeroFabrica('R')].filter(Boolean).join(' · ') || '—'), true],

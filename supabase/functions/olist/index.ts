@@ -227,6 +227,36 @@ function numeroFabrica(d: any) {
   const l = [...achar(d?.numeroOrdemCompra), ...achar(d?.observacoesInternas), ...achar(d?.observacoes)];
   return [...new Set(l)].join(" / ") || (String(d?.numeroOrdemCompra ?? "").trim() || null);
 }
+// Serviços na OS (acompanhamento das OS de serviço, 20/11/2026): tipos de serviço nos itens, se há produto novo
+// (cortina/persiana/toldo) e se a OS tem a tag "SERVIÇO" no Olist.
+const RE_SERVICO = /(INSTALA|DESINSTALA|LAVAGEM|LAVAR|MANUTEN|CONSERTO|REPARO|REVIS[AÃ]O|AJUSTE|REDU[CÇ][AÃ]O D|TROCA D|SERVI[CÇ]O|M[AÃ]O DE OBRA|VISITA T[EÉ]CNICA)/i;
+function lerItensServico(d: any) {
+  const itens = (d?.itens ?? []).map((i: any) => ({ desc: String(i.produto?.descricao ?? i.descricao ?? ""), tipo: String(i.produto?.tipo ?? ""), qtd: num(i.quantidade) }));
+  const tipos = new Set<string>();
+  let temProduto = false;
+  for (const i of itens) {
+    const u = i.desc.toUpperCase();
+    const servico = i.tipo === "S" || RE_SERVICO.test(u);
+    if (servico) {
+      if (/DESINSTALA/.test(u)) tipos.add("desinstalação");
+      else if (/INSTALA/.test(u)) tipos.add("instalação");
+      if (/LAVAGEM|LAVAR/.test(u)) tipos.add("lavagem");
+      if (/MANUTEN|CONSERTO|REPARO|REVIS|M[AÃ]O DE OBRA/.test(u)) tipos.add("manutenção");
+      if (/AJUSTE|REDU[CÇ][AÃ]O D|TROCA D/.test(u)) tipos.add("ajuste");
+      if (/VISITA/.test(u)) tipos.add("visita");
+      if (![...tipos].length) tipos.add("serviço");
+    } else if (/CORTINA|PERSIANA|TOLDO/.test(u) && !/^([A-Z]+\s*[–-]\s*)?(CORDA|SUPORTE|TRILHO|PE[CÇ]A|COMPONENTE|ACESS[OÓ]RIO|CONTROLE|MOTOR\b|BAND[OÔ]|GUIA|TECIDO|CAT[AÁ]LOGO|AMOSTRA)/.test(u)) {
+      temProduto = true;
+    }
+  }
+  const marcadores = (d?.marcadores ?? []).map((m: any) => String(m?.descricao ?? m?.nome ?? m ?? ""));
+  return {
+    itens_resumo: itens.map((i: any) => (i.qtd && i.qtd !== 1 ? String(i.qtd).replace(".", ",") + "× " : "") + i.desc).join(" · ").slice(0, 1000) || null,
+    servico_tipos: [...tipos].join(", ") || null,
+    tem_produto: temProduto,
+    marcado_servico: marcadores.some((m: string) => /SERVI[CÇ]O/i.test(m)),
+  };
+}
 async function sincronizarOS() {
   const hoje = new Date();
   const desde = new Date(hoje); desde.setDate(desde.getDate() - 30);   // entregues dos últimos 30 dias (avaliação + nota fiscal)
@@ -246,7 +276,7 @@ async function sincronizarOS() {
   }
 
   const ids = [...vistos.keys()];
-  const { data: jaRows } = ids.length ? await admin.from("os_acompanhamento").select("pedido_id,situacao,numero_fabrica,data_entrega,nf_id,nf_numero,nf_situacao,nf_checado_em").in("pedido_id", ids) : { data: [] };
+  const { data: jaRows } = ids.length ? await admin.from("os_acompanhamento").select("pedido_id,situacao,numero_fabrica,data_entrega,nf_id,nf_numero,nf_situacao,nf_checado_em,itens_resumo,servico_tipos,tem_produto,marcado_servico,itens_lidos_em").in("pedido_id", ids) : { data: [] };
   const ja = new Map((jaRows ?? []).map((r: any) => [Number(r.pedido_id), r]));
   const agora = new Date().toISOString();
   const linhas: any[] = [];
@@ -264,11 +294,14 @@ async function sincronizarOS() {
       numero_fabrica: antes?.numero_fabrica ?? null, data_entrega: antes?.data_entrega ?? null,
       // nota fiscal: mantém o que já foi lido (o upsert em lote não pode apagar)
       nf_id: antes?.nf_id ?? null, nf_numero: antes?.nf_numero ?? null, nf_situacao: antes?.nf_situacao ?? null, nf_checado_em: antes?.nf_checado_em ?? null,
+      // itens e serviços: idem (lidos uma vez do detalhe; de novo quando a situação muda, porque a OS pode ter sido editada)
+      itens_resumo: antes?.itens_resumo ?? null, servico_tipos: antes?.servico_tipos ?? null, tem_produto: antes?.tem_produto ?? null,
+      marcado_servico: antes?.marcado_servico ?? null, itens_lidos_em: antes?.itens_lidos_em ?? null,
     };
     // entregue sem nota ligada: procura de novo no máximo a cada 6h (limite de 60 consultas/min do Olist)
     const procurarNF = sit === 6 && !linha.nf_id && (!linha.nf_checado_em || Date.now() - new Date(linha.nf_checado_em).getTime() > 6 * 3600e3);
     // detalhe só quando precisa (nº da fábrica a partir da produção; data de entrega das entregues) — limite do Olist
-    const precisa = ([4, 7, 5, 1, 6].includes(sit) && !linha.numero_fabrica) || (sit === 6 && !linha.data_entrega) || (antes && Number(antes.situacao) !== sit) || procurarNF;
+    const precisa = ([4, 7, 5, 1, 6].includes(sit) && !linha.numero_fabrica) || (sit === 6 && !linha.data_entrega) || (antes && Number(antes.situacao) !== sit) || procurarNF || !linha.itens_lidos_em;
     if (precisa && detalhes < 25) {
       detalhes++;
       try {
@@ -276,6 +309,7 @@ async function sincronizarOS() {
         linha.numero_fabrica = numeroFabrica(d) ?? linha.numero_fabrica;
         linha.data_entrega = soData(d?.dataEntrega) ?? linha.data_entrega;
         if (d?.valorTotalPedido != null) linha.valor = Number(d.valorTotalPedido);
+        if (Array.isArray(d?.itens)) Object.assign(linha, lerItensServico(d), { itens_lidos_em: agora });
         if (d?.idNotaFiscal) {
           linha.nf_id = Number(d.idNotaFiscal);
           if (!antes?.nf_id && String(d?.cliente?.email ?? "").includes("@")) enviadasPorEmail.push(id);

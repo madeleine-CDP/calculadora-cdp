@@ -1339,3 +1339,25 @@ button.ges-al{cursor:pointer} button.ges-al:hover{border-color:var(--vinho)}
   .dobravel.fechado > :not(.inicio-bloco-tit){display:none!important}
   .dobravel.fechado{padding-bottom:4px}
 }
+
+/* ── OS de serviço (20/11/2026) ── */
+.svc-card{border-left-color:#3F6B4F}
+.svc-card.svc-novo{border-left-color:#7D5411} .svc-card.svc-atras{border-left-color:var(--red)} .svc-card.svc-espera{border-left-color:#C9A227}
+.svc-tags{display:flex;flex-wrap:wrap;gap:5px}
+.svc-tags span{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--verde-suave);color:var(--verde);text-transform:capitalize}
+.svc-tags span.prod{background:var(--vinho-suave);color:var(--vinho);text-transform:none} .svc-tags span.olist{background:#E8EEF7;color:#2D4A73;text-transform:none}
+.svc-itens{font-size:12.5px;color:var(--tinta-suave);line-height:1.4}
+.svc-sit{font-size:14px;font-weight:700}
+.svc-novo .svc-sit{color:var(--dourado-texto)} .svc-atras .svc-sit{color:#7E2A22}
+.svc-perg{background:#FFF6DA;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.svc-bts{display:flex;flex-wrap:wrap;gap:8px}
+.svc-resp{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;background:var(--fundo);border-radius:10px;padding:6px 10px}
+.svc-peca{display:flex;flex-direction:column;gap:6px;background:#FFF6DA;border-radius:12px;padding:10px 12px;font-size:14px}
+.svc-peca input,.svc-peca select{min-height:40px;padding:0 10px;border-radius:10px;border:1px solid var(--linha);background:var(--superficie);font:inherit;font-size:14px;color:var(--tinta);min-width:0}
+.svc-peca-l{display:flex;flex-wrap:wrap;gap:6px;align-items:center} .svc-peca-l input{flex:1 1 140px}
+.svc-etapas{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+.svc-et{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13.5px}
+.svc-et.ok span{color:var(--verde);font-weight:600} .svc-et.ok em{font-style:normal;font-size:12px;color:var(--tinta-suave)}
+.svc-et.depois span{color:var(--tinta-fraca);padding-left:2px}
+.svc-rodape{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--linha-suave);padding-top:6px}
+.svc-explica{margin:0 0 8px}
