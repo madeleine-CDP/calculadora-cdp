@@ -99,21 +99,21 @@ async function renderInicio(atualizar){
     </div>
     <div class="inicio-atalhos">
       <button type="button" class="btn" onclick="novoOrcamento()">${ic('mais',18)} Novo orçamento</button>
-      <button type="button" class="btn-outline" onclick="switchTab('calc')"><span class="at-em">🧮</span> Cálculo rápido</button>
-      <button type="button" class="btn-outline" onclick="novoRetorno()"><span class="at-em">💬</span> Lançar retorno</button>
-      ${typeof novaGarantia === 'function' ? `<button type="button" class="btn-outline" onclick="novaGarantia()"><span class="at-em">🛡️</span> Garantia / problema</button>` : ''}
+      <button type="button" class="btn-outline" onclick="switchTab('calc')"><span class="at-em">${ic('calculadora',16)}</span> Cálculo rápido</button>
+      <button type="button" class="btn-outline" onclick="novoRetorno()"><span class="at-em">${ic('chat',16)}</span> Lançar retorno</button>
+      ${typeof novaGarantia === 'function' ? `<button type="button" class="btn-outline" onclick="novaGarantia()"><span class="at-em">${ic('escudo',16)}</span> Garantia / problema</button>` : ''}
     </div>
 
     <div id="inicio-meudia"></div>
 
-    <div class="inicio-secao">📌 Para fazer hoje</div>
+    <div class="inicio-secao">Para fazer hoje</div>
     <div id="inicio-fechamento"></div>
     <div id="inicio-pedidos"></div>
     <div id="inicio-garantia"></div>
     ${blocoRetornosInicio()}
     <div id="inicio-confirmar"></div>
     <section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>⏳ Orçamentos parados</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' orçamentos' : ' orçamento') : ''}</strong></div>
+      <div class="inicio-bloco-tit"><span>${ic('relogio',16)}Orçamentos parados</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' orçamentos' : ' orçamento') : ''}</strong></div>
       ${pend.length ? `<div class="inicio-pend">${pend.map(p => `
         <button type="button" class="inicio-pend-item pend-${p.tipo}" onclick="reopenOrc(${p.e.id})">
           <span class="inicio-pend-ic">${ic(p.tipo === 'aguardando' ? 'info' : 'alerta', 16)}</span>
@@ -127,7 +127,7 @@ async function renderInicio(atualizar){
     <div id="inicio-posvenda"></div>
     <div id="inicio-notas"></div>
 
-    <div class="inicio-secao">📊 Números</div>
+    <div class="inicio-secao">Números</div>
     <section class="inicio-bloco">
       <div class="inicio-bloco-tit"><span>Em aberto</span><strong>${ativos.length} · ${fmt(totalAberto)} à vista</strong></div>
       <div class="inicio-etapas">${porEtapa.map(x => `
@@ -180,11 +180,11 @@ function blocoRetornosInicio(){
       ${cel(total ? '' : x.nome, 'todos', x.atrasados, 'atr')}${cel(total ? '' : x.nome, 'todos', x.hoje, 'hj')}${cel(total ? '' : x.nome, 'todos', x.abertos, 'ab')}${cel(total ? '' : x.nome, 'feitos', x.feitos, 'ok')}
     </div>`;
   const grade = pn.linhas.length ? `<div class="rg-grade" role="table" aria-label="Retornos por responsável">
-      <div class="rg-linha rg-cab"><span>Quem</span><span>⚠️<br>Atrasados</span><span>📅<br>Hoje</span><span>⏳<br>Em aberto</span><span>✅<br>Feitos 7d</span></div>
+      <div class="rg-linha rg-cab"><span>Quem</span><span><br>Atrasados</span><span><br>Hoje</span><span><br>Em aberto</span><span><br>Feitos 7d</span></div>
       ${pn.linhas.map(x => linha(x)).join('')}${pn.linhas.length > 1 ? linha(pn.total, true) : ''}
     </div>` : '';
   return `<section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>💬 Retornos</span><strong>${pn.total ? pn.total.abertos + ' em aberto' : ''}${meus ? ' · ' + meus + ' comigo hoje' : ''}</strong></div>
+      <div class="inicio-bloco-tit"><span>${ic('chat',16)}Retornos</span><strong>${pn.total ? pn.total.abertos + ' em aberto' : ''}${meus ? ' · ' + meus + ' comigo hoje' : ''}</strong></div>
       ${grade}
       ${l.length ? `<div class="rg-sub">Para hoje e atrasados</div>` : ''}
       <div class="inicio-pend">${l.slice(0, 6).map(r => `

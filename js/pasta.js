@@ -23,8 +23,8 @@ function confirmarSairOrc(){
           <div class="modal-titulo" id="modal-sair-titulo">Sair do orçamento?</div>
           <div class="modal-corpo"><p>Você está saindo deste orçamento. Deseja salvar as alterações antes de sair?</p></div>
           <div class="sair-botoes">
-            <button type="button" class="btn" data-r="salvar">💾 Salvar e sair</button>
-            <button type="button" class="btn-outline" data-r="descartar">🗑️ Sair sem salvar</button>
+            <button type="button" class="btn" data-r="salvar">Salvar e sair</button>
+            <button type="button" class="btn-outline" data-r="descartar">Sair sem salvar</button>
             <button type="button" class="btn-outline sair-ficar" data-r="ficar">↩️ Continuar editando</button>
           </div>
         </div>`;

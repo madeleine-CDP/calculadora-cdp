@@ -115,9 +115,9 @@ function cardGarantia(g){
     <div class="gar-topo"><strong>${escHtml(g.cliente)}</strong><span class="gar-st st-${g.status}">${escHtml(GAR_STATUS[g.status])}</span></div>
     <div class="gar-meta">${[g.pedido_numero ? 'OS ' + escHtml(g.pedido_numero) : '', g.data_entrega ? 'instalado em ' + diaBR(g.data_entrega) : '', g.tipo === 'servico' ? 'serviço' : 'produto novo', g.telefone ? escHtml(g.telefone) : ''].filter(Boolean).join(' · ')}</div>
     <div>${seloGarantia(g)}</div>
-    <p class="gar-relato">${escHtml(g.relato)}${g.fotos ? ' <span class="gar-foto">📸 fotos no WhatsApp</span>' : ''}</p>
+    <p class="gar-relato">${escHtml(g.relato)}${g.fotos ? ' <span class="gar-foto">fotos no WhatsApp</span>' : ''}</p>
     ${aberto ? `<div class="gar-retorno">${g.primeiro_retorno_em
-        ? `<span class="conf-st ok">✅ 1º retorno dado</span><span class="conf-nota">${new Date(g.primeiro_retorno_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span><button type="button" class="conf-link" onclick="garRetorno(${g.id}, false)">desfazer</button>`
+        ? `<span class="conf-st ok">1º retorno dado</span><span class="conf-nota">${new Date(g.primeiro_retorno_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span><button type="button" class="conf-link" onclick="garRetorno(${g.id}, false)">desfazer</button>`
         : `<span class="gar-prazo${atras ? ' atrasado' : ''}">${ic('relogio',14)} ${escHtml(textoPrazoRetorno(g))}</span><button type="button" class="conf-btn ok" onclick="garRetorno(${g.id}, true)">${ic('ok',15)} Já dei o 1º retorno</button>`}</div>
       <div class="gar-linha"><span class="gar-rot">Acionado:</span>${Object.entries(GAR_ACIONADO).map(([k, t]) => `<button type="button" class="hist-chip${g.acionado === k ? ' on' : ''}" onclick="garAcionar(${g.id}, '${k}')">${t}</button>`).join('')}</div>
       ${situacaoGarantia(g) === 'fora' || situacaoGarantia(g) === 'sem_cadastro' ? `<button type="button" class="conf-link" onclick="garVerTaxa(${g.id})">mensagem da taxa de visita</button>` : ''}
@@ -328,7 +328,7 @@ function itemPosvenda(p){
   const cel = String(p.celular || '').replace(/\D/g, '');
   const aberto = PV_ABERTO.has(p.pedido_id);
   const ctrl = p.contato_em
-    ? `<div class="conf-ctrl"><span class="conf-st ok">✅ Contato feito</span><span class="conf-nota">${escHtml((p.contato_por || '') + ' · ' + horaCurta(p.contato_em))}</span><button type="button" class="conf-link" onclick="pvJaEnviei(${p.pedido_id}, false)">desfazer</button></div>`
+    ? `<div class="conf-ctrl"><span class="conf-st ok">Contato feito</span><span class="conf-nota">${escHtml((p.contato_por || '') + ' · ' + horaCurta(p.contato_em))}</span><button type="button" class="conf-link" onclick="pvJaEnviei(${p.pedido_id}, false)">desfazer</button></div>`
     : `<div class="conf-ctrl"><button type="button" class="conf-btn conf-wa${aberto ? ' on' : ''}" onclick="pvVer(${p.pedido_id})">${ic('chat',15)} Mensagem de 6 meses</button></div>
       ${aberto ? `<div class="conf-painel">
         <div class="conf-fones">${cel ? `<span class="conf-fone">${escHtml(p.celular)} <button type="button" class="conf-link" onclick="copiarNumero('${cel}', this)">copiar nº</button></span>` : '<span class="conf-nota">sem celular no Olist</span>'}</div>
@@ -345,7 +345,7 @@ function desenharPosvenda(){
   if(!PV_LISTA.length){ box.innerHTML = ''; return; }
   const mostrar = PV_LISTA.slice(0, 8);
   box.innerHTML = `<section class="inicio-bloco">
-    <div class="inicio-bloco-tit"><span>💜 Pós-venda · 6 meses</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' para contatar' : ' para contatar') : 'tudo em dia'}</strong></div>
+    <div class="inicio-bloco-tit"><span>${ic('presente',16)}Pós-venda · 6 meses</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' para contatar' : ' para contatar') : 'tudo em dia'}</strong></div>
     <div class="conf-lista">${mostrar.map(itemPosvenda).join('')}</div>
     ${PV_LISTA.length > 8 ? `<div class="conf-nota pv-mais">E mais ${PV_LISTA.length - 8}. Conforme forem contatados, aparecem aqui.</div>` : ''}
   </section>`;
@@ -357,7 +357,7 @@ function desenharGarantiasInicio(){
   const ab = garAbertos(); if(!ab.length){ box.innerHTML = ''; return; }
   const l = ab.slice().sort((a, b) => (garAtrasado(b) - garAtrasado(a)) || String(a.prazo_retorno || '').localeCompare(String(b.prazo_retorno || '')));
   box.innerHTML = `<section class="inicio-bloco">
-    <div class="inicio-bloco-tit"><span>🛡️ Garantia</span><strong>${ab.length} ${ab.length > 1 ? 'chamados abertos' : 'chamado aberto'}</strong></div>
+    <div class="inicio-bloco-tit"><span>${ic('escudo',16)}Garantia</span><strong>${ab.length} ${ab.length > 1 ? 'chamados abertos' : 'chamado aberto'}</strong></div>
     <div class="inicio-pend">${l.slice(0, 5).map(g => `
       <button type="button" class="inicio-pend-item pend-${garAtrasado(g) ? 'atrasado' : 'enviar'}" onclick="abrirGarantias('abertos')">
         <span class="inicio-pend-ic">${ic('escudo', 16)}</span>

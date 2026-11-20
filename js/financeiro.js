@@ -14,9 +14,9 @@ const MESES_CURTO = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'se
 function abasPainel(atual){
   if(!finPode()) return '';
   return `<div class="painel-abas" role="tablist" aria-label="Painéis">
-    <button type="button" role="tab" aria-selected="${atual === 'inicio'}" class="hist-chip${atual === 'inicio' ? ' on' : ''}" onclick="switchTab('inicio')">☀️ Meu dia</button>
-    <button type="button" role="tab" aria-selected="${atual === 'ges'}" class="hist-chip${atual === 'ges' ? ' on' : ''}" onclick="abrirGestao()">🧭 Gestão</button>
-    <button type="button" role="tab" aria-selected="${atual === 'fin'}" class="hist-chip${atual === 'fin' ? ' on' : ''}" onclick="abrirFinanceiro()">💰 Financeiro e vendas</button>
+    <button type="button" role="tab" aria-selected="${atual === 'inicio'}" class="hist-chip${atual === 'inicio' ? ' on' : ''}" onclick="switchTab('inicio')">Meu dia</button>
+    <button type="button" role="tab" aria-selected="${atual === 'ges'}" class="hist-chip${atual === 'ges' ? ' on' : ''}" onclick="abrirGestao()">Gestão</button>
+    <button type="button" role="tab" aria-selected="${atual === 'fin'}" class="hist-chip${atual === 'fin' ? ' on' : ''}" onclick="abrirFinanceiro()">Financeiro e vendas</button>
   </div>`;
 }
 // a Madeleine cai direto no Financeiro na primeira vez que o Início abre
@@ -122,7 +122,7 @@ function desenharFinanceiro(){
   const semSaldo = (typeof PED_OS !== 'undefined' ? PED_OS : []).filter(o => [7, 5, 1].includes(Number(o.situacao)) && !pedPagamento(o).instalacao);
   box.innerHTML = abasPainel('fin') + `
   <div class="fin-topo"><div><div class="inicio-data">${escHtml(hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))}</div><div class="hist-titulo">Financeiro e vendas</div></div>
-    <button type="button" class="btn-outline" onclick="renderFinanceiro(true)">🔄 Atualizar</button></div>
+    <button type="button" class="btn-outline" onclick="renderFinanceiro(true)">Atualizar</button></div>
   ${FIN_ERRO ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(FIN_ERRO)}</span></div>` : ''}
 
   <section class="fin-kpis" aria-label="Números do mês">
@@ -147,7 +147,7 @@ function desenharFinanceiro(){
         <label>Mínima (R$) <input id="fin-meta-min" type="number" min="0" step="1000" value="${M.minima}"></label>
         <label>Ideal (R$) <input id="fin-meta-ideal" type="number" min="0" step="1000" value="${M.ideal}"></label>
         <button type="submit" class="btn">Salvar</button></form>` : ''}
-      <div class="fin-meta-num"><b>${temVendas ? finR(vend) : '—'}</b><span>${vend >= M.ideal ? '🎉 meta ideal batida' : vend >= M.minima ? '✅ meta mínima batida · faltam ' + finR(M.ideal - vend) + ' para a ideal' : Math.round(vend / M.minima * 100) + '% da mínima · faltam ' + finR(falta) + ' em ' + (diasMes - dia) + (diasMes - dia === 1 ? ' dia' : ' dias')}</span></div>
+      <div class="fin-meta-num"><b>${temVendas ? finR(vend) : '—'}</b><span>${vend >= M.ideal ? 'meta ideal batida' : vend >= M.minima ? 'meta mínima batida · faltam ' + finR(M.ideal - vend) + ' para a ideal' : Math.round(vend / M.minima * 100) + '% da mínima · faltam ' + finR(falta) + ' em ' + (diasMes - dia) + (diasMes - dia === 1 ? ' dia' : ' dias')}</span></div>
       <figure class="fin-meta-barra" role="img" aria-label="Vendido ${finR(vend)}; meta mínima ${finR(M.minima)}; meta ideal ${finR(M.ideal)}; projeção do mês ${finR(proj)}">
         <div class="fin-trilho">
           <div class="fin-proj" style="width:${pct(proj)}"></div>
@@ -185,7 +185,7 @@ function desenharFinanceiro(){
     <section class="fin-q">
       <div class="fin-q-tit"><h2>Dinheiro em cada fase</h2><button type="button" class="conf-link" onclick="abrirPedidos('todos')">ver pedidos ›</button></div>
       ${fases.map(f => `<div class="fin-fase"><span>${f.em} ${escHtml(f.t)} <em>· ${f.n} OS</em></span><b>${finR(f.v)}</b></div>`).join('')}
-      ${semSaldo.length ? `<div class="fin-fase alerta"><span>⛔ Instalação sem pagamento completo <em>· ${semSaldo.length} OS</em></span><b>${finR(semSaldo.reduce((t, o) => t + (pedPagamento(o).saldoValor || 0), 0))}</b></div>` : ''}
+      ${semSaldo.length ? `<div class="fin-fase alerta"><span>Instalação sem pagamento completo <em>· ${semSaldo.length} OS</em></span><b>${finR(semSaldo.reduce((t, o) => t + (pedPagamento(o).saldoValor || 0), 0))}</b></div>` : ''}
     </section>
   </div>
 

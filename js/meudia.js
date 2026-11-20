@@ -43,7 +43,7 @@ function cartaoRecado(r){
   const hoje = mdHoje();
   const lembrar = r.lembrar_em ? (r.lembrar_em > hoje ? 'lembrar em ' + mdDia(r.lembrar_em) : r.lembrar_em === hoje ? 'lembrete de hoje' : 'lembrete de ' + mdDia(r.lembrar_em)) : '';
   return `<div class="md-recado${r.fixado ? ' fixado' : ''}${r.lembrar_em && r.lembrar_em <= hoje ? ' lembrete' : ''}">
-    <div class="md-recado-m"><span>${r.fixado ? '📌 fixado · ' : ''}${escHtml(r.autor || '')}${lembrar ? ' · ' + escHtml(lembrar) : ''}</span><span>${escHtml(mdDia(r.criado_em))}</span></div>
+    <div class="md-recado-m"><span>${r.fixado ? 'fixado · ' : ''}${escHtml(r.autor || '')}${lembrar ? ' · ' + escHtml(lembrar) : ''}</span><span>${escHtml(mdDia(r.criado_em))}</span></div>
     <p>${escHtml(r.texto).replace(/\n/g, '<br>')}</p>
     ${pode ? `<div class="md-recado-acoes"><button type="button" class="conf-link" onclick="mdFixar(${r.id},${!r.fixado})">${r.fixado ? 'desafixar' : 'fixar'}</button><button type="button" class="conf-link" onclick="mdApagarRecado(${r.id})">apagar</button></div>` : ''}
   </div>`;
@@ -52,7 +52,7 @@ function blocoMural(){
   const dest = mdDestaque(), vis = MD_MURAL_TODOS ? MD_MURAL : dest;
   const resto = MD_MURAL.length - dest.length;
   return `<section class="inicio-bloco md-mural">
-    <div class="inicio-bloco-tit"><span>📌 Mural da equipe</span><button type="button" class="conf-link" onclick="MD_FORM_RECADO=!MD_FORM_RECADO;desenharMeuDia();if(MD_FORM_RECADO) setTimeout(()=>{const t=document.getElementById('md-recado-txt'); if(t) t.focus();},30)">${MD_FORM_RECADO ? 'cancelar' : '+ Recado'}</button></div>
+    <div class="inicio-bloco-tit"><span>${ic('pin',16)}Mural da equipe</span><button type="button" class="conf-link" onclick="MD_FORM_RECADO=!MD_FORM_RECADO;desenharMeuDia();if(MD_FORM_RECADO) setTimeout(()=>{const t=document.getElementById('md-recado-txt'); if(t) t.focus();},30)">${MD_FORM_RECADO ? 'cancelar' : '+ Recado'}</button></div>
     ${MD_FORM_RECADO ? `<form class="md-form-recado" onsubmit="event.preventDefault();mdSalvarRecado()">
       <label for="md-recado-txt" class="sr-only">Recado</label>
       <textarea id="md-recado-txt" rows="3" maxlength="1000" placeholder="Escreva o recado para a equipe"></textarea>
@@ -102,7 +102,7 @@ function blocoTarefas(){
   const feitas = doDia.filter(t => t.feita_em).length;
   const pct = doDia.length ? Math.round(feitas / doDia.length * 100) : 0;
   return `<section class="inicio-bloco md-tarefas">
-    <div class="inicio-bloco-tit"><span>✅ Minhas tarefas</span><strong>${doDia.length ? feitas + ' de ' + doDia.length + ' feitas hoje' : ''}</strong></div>
+    <div class="inicio-bloco-tit"><span>${ic('ok',16)}Minhas tarefas</span><strong>${doDia.length ? feitas + ' de ' + doDia.length + ' feitas hoje' : ''}</strong></div>
     ${doDia.length ? `<div class="md-barra" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Tarefas feitas hoje"><div style="width:${pct}%"></div></div>` : ''}
     <form class="md-form-tarefa" onsubmit="event.preventDefault();mdNovaTarefa()">
       <label for="md-tarefa-txt" class="sr-only">Nova tarefa</label>
@@ -154,7 +154,7 @@ function desenharNotas(){
   const box = document.getElementById('inicio-notas'); if(!box) return;
   if(document.activeElement && document.activeElement.id === 'md-nota') return;   // não atrapalha quem está digitando
   box.innerHTML = `<section class="inicio-bloco md-notas">
-    <div class="inicio-bloco-tit"><span>📝 Meu bloco de notas</span><strong id="md-nota-est">${MD_NOTA_EST || 'só você vê · salva sozinho'}</strong></div>
+    <div class="inicio-bloco-tit"><span>${ic('nota',16)}Meu bloco de notas</span><strong id="md-nota-est">${MD_NOTA_EST || 'só você vê · salva sozinho'}</strong></div>
     <label for="md-nota" class="sr-only">Bloco de notas</label>
     <textarea id="md-nota" rows="5" maxlength="20000" placeholder="Anote o que quiser: lembretes, recados de cliente, ideias…" oninput="mdNotaDigitou()" onblur="mdSalvarNota()">${escHtml((MD_NOTA && MD_NOTA.texto) || '')}</textarea>
   </section>`;

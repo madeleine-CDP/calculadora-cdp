@@ -55,7 +55,7 @@ function celFaixaUrgentes(){
     faixa.addEventListener('click', celIrUrgente);
     const ref = box.querySelector('.inicio-atalhos'); if(ref) ref.before(faixa); else box.prepend(faixa);
   }
-  const html = `⚠️ <b>${itens.length} ${itens.length === 1 ? 'item urgente' : 'itens urgentes'}</b> <span>ver o primeiro ›</span>`;
+  const html = `${ic('alerta',16)} <b>${itens.length} ${itens.length === 1 ? 'item urgente' : 'itens urgentes'}</b> <span>ver o primeiro ›</span>`;
   if(faixa.innerHTML !== html) faixa.innerHTML = html;   // só mexe se mudou (evita repetir sem fim com o observador)
 }
 function celIrUrgente(){

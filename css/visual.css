@@ -1,0 +1,91 @@
+/* ═══════════════════════════════════════════════════════════════
+   VISUAL PROFISSIONAL — etapa 1 (aprovado pela Bru em 20/11/2026)
+   Protótipo: https://claude.ai/artifact/XkMRyQH9nAjdvSwubd55VP
+   Carregado DEPOIS do tema.css. Só aparência: nenhuma conta muda.
+   - uma letra só (Inter), números alinhados;
+   - cinzas puxados para o cinza-areia da logo; vinho só na ação principal;
+   - cantos de 8–10px (sem pílulas), sem brilho nos botões;
+   - 4 cores de situação: atrasado (vermelho), hoje (azul), esperando (âmbar), ok (verde).
+   A proposta ao cliente (modelo do Word) não usa nada daqui.
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  /* marca (logo e brandbook) */
+  --cdp-verm:#A00000; --cdp-cinza:#ABA693;
+  --vinho:#5A1524; --vinho-suave:#F6EEF0; --vinho-escuro:#47101C; --vinho-borda:#E7D3D8;
+  --linho:#EEDFCB; --areia:#F6EBD9; --escuro:#2B221C;
+  /* neutros */
+  --fundo:#F7F6F3; --superficie:#FFFFFF; --linha:#E6E3DD; --linha-suave:#F0EEEA;
+  --tinta:#1A1917; --tinta-suave:#57534C; --tinta-fraca:#736E66;
+  --cab:#FAF9F7; --hover:#F3F1ED;
+  /* situação */
+  --atr:#B42318; --atr-bg:#FEF3F2; --atr-bd:#FECDCA;
+  --hoje:#175CD3; --hoje-bg:#EFF8FF; --hoje-bd:#B2DDFF;
+  --esp:#B54708; --esp-bg:#FFFAEB; --esp-bd:#FEDF89;
+  --ok:#067647; --ok-bg:#ECFDF3; --ok-bd:#ABEFC6;
+  --verde:#067647; --verde-suave:#ECFDF3; --red:#B42318;
+  /* variáveis antigas reapontadas */
+  --s3:var(--cab); --border2:#D6D2CA;
+  /* forma e letra */
+  --r:10px; --r2:8px; --r-pill:8px;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --serif:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --sombra:0 1px 2px rgba(26,25,23,.05);
+  --sombra-alta:0 12px 40px rgba(26,25,23,.16),0 2px 6px rgba(26,25,23,.06);
+}
+body{font-size:14.5px;font-variant-numeric:tabular-nums;letter-spacing:-.003em}
+::selection{background:#EEDFE3}
+:focus-visible{outline:2px solid var(--vinho);outline-offset:2px}
+
+/* títulos grandes: antes serifados; agora Inter firme */
+.hist-titulo,.pasta-nome,.pedv-cab h1,.cli-cab-txt h1{font-weight:700!important;letter-spacing:-.022em;font-size:26px!important;line-height:1.15}
+.modal-titulo{font-weight:650!important;letter-spacing:-.015em;font-size:20px!important}
+.cli-ano{font-weight:650!important;font-size:16px!important;letter-spacing:-.01em}
+.rc-cost,.pasta-total-av strong,.sell-item.avista .sell-price{font-weight:700!important;letter-spacing:-.025em}
+.inicio-etapa-n,.inicio-mes strong{font-weight:650!important;letter-spacing:-.02em;font-size:26px!important}
+/* rótulos em caixa alta ficam menores e mais calmos */
+.pedv-tit h2,.cli-hist h2,.cli-q h2,.fin-q-tit h2{font-size:12px!important;letter-spacing:.06em!important;color:var(--tinta-fraca)!important;font-weight:650!important}
+
+/* cartões e blocos: borda fina, sombra quase nenhuma */
+.card{box-shadow:none!important;padding:18px!important}
+.inicio-etapa{border-top-width:1px!important}
+
+/* botões: retos, sem brilho */
+.btn{border-radius:var(--r2)!important;box-shadow:none!important;font-weight:600!important;padding:11px 18px!important}
+.btn:hover{background:var(--vinho-escuro)!important}
+#login-btn,#senha-btn{border-radius:var(--r2)!important;box-shadow:none!important}
+
+/* o que precisa continuar redondo */
+.hist-avatar,.jornada-ponto,.inicio-pend-ic{border-radius:50%!important}
+.tab-badge{border-radius:999px!important}
+
+/* menu de cima (até a etapa 2 trocar pelo menu lateral) */
+.tab-btn.active{background:var(--vinho-suave)!important;color:var(--vinho)!important}
+.tab-btn.active .ic{color:var(--vinho)}
+
+/* ─── Tela de entrada com a marca ─── */
+#login-screen{background:var(--escuro)!important;font-family:var(--sans)!important;justify-content:flex-end!important;overflow:hidden}
+#login-screen::before{content:"";position:absolute;left:-40px;bottom:-140px;width:520px;height:720px;transform:skewX(-24deg);
+  background:linear-gradient(90deg,transparent 0 16%,var(--cdp-cinza) 16% 30%,transparent 30% 43%,var(--cdp-verm) 43% 57%,transparent 57% 70%,var(--cdp-cinza) 70% 84%,transparent 84%);opacity:.9;pointer-events:none}
+#login-screen .login-marca{position:absolute;left:48px;top:44px;right:52%;display:flex;flex-direction:column;gap:14px;color:#D8D2C6;font-size:15px;line-height:1.6;max-width:420px}
+#login-screen .login-marca img{height:56px;width:auto;align-self:flex-start}
+#login-screen > div.login-cartao{position:relative;background:#fff!important;border-radius:0!important;border:0!important;box-shadow:none!important;width:min(560px,48%)!important;max-width:none!important;height:100%;display:flex;flex-direction:column;justify-content:center;padding:40px max(48px,6vw)!important}
+#login-screen .login-cartao > div:first-child{text-align:left!important;margin-bottom:22px!important}
+#login-screen .login-cartao > div:first-child img{display:none!important}
+#login-screen .login-cartao > div:first-child div{font-size:24px!important;font-weight:650!important;color:var(--tinta)!important;letter-spacing:-.015em!important;text-transform:none!important;margin:0!important}
+#login-screen input{border-radius:var(--r2)!important;border:1px solid var(--linha)!important;padding:11px 12px!important;font-size:16px!important;box-shadow:var(--sombra)}
+#login-screen label{font-size:13px!important;color:var(--tinta-suave)!important}
+#login-btn,#senha-btn{padding:13px!important;font-size:15px!important;margin-top:4px}
+@media (max-width:760px){
+  #login-screen{flex-direction:column!important;justify-content:flex-start!important;align-items:stretch!important;overflow-y:auto}
+  #login-screen::before{width:240px;height:340px;left:auto;right:-60px;top:-110px;bottom:auto;opacity:.55}
+  #login-screen .login-marca{position:relative;left:auto;top:auto;right:auto;padding:28px 20px 30px;font-size:14px;gap:10px}
+  #login-screen .login-marca img{height:40px}
+  #login-screen > div.login-cartao{width:100%!important;height:auto;flex:1;justify-content:flex-start;padding:28px 20px 40px!important}
+}
+#login-screen > div.login-marca{background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0!important;width:auto!important}
+@media (max-width:760px){#login-screen > div.login-marca{padding:28px 20px 30px!important}}
+
+/* títulos dos blocos: ícone de traço discreto no lugar do emoji */
+.inicio-bloco-tit > span{display:inline-flex;align-items:center;gap:8px}
+.inicio-bloco-tit > span .ic,.ped-filtro .ic,.pedv-fase .ic,.fin-fase .ic{color:var(--tinta-fraca)}
+.inicio-secao{letter-spacing:.06em!important}

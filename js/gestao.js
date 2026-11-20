@@ -85,7 +85,7 @@ function desenharGestao(carregando){
   const box = $('ges-conteudo'); if(!box) return;
   const abas = typeof abasPainel === 'function' ? abasPainel('ges') : '';
   const topo = `<div class="fin-topo"><div><div class="inicio-data">${escHtml(new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }))}</div><div class="hist-titulo">Gestão</div></div>
-    <button type="button" class="btn-outline" onclick="renderGestao()">🔄 Atualizar</button></div>`;
+    <button type="button" class="btn-outline" onclick="renderGestao()">Atualizar</button></div>`;
   if(carregando && !(typeof HIST_CARREGADO !== 'undefined' && HIST_CARREGADO)){ box.innerHTML = abas + topo + '<div class="hist-empty">Carregando…</div>'; return; }
   const F = gesForaDoPrazo(), E = gesEquipe(), P = gesPedidos(), T = gesTabelas();
   const pend = (typeof pendenciasDoDia === 'function' ? pendenciasDoDia() : []).slice(0, 8);

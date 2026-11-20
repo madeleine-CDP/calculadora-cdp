@@ -11,12 +11,12 @@
 // ═══════════════════════════════════════════════════════
 
 const PED_FASES = [
-  { k: 'pagar',    sit: [0],    em: '💳', tit: 'Aguardando pagamento' },
-  { k: 'fabrica',  sit: [3],    em: '🏭', tit: 'Fazer pedido na fábrica' },
-  { k: 'producao', sit: [4],    em: '⚙️', tit: 'Em produção' },
-  { k: 'pronto',   sit: [7],    em: '📦', tit: 'Pronto · agendar instalação' },
-  { k: 'agendado', sit: [5, 1], em: '🚚', tit: 'Instalação agendada' },
-  { k: 'entregue', sit: [6],    em: '✅', tit: 'Entregues · avaliação e nota fiscal' },
+  { k: 'pagar',    sit: [0],    em: ic('cartao', 16), tit: 'Aguardando pagamento' },
+  { k: 'fabrica',  sit: [3],    em: ic('etiqueta', 16), tit: 'Fazer pedido na fábrica' },
+  { k: 'producao', sit: [4],    em: ic('ferramenta', 16), tit: 'Em produção' },
+  { k: 'pronto',   sit: [7],    em: ic('caixa', 16), tit: 'Pronto · agendar instalação' },
+  { k: 'agendado', sit: [5, 1], em: ic('caminhao', 16), tit: 'Instalação agendada' },
+  { k: 'entregue', sit: [6],    em: ic('ok', 16), tit: 'Entregues · avaliação e nota fiscal' },
 ];
 const PED_FABRICAS = [['decore', 'Decore', 'D'], ['real', 'Real', 'R']];
 let PED_OS = [], PED_NUMS = [], PED_CONF = [], SVC_MAPA = {}, PED_CARREGADO = false, PED_SINC_EM = 0, PED_FILTRO = 'todos', PED_AGENDA = null;
@@ -126,9 +126,9 @@ const pedQuando = (por, em) => escHtml([por, em ? new Date(em).toLocaleDateStrin
 // faixa curta (uma linha) para os cartões
 function pedFaixaPagamento(o){
   const g = pedPagamento(o);
-  const ent = g.entradaOk ? `<span class="pg-ok">✅ ${g.temSaldo ? 'Entrada' : 'Total'}</span>` : `<span class="pg-pend">⏳ ${g.temSaldo ? 'Entrada' : 'Total'}</span>`;
-  const sal = !g.temSaldo ? '' : g.saldoOk ? '<span class="pg-ok">✅ Saldo</span>' : g.saldoComp ? '<span class="pg-meio">🧾 Saldo · falta conferir</span>' : '<span class="pg-pend">⏳ Saldo</span>';
-  return `<div class="pg-faixa">💳 ${ent}${sal}${g.forma ? `<span class="pg-forma">${g.forma === 'cartao' ? 'cartão' : 'PIX'}</span>` : ''}</div>`;
+  const ent = g.entradaOk ? `<span class="pg-ok">${g.temSaldo ? 'Entrada' : 'Total'}</span>` : `<span class="pg-pend">${g.temSaldo ? 'Entrada' : 'Total'}</span>`;
+  const sal = !g.temSaldo ? '' : g.saldoOk ? '<span class="pg-ok">Saldo</span>' : g.saldoComp ? '<span class="pg-meio">Saldo · falta conferir</span>' : '<span class="pg-pend">Saldo</span>';
+  return `<div class="pg-faixa">${ent}${sal}${g.forma ? `<span class="pg-forma">${g.forma === 'cartao' ? 'cartão' : 'PIX'}</span>` : ''}</div>`;
 }
 // bloco completo (fases em que o pagamento decide o próximo passo, e na tela do pedido)
 function pedBlocoPagamento(o, fase){
@@ -136,32 +136,32 @@ function pedBlocoPagamento(o, fase){
   const rotConf = (typeof fechEhDona === 'function' && fechEhDona()) ? 'Conferi no extrato' : 'Madeleine conferiu';
   const nomeEnt = g.temSaldo ? 'Entrada' : 'Pagamento total';
   const linhaEnt = g.entradaOk
-    ? `<div class="pg-linha ok"><span>✅ ${nomeEnt} conferid${g.temSaldo ? 'a' : 'o'} no extrato</span><em>${pedQuando(g.entradaPor, g.entradaEm)}${g.entradaDaOS ? '' : ' · pelo Fechamento'}</em>
+    ? `<div class="pg-linha ok"><span>${nomeEnt} conferid${g.temSaldo ? 'a' : 'o'} no extrato</span><em>${pedQuando(g.entradaPor, g.entradaEm)}${g.entradaDaOS ? '' : ' · pelo Fechamento'}</em>
         ${g.entradaDaOS && pode ? `<button type="button" class="conf-link" onclick="pedPag(${id},{entrada_validado_em:null},'Desfeito.')">desfazer</button>` : ''}</div>`
-    : `<div class="pg-linha pend"><span>⏳ ${nomeEnt} ainda não conferid${g.temSaldo ? 'a' : 'o'} no extrato</span>${g.comprovanteEntrada ? '<em>comprovante recebido (Fechamento)</em>' : ''}
+    : `<div class="pg-linha pend"><span>${nomeEnt} ainda não conferid${g.temSaldo ? 'a' : 'o'} no extrato</span>${g.comprovanteEntrada ? '<em>comprovante recebido (Fechamento)</em>' : ''}
         ${pode ? `<button type="button" class="conf-btn ok" onclick="pedPag(${id},{entrada_validado_em:new Date().toISOString()},'${g.temSaldo ? 'Entrada conferida' : 'Pagamento total conferido'}: pode ir para a produção.')">${ic('ok',15)} ${rotConf}</button>` : '<em>a Madeleine (ou a Bruna) marca</em>'}</div>`;
   let linhaSal;
   if(!g.temSaldo){
-    linhaSal = `<div class="pg-linha neutro"><span>💳 Sem saldo: ${g.forma === 'cartao' && g.saldoAuto ? 'cartão, 100% na entrada' : 'pago 100% na entrada'}</span>
+    linhaSal = `<div class="pg-linha neutro"><span>Sem saldo: ${g.forma === 'cartao' && g.saldoAuto ? 'cartão, 100% na entrada' : 'pago 100% na entrada'}</span>
       <button type="button" class="conf-link" onclick="pedPag(${id},{saldo_modo:'tem'},'Anotado: este pedido tem saldo a pagar.')">tem saldo a pagar?</button></div>`;
   } else if(g.saldoOk){
-    linhaSal = `<div class="pg-linha ok"><span>✅ Saldo conferido no extrato</span><em>${pedQuando(o.saldo_validado_por, o.saldo_validado_em)}</em>
+    linhaSal = `<div class="pg-linha ok"><span>Saldo conferido no extrato</span><em>${pedQuando(o.saldo_validado_por, o.saldo_validado_em)}</em>
       ${pode ? `<button type="button" class="conf-link" onclick="pedPag(${id},{saldo_validado_em:null},'Desfeito.')">desfazer</button>` : ''}</div>`;
   } else if(fase === 'fabrica' && !g.saldoComp){
-    linhaSal = `<div class="pg-linha neutro"><span>💳 Saldo${g.saldoValor ? ' de ' + reais(g.saldoValor) : ''}: cobrar antes da instalação</span>
+    linhaSal = `<div class="pg-linha neutro"><span>Saldo${g.saldoValor ? ' de ' + reais(g.saldoValor) : ''}: cobrar antes da instalação</span>
       <button type="button" class="conf-link" onclick="pedPag(${id},{saldo_modo:'nao'},'Anotado: pago 100% na entrada.')">pago 100% na entrada?</button></div>`;
   } else {
-    linhaSal = `<div class="pg-linha ${g.saldoComp ? 'meio' : 'pend'}"><span>${g.saldoComp ? '🧾 Comprovante do saldo recebido · falta conferir' : '⏳ Saldo' + (g.saldoValor ? ' de ' + reais(g.saldoValor) : '') + ' aguardando o cliente'}</span>
+    linhaSal = `<div class="pg-linha ${g.saldoComp ? 'meio' : 'pend'}"><span>${g.saldoComp ? 'Comprovante do saldo recebido · falta conferir' : 'Saldo' + (g.saldoValor ? ' de ' + reais(g.saldoValor) : '') + ' aguardando o cliente'}</span>
       ${g.saldoComp ? `<em>${pedQuando(o.saldo_comprovante_por, o.saldo_comprovante_em)}</em><button type="button" class="conf-link" onclick="pedPag(${id},{saldo_comprovante_em:null},'Desfeito.')">desfazer</button>`
-        : `<button type="button" class="conf-btn" onclick="pedPag(${id},{saldo_comprovante_em:new Date().toISOString()},'Comprovante do saldo anotado. Agora a Madeleine confere no extrato.')">🧾 Cliente mandou o comprovante</button>`}
+        : `<button type="button" class="conf-btn" onclick="pedPag(${id},{saldo_comprovante_em:new Date().toISOString()},'Comprovante do saldo anotado. Agora a Madeleine confere no extrato.')">Cliente mandou o comprovante</button>`}
       ${pode ? `<button type="button" class="conf-btn ok" onclick="pedPag(${id},{saldo_validado_em:new Date().toISOString()},'Saldo conferido: pode confirmar a instalação.')">${ic('ok',15)} ${rotConf}</button>` : ''}
       ${g.saldoComp ? '' : `<button type="button" class="conf-link" onclick="pedPag(${id},{saldo_modo:'nao'},'Anotado: pago 100% na entrada.')">pago 100% na entrada?</button>`}</div>`;
   }
   let trava = '';
-  if(fase === 'fabrica' && !g.producao) trava = `<div class="pg-trava">⛔ Não fazer o pedido na fábrica: ${nomeEnt.toLowerCase()} ainda não conferid${g.temSaldo ? 'a' : 'o'} no extrato. Comprovante não é pagamento.</div>`;
+  if(fase === 'fabrica' && !g.producao) trava = `<div class="pg-trava">Não fazer o pedido na fábrica: ${nomeEnt.toLowerCase()} ainda não conferid${g.temSaldo ? 'a' : 'o'} no extrato. Comprovante não é pagamento.</div>`;
   if(['pronto', 'agendado'].includes(fase) || fase === 'detalhe') trava = g.instalacao
-    ? (fase === 'detalhe' ? '' : '<div class="pg-livre">✅ Pagamento completo: pode confirmar a instalação.</div>')
-    : `<div class="pg-trava">⛔ Não confirmar a instalação: ${!g.entradaOk ? nomeEnt.toLowerCase() + ' ainda não conferid' + (g.temSaldo ? 'a' : 'o') : 'saldo' + (g.saldoValor ? ' de ' + reais(g.saldoValor) : '') + ' ainda não conferido'} no extrato.</div>`;
+    ? (fase === 'detalhe' ? '' : '<div class="pg-livre">Pagamento completo: pode confirmar a instalação.</div>')
+    : `<div class="pg-trava">Não confirmar a instalação: ${!g.entradaOk ? nomeEnt.toLowerCase() + ' ainda não conferid' + (g.temSaldo ? 'a' : 'o') : 'saldo' + (g.saldoValor ? ' de ' + reais(g.saldoValor) : '') + ' ainda não conferido'} no extrato.</div>`;
   return `<div class="pg-bloco">${trava}${linhaEnt}${linhaSal}</div>`;
 }
 async function pedPag(id, campos, msg){
@@ -181,10 +181,10 @@ function pedOSDoEvento(ev){
 function pedAvisoInstalacao(ev, tipo){
   if(!PED_CARREGADO || !/instala|entrega/i.test(tipo || '') || /manuten|lavagem/i.test(tipo || '')) return '';
   const o = pedOSDoEvento(ev);
-  if(!o) return '<div class="pg-nota">💳 Não achei a OS deste cliente para conferir o pagamento: confira no Tiny antes de confirmar.</div>';
+  if(!o) return '<div class="pg-nota">Não achei a OS deste cliente para conferir o pagamento: confira no Tiny antes de confirmar.</div>';
   const g = pedPagamento(o);
-  return g.instalacao ? `<div class="pg-livre">✅ OS ${escHtml(o.numero)}: pagamento completo conferido.</div>`
-    : `<div class="pg-trava">⛔ OS ${escHtml(o.numero)}: ${!g.entradaOk ? 'entrada não conferida' : 'saldo' + (g.saldoValor ? ' de ' + reais(g.saldoValor) : '') + (g.saldoComp ? ' com comprovante, falta a Madeleine conferir' : ' não conferido')}. Não confirmar a instalação.
+  return g.instalacao ? `<div class="pg-livre">OS ${escHtml(o.numero)}: pagamento completo conferido.</div>`
+    : `<div class="pg-trava">OS ${escHtml(o.numero)}: ${!g.entradaOk ? 'entrada não conferida' : 'saldo' + (g.saldoValor ? ' de ' + reais(g.saldoValor) : '') + (g.saldoComp ? ' com comprovante, falta a Madeleine conferir' : ' não conferido')}. Não confirmar a instalação.
        <button type="button" class="conf-link" onclick="abrirPedidoVenda(${o.pedido_id})">ver pedido ›</button></div>`;
 }
 
@@ -205,21 +205,21 @@ function svcEmAndamento(){
 }
 // etapas conforme as respostas (onde é feito; se precisa de peça)
 function svcEtapas(s){
-  const peca = s.precisa_peca ? [['peca_pedida', '🔩 Peça pedida'], ['peca_chegou', '📦 Peça chegou na loja']] : [];
-  if(s.local === 'loja') return [['retirada', '🚚 Retirada (está na loja)'], ...peca, ['feito', '🛠️ Serviço feito na loja'], ['devolvido', '🏠 Devolvido / instalado no cliente']];
-  return [...peca, ['feito', '🛠️ Serviço feito no local']];
+  const peca = s.precisa_peca ? [['peca_pedida', 'Peça pedida'], ['peca_chegou', 'Peça chegou na loja']] : [];
+  if(s.local === 'loja') return [['retirada', 'Retirada (está na loja)'], ...peca, ['feito', 'Serviço feito na loja'], ['devolvido', 'Devolvido / instalado no cliente']];
+  return [...peca, ['feito', 'Serviço feito no local']];
 }
 const svcDias = (iso) => iso ? Math.floor((Date.now() - new Date(iso)) / 864e5) : 0;
 function svcSituacao(o){
   const s = SVC_MAPA[o.pedido_id] || {};
   if(!s.local || s.precisa_peca === null || s.precisa_peca === undefined) return { cls: 'novo', txt: '🆕 Responder: onde é feito e se precisa de peça' };
   const et = svcEtapas(s), prox = et.find(([k]) => !s[k + '_em']);
-  if(!prox) return { cls: 'ok', txt: '✅ Tudo feito · falta concluir' };
-  if(prox[0] === 'peca_chegou') return { cls: svcDias(s.peca_pedida_em) >= 7 ? 'atras' : 'espera', txt: '⏳ Aguardando ' + (s.peca_desc || 'a peça') + (s.peca_fabrica ? ' (' + s.peca_fabrica + ')' : '') + (svcDias(s.peca_pedida_em) ? ' há ' + svcDias(s.peca_pedida_em) + (svcDias(s.peca_pedida_em) === 1 ? ' dia' : ' dias') : ' · pedida hoje') };
-  if(prox[0] === 'peca_pedida') return { cls: 'agir', txt: '🔩 Pedir a peça: ' + (s.peca_desc || 'definir qual') };
-  if(prox[0] === 'retirada') return { cls: 'agir', txt: '🚚 Agendar a retirada' };
-  if(prox[0] === 'feito') return s.local === 'loja' ? { cls: 'agir', txt: '🧺 Na loja: fazer o serviço' } : { cls: 'agir', txt: s.precisa_peca ? '📅 Peça chegou: agendar a visita' : '📅 Agendar a visita' };
-  if(prox[0] === 'devolvido') return { cls: 'agir', txt: '🏠 Pronto: agendar a devolução' };
+  if(!prox) return { cls: 'ok', txt: 'Tudo feito · falta concluir' };
+  if(prox[0] === 'peca_chegou') return { cls: svcDias(s.peca_pedida_em) >= 7 ? 'atras' : 'espera', txt: 'Aguardando ' + (s.peca_desc || 'a peça') + (s.peca_fabrica ? ' (' + s.peca_fabrica + ')' : '') + (svcDias(s.peca_pedida_em) ? ' há ' + svcDias(s.peca_pedida_em) + (svcDias(s.peca_pedida_em) === 1 ? ' dia' : ' dias') : ' · pedida hoje') };
+  if(prox[0] === 'peca_pedida') return { cls: 'agir', txt: 'Pedir a peça: ' + (s.peca_desc || 'definir qual') };
+  if(prox[0] === 'retirada') return { cls: 'agir', txt: 'Agendar a retirada' };
+  if(prox[0] === 'feito') return s.local === 'loja' ? { cls: 'agir', txt: 'Na loja: fazer o serviço' } : { cls: 'agir', txt: s.precisa_peca ? 'Peça chegou: agendar a visita' : 'Agendar a visita' };
+  if(prox[0] === 'devolvido') return { cls: 'agir', txt: 'Pronto: agendar a devolução' };
   return { cls: 'agir', txt: prox[1] };
 }
 async function svcSalvar(id, campos, msg){
@@ -231,7 +231,7 @@ async function svcSalvar(id, campos, msg){
   pedRedesenhar(); return true;
 }
 function svcMarcar(id, etapa, feito){
-  const rot = (svcEtapas(SVC_MAPA[id] || {}).find(([k]) => k === etapa) || [, etapa])[1].replace(/^\S+\s/, '');
+  const rot = (svcEtapas(SVC_MAPA[id] || {}).find(([k]) => k === etapa) || [, etapa])[1];
   svcSalvar(id, { [etapa + '_em']: feito ? new Date().toISOString() : null }, feito ? rot + ': registrado. <button type="button" class="aviso-desfazer" onclick="svcMarcar(' + id + ',\'' + etapa + '\',false)">desfazer</button>' : 'Desfeito.');
 }
 function svcSalvarPeca(id){
@@ -246,15 +246,15 @@ function cardServico(o){
   const quando = (k) => escHtml([s[k + '_por'], s[k + '_em'] ? new Date(s[k + '_em']).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''].filter(Boolean).join(' · '));
   // pergunta 1: onde
   const q1 = s.local
-    ? `<div class="svc-resp"><span>${s.local === 'loja' ? '🚚 Retirar e fazer na loja' : '🏠 Feito no local (na casa do cliente)'}</span><button type="button" class="conf-link" onclick="svcSalvar(${id},{local:null})">mudar</button></div>`
+    ? `<div class="svc-resp"><span>${s.local === 'loja' ? 'Retirar e fazer na loja' : 'Feito no local (na casa do cliente)'}</span><button type="button" class="conf-link" onclick="svcSalvar(${id},{local:null})">mudar</button></div>`
     : `<div class="svc-perg"><b>Onde vai ser feito?</b><div class="svc-bts">
-        <button type="button" class="conf-btn${lavagem ? '' : ' ok'}" onclick="svcSalvar(${id},{local:'local'})">🏠 No local</button>
-        <button type="button" class="conf-btn${lavagem ? ' ok' : ''}" onclick="svcSalvar(${id},{local:'loja'})">🚚 Retirar e fazer na loja</button></div>
+        <button type="button" class="conf-btn${lavagem ? '' : ' ok'}" onclick="svcSalvar(${id},{local:'local'})">No local</button>
+        <button type="button" class="conf-btn${lavagem ? ' ok' : ''}" onclick="svcSalvar(${id},{local:'loja'})">Retirar e fazer na loja</button></div>
         ${lavagem ? '<span class="conf-nota">Lavagem: a cortina sempre é retirada.</span>' : ''}</div>`;
   // pergunta 2: peça
   let q2;
-  if(s.precisa_peca === false) q2 = `<div class="svc-resp"><span>✔️ Não precisa de peça</span><button type="button" class="conf-link" onclick="svcSalvar(${id},{precisa_peca:null})">mudar</button></div>`;
-  else if(s.precisa_peca === true && s.peca_desc && !s.editPeca) q2 = `<div class="svc-resp"><span>🔩 ${escHtml(s.peca_desc)}${s.peca_fabrica ? ' · ' + escHtml(s.peca_fabrica) : ''}${s.peca_pedido ? ' · pedido ' + escHtml(s.peca_pedido) : ''}</span><button type="button" class="conf-link" onclick="SVC_MAPA[${id}].editPeca=true;pedRedesenhar()">editar</button></div>`;
+  if(s.precisa_peca === false) q2 = `<div class="svc-resp"><span>Não precisa de peça</span><button type="button" class="conf-link" onclick="svcSalvar(${id},{precisa_peca:null})">mudar</button></div>`;
+  else if(s.precisa_peca === true && s.peca_desc && !s.editPeca) q2 = `<div class="svc-resp"><span>${escHtml(s.peca_desc)}${s.peca_fabrica ? ' · ' + escHtml(s.peca_fabrica) : ''}${s.peca_pedido ? ' · pedido ' + escHtml(s.peca_pedido) : ''}</span><button type="button" class="conf-link" onclick="SVC_MAPA[${id}].editPeca=true;pedRedesenhar()">editar</button></div>`;
   else if(s.precisa_peca === true) q2 = `<form class="svc-peca" onsubmit="event.preventDefault();svcSalvarPeca(${id})">
       <b>Qual peça, componente ou acessório?</b>
       <label class="sr-only" for="svc-desc-${id}">Peça</label><input id="svc-desc-${id}" maxlength="300" placeholder="Ex.: corda do mecanismo, suporte, motor" value="${escHtml(s.peca_desc || '')}">
@@ -270,11 +270,11 @@ function cardServico(o){
     const et = svcEtapas(s), iProx = et.findIndex(([k]) => !s[k + '_em']);
     const precisaAgenda = (k) => (k === 'retirada' || k === 'devolvido' || (k === 'feito' && s.local === 'local'));
     etapas = `<div class="svc-etapas">${et.map(([k, rot], i) => {
-      if(s[k + '_em']) return `<div class="svc-et ok"><span>✅ ${escHtml(rot.replace(/^\S+\s/, ''))}</span><em>${quando(k)}</em><button type="button" class="conf-link" onclick="svcMarcar(${id},'${k}',false)">desfazer</button></div>`;
+      if(s[k + '_em']) return `<div class="svc-et ok"><span>${escHtml(rot)}</span><em>${quando(k)}</em><button type="button" class="conf-link" onclick="svcMarcar(${id},'${k}',false)">desfazer</button></div>`;
       if(i === iProx) return `<div class="svc-et prox"><button type="button" class="conf-btn ok" onclick="svcMarcar(${id},'${k}',true)">${escHtml(rot)}</button>
-        ${precisaAgenda(k) ? (ag ? `<span class="conf-st env">📅 Na agenda: ${escHtml(new Date(ag.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</span>` : '<span class="conf-nota">Agende na Agenda CLIENTES CDP com o nome do cliente no título.</span>') : ''}</div>`;
+        ${precisaAgenda(k) ? (ag ? `<span class="conf-st env">Na agenda: ${escHtml(new Date(ag.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</span>` : '<span class="conf-nota">Agende na Agenda CLIENTES CDP com o nome do cliente no título.</span>') : ''}</div>`;
       return `<div class="svc-et depois"><span>${escHtml(rot)}</span></div>`; }).join('')}
-      ${iProx === -1 ? `<div class="svc-et prox"><button type="button" class="conf-btn ok" onclick="svcMarcar(${id},'concluido',true)">✅ Concluir · garantia de 3 meses a partir de hoje</button></div>` : ''}</div>`;
+      ${iProx === -1 ? `<div class="svc-et prox"><button type="button" class="conf-btn ok" onclick="svcMarcar(${id},'concluido',true)">Concluir · garantia de 3 meses a partir de hoje</button></div>` : ''}</div>`;
   }
   return `<div class="ped-card svc-card svc-${sit.cls}">
     <div class="gar-topo"><strong>${escHtml(o.cliente || 'Cliente')}</strong><button type="button" class="ped-ver" onclick="abrirPedidoVenda(${id})">OS ${escHtml(o.numero || '')} · ver pedido ›</button></div>
@@ -292,7 +292,7 @@ const buscaSituacaoTiny = (o) => SIT_TINY[Number(o.situacao)] || '';
 function pedBlocoServicos(){
   const l = svcEmAndamento();
   return `<section class="ped-grupo" id="ped-servicos">
-    <div class="inicio-bloco-tit"><span>🛠️ Serviços em andamento</span><strong>${l.length}</strong></div>
+    <div class="inicio-bloco-tit"><span>${ic('ferramenta',16)}Serviços em andamento</span><strong>${l.length}</strong></div>
     <div class="conf-nota svc-explica">OS com a tag SERVIÇO no Olist, ou com serviço e sem cortina/persiana nova. Responda onde é feito e se precisa de peça; o sistema monta as etapas.</div>
     ${l.length ? `<div class="ped-lista">${l.map(cardServico).join('')}</div>` : '<div class="conf-nota ped-vazio">Nenhuma OS de serviço em andamento.</div>'}
   </section>`;
@@ -354,7 +354,7 @@ function desenharPedidos(aviso){
   const lido = PED_OS.reduce((m, o) => o.lido_em > m ? o.lido_em : m, '');
   $('ped-sub').textContent = (PED_OS.filter(o => Number(o.situacao) !== 6).length) + ' OS em andamento' + (lido ? ' · lido do Olist às ' + new Date(lido).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
   const nSvc = svcEmAndamento().length;
-  $('ped-filtros').innerHTML = [['todos', '📋 Tudo', grupos.reduce((t, g) => t + g.l.length, 0) + nSvc], ['servicos', '🛠️ Serviços', nSvc]].concat(grupos.map(g => [g.f.k, g.f.em + ' ' + g.f.tit.split(' · ')[0], g.l.length]))
+  $('ped-filtros').innerHTML = [['todos', 'Tudo', grupos.reduce((t, g) => t + g.l.length, 0) + nSvc], ['servicos', 'Serviços', nSvc]].concat(grupos.map(g => [g.f.k, g.f.em + ' ' + g.f.tit.split(' · ')[0], g.l.length]))
     .map(([k, t, n]) => `<button type="button" class="hist-chip${PED_FILTRO === k ? ' on' : ''}" onclick="PED_FILTRO='${k}';desenharPedidos()">${t} <span>${n}</span></button>`).join('');
   const mostrar = grupos.filter(g => PED_FILTRO === 'todos' || g.f.k === PED_FILTRO);
   box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + ((PED_FILTRO === 'todos' || PED_FILTRO === 'servicos') ? pedBlocoServicos() : '') + mostrar.map(g => `
@@ -368,7 +368,7 @@ function desenharPedidos(aviso){
 function pedBlocoProximoNumero(){
   const d = proximoNumeroFabrica('D'), r = proximoNumeroFabrica('R');
   if(!d && !r) return '';
-  return `<div class="ped-num">🔢 Próximo nº de pedido: ${d ? `<b>D${d}</b> (Decore)` : ''}${d && r ? ' · ' : ''}${r ? `<b>R${r}</b> (Real)` : ''}
+  return `<div class="ped-num">Próximo nº de pedido: ${d ? `<b>D${d}</b> (Decore)` : ''}${d && r ? ' · ' : ''}${r ? `<b>R${r}</b> (Real)` : ''}
     <span class="conf-nota">último usado: ${[d ? 'D' + (d - 1) : '', r ? 'R' + (r - 1) : ''].filter(Boolean).join(' e ')} · cada fábrica tem a sua sequência · confira no Tiny se outra pessoa acabou de usar</span></div>`;
 }
 function pedBlocoConferencia(lista){
@@ -378,7 +378,7 @@ function pedBlocoConferencia(lista){
     const dias = u ? pedDias(u.conferido_em) : null;
     const atrasada = tem && (dias === null || dias >= 2);
     return `<div class="ped-conf-f${atrasada ? ' atrasada' : ''}">
-      <div><strong>🔎 ${nome}</strong><span>${tem ? lista.filter(o => fabricasDaOS(o).includes(k)).length + ' em produção · ' : 'nada em produção · '}${u ? 'conferida ' + (dias === 0 ? 'hoje' : dias === 1 ? 'ontem' : 'há ' + dias + ' dias') + ' (' + escHtml(u.conferido_por || '') + ', ' + new Date(u.conferido_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')' : 'ainda não conferida'}</span></div>
+      <div><strong>${nome}</strong><span>${tem ? lista.filter(o => fabricasDaOS(o).includes(k)).length + ' em produção · ' : 'nada em produção · '}${u ? 'conferida ' + (dias === 0 ? 'hoje' : dias === 1 ? 'ontem' : 'há ' + dias + ' dias') + ' (' + escHtml(u.conferido_por || '') + ', ' + new Date(u.conferido_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ')' : 'ainda não conferida'}</span></div>
       <div class="ped-conf-bt">${u && dias === 0 ? `<button type="button" class="conf-link" onclick="desfazerConferencia(${u.id})">desfazer</button>` : ''}
         <button type="button" class="conf-btn${atrasada ? ' ok' : ''}" onclick="conferirFabrica('${k}')">Conferi agora</button></div>
     </div>`; }).join('')}
@@ -400,49 +400,49 @@ function cardOS(o, fase){
   let acoes = '';
   if(fase === 'pagar'){
     const cb = (fech && typeof fechCobranca === 'function') ? fechCobranca(fech) : null;
-    const st = !fech || !fech.os_enviada_em ? '<span class="conf-nota">📤 OS ainda não marcada como enviada ao cliente (Fechamento, passo 3).</span>'
-      : fech.comprovante_em ? '<span class="conf-st ok">🧾 Comprovante recebido · aguardando conferência da Madeleine</span>'
-      : cb && cb.avisarDona ? `<span class="ped-alerta">⚠️ ${cb.dias} dias úteis sem pagamento: avisar a Madeleine</span>`
-      : cb && cb.devida ? `<span class="conf-st env">📣 Cobrar retorno do cliente hoje</span>`
-      : `<span class="conf-nota">📤 OS enviada · próxima cobrança ${cb ? fechDataCurta(cb.proxima) : ''}</span>`;
+    const st = !fech || !fech.os_enviada_em ? '<span class="conf-nota">OS ainda não marcada como enviada ao cliente (Fechamento, passo 3).</span>'
+      : fech.comprovante_em ? '<span class="conf-st ok">Comprovante recebido · aguardando conferência da Madeleine</span>'
+      : cb && cb.avisarDona ? `<span class="ped-alerta">${cb.dias} dias úteis sem pagamento: avisar a Madeleine</span>`
+      : cb && cb.devida ? `<span class="conf-st env">Cobrar retorno do cliente hoje</span>`
+      : `<span class="conf-nota">OS enviada · próxima cobrança ${cb ? fechDataCurta(cb.proxima) : ''}</span>`;
     acoes = pedFaixaPagamento(o) + (orc ? `<div class="conf-ctrl">${st}<button type="button" class="conf-link" onclick="reopenOrc(${orc.id})">ver fechamento ›</button></div>` : '');
   }
   if(fase === 'fabrica') acoes = pedBlocoPagamento(o, 'fabrica') +
     `<div class="conf-nota">Faça o pedido no sistema da fábrica (Guia das Fábricas), anote o nº na OS do Tiny e mude para <b>"Preparando envio"</b>.</div>`;
-  if(fase === 'producao') acoes = pedFaixaPagamento(o) + (!o.numero_fabrica ? '<div class="pg-nota">🧵 Sem nº de fábrica (D/R): produção própria (tradicional em tecido) ou serviço.</div>' : '');
+  if(fase === 'producao') acoes = pedFaixaPagamento(o) + (!o.numero_fabrica ? '<div class="pg-nota">Sem nº de fábrica (D/R): produção própria (tradicional em tecido) ou serviço.</div>' : '');
   if(fase === 'pronto') acoes = pedBlocoPagamento(o, 'pronto') + `
     <div class="conf-ctrl">${o.em_maos_em
-      ? `<span class="conf-st ok">🖐️ Conferido em mãos</span><span class="conf-nota">${escHtml((o.em_maos_por || '') + ' · ' + new Date(o.em_maos_em).toLocaleDateString('pt-BR'))}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'em_maos_em',false)">desfazer</button>`
-      : `<button type="button" class="conf-btn" onclick="pedMarcar(${o.pedido_id},'em_maos_em',true)">🖐️ Itens conferidos em mãos</button>`}</div>
-    <div class="conf-ctrl">${ag ? `<span class="conf-st env">📅 Na agenda: ${new Date(ag.inicio).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}</span>` : '<span class="conf-nota">Sem compromisso na agenda ainda.</span>'}
+      ? `<span class="conf-st ok">Conferido em mãos</span><span class="conf-nota">${escHtml((o.em_maos_por || '') + ' · ' + new Date(o.em_maos_em).toLocaleDateString('pt-BR'))}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'em_maos_em',false)">desfazer</button>`
+      : `<button type="button" class="conf-btn" onclick="pedMarcar(${o.pedido_id},'em_maos_em',true)">Itens conferidos em mãos</button>`}</div>
+    <div class="conf-ctrl">${ag ? `<span class="conf-st env">Na agenda: ${new Date(ag.inicio).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}</span>` : '<span class="conf-nota">Sem compromisso na agenda ainda.</span>'}
       <button type="button" class="conf-btn conf-wa" onclick="pedVer(${o.pedido_id},'agendar')">${ic('chat',15)} Mensagem: propor data</button></div>
     ${msgPainel('agendar', pedMsgAgendar(o), '', '')}
     <div class="conf-nota">Instalação só se confirma com o saldo pago (até 1 dia útil antes) e os itens conferidos em mãos. Agendado e confirmado → <b>"Enviado"</b> no Tiny.</div>`;
-  if(fase === 'agendado') acoes = pedBlocoPagamento(o, 'agendado') + (ag ? `<div class="conf-ctrl"><span class="conf-st env">📅 ${new Date(ag.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span></div>` : '<span class="conf-nota">Não achei o compromisso na agenda dos próximos 45 dias.</span>');
+  if(fase === 'agendado') acoes = pedBlocoPagamento(o, 'agendado') + (ag ? `<div class="conf-ctrl"><span class="conf-st env">${new Date(ag.inicio).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span></div>` : '<span class="conf-nota">Não achei o compromisso na agenda dos próximos 45 dias.</span>');
   if(fase === 'entregue'){
     const quando = (por, em) => escHtml([por, em ? new Date(em).toLocaleDateString('pt-BR') : ''].filter(Boolean).join(' · '));
     const nf = nfEstado(o);
     const nfNome = o.nf_fora_em ? 'NF emitida fora do Tiny' : 'NF' + (o.nf_numero ? ' nº ' + escHtml(o.nf_numero) : '') + ' emitida';
     const nfBloco = nf === 'emitir'
-      ? `<div class="ped-alerta">🧾 Nota fiscal ainda não emitida no Tiny${o.nf_id && NF_SIT_NOME[o.nf_situacao] ? ' (nota ' + NF_SIT_NOME[o.nf_situacao] + ')' : ''}: emitir e depois enviar ao cliente.</div>
+      ? `<div class="ped-alerta">Nota fiscal ainda não emitida no Tiny${o.nf_id && NF_SIT_NOME[o.nf_situacao] ? ' (nota ' + NF_SIT_NOME[o.nf_situacao] + ')' : ''}: emitir e depois enviar ao cliente.</div>
          <div class="conf-ctrl"><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_fora_em',true)">NF de serviço emitida fora do Tiny (Tinus)</button></div>`
-      : `<div class="conf-ctrl"><span class="conf-st ok">🧾 ${nfNome}</span>${o.nf_fora_em ? `<span class="conf-nota">${quando(o.nf_fora_por, o.nf_fora_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_fora_em',false)">desfazer</button>` : ''}</div>
+      : `<div class="conf-ctrl"><span class="conf-st ok">${nfNome}</span>${o.nf_fora_em ? `<span class="conf-nota">${quando(o.nf_fora_por, o.nf_fora_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_fora_em',false)">desfazer</button>` : ''}</div>
          <div class="conf-ctrl">${o.nf_enviada_em
            ? (o.nf_enviada_por === 'Olist (e-mail)'
-              ? `<span class="conf-st ok">📧 NF enviada por e-mail pelo Olist</span><span class="conf-nota">cliente com e-mail no cadastro</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',false)">não foi enviada</button>`
-              : `<span class="conf-st ok">📤 NF enviada ao cliente</span><span class="conf-nota">${quando(o.nf_enviada_por, o.nf_enviada_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',false)">desfazer</button>`)
-           : `<span class="conf-st env">📤 Enviar a NF ao cliente</span><button type="button" class="conf-btn ok" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',true)">${ic('ok',15)} Já enviei a NF</button>`}</div>`;
+              ? `<span class="conf-st ok">NF enviada por e-mail pelo Olist</span><span class="conf-nota">cliente com e-mail no cadastro</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',false)">não foi enviada</button>`
+              : `<span class="conf-st ok">NF enviada ao cliente</span><span class="conf-nota">${quando(o.nf_enviada_por, o.nf_enviada_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',false)">desfazer</button>`)
+           : `<span class="conf-st env">Enviar a NF ao cliente</span><button type="button" class="conf-btn ok" onclick="pedMarcar(${o.pedido_id},'nf_enviada_em',true)">${ic('ok',15)} Já enviei a NF</button>`}</div>`;
     const aval = o.avaliacao_em
-      ? `<div class="conf-ctrl"><span class="conf-st ok">⭐ Avaliação pedida</span><span class="conf-nota">${quando(o.avaliacao_por, o.avaliacao_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'avaliacao_em',false)">desfazer</button></div>`
-      : avaliacaoPendente(o) ? `<div class="conf-ctrl"><button type="button" class="conf-btn conf-wa" onclick="pedVer(${o.pedido_id},'avaliacao')">⭐ Mensagem: finalização e avaliação</button></div>${msgPainel('avaliacao', pedMsgAvaliacao(o), 'Já enviei', 'avaliacao_em')}` : '';
+      ? `<div class="conf-ctrl"><span class="conf-st ok">Avaliação pedida</span><span class="conf-nota">${quando(o.avaliacao_por, o.avaliacao_em)}</span><button type="button" class="conf-link" onclick="pedMarcar(${o.pedido_id},'avaliacao_em',false)">desfazer</button></div>`
+      : avaliacaoPendente(o) ? `<div class="conf-ctrl"><button type="button" class="conf-btn conf-wa" onclick="pedVer(${o.pedido_id},'avaliacao')">Mensagem: finalização e avaliação</button></div>${msgPainel('avaliacao', pedMsgAvaliacao(o), 'Já enviei', 'avaliacao_em')}` : '';
     acoes = nfBloco + aval;
   }
-  if(o.servico_tipos && !svcEhServico(o)) acoes += `<div class="conf-ctrl"><span class="conf-nota">Tem serviço (${escHtml(o.servico_tipos)}) junto</span><button type="button" class="conf-link" onclick="svcSalvar(${o.pedido_id},{eh_servico:true},'Agora aparece em 🛠️ Serviços.')">acompanhar como serviço</button></div>`;
-  else if(svcEhServico(o)) acoes += `<div class="conf-ctrl"><span class="conf-nota">🛠️ Também em Serviços</span><button type="button" class="conf-link" onclick="PED_FILTRO='servicos';desenharPedidos();window.scrollTo({top:0})">ver ›</button></div>`;
+  if(o.servico_tipos && !svcEhServico(o)) acoes += `<div class="conf-ctrl"><span class="conf-nota">Tem serviço (${escHtml(o.servico_tipos)}) junto</span><button type="button" class="conf-link" onclick="svcSalvar(${o.pedido_id},{eh_servico:true},'Agora aparece em Serviços.')">acompanhar como serviço</button></div>`;
+  else if(svcEhServico(o)) acoes += `<div class="conf-ctrl"><span class="conf-nota">Também em Serviços</span><button type="button" class="conf-link" onclick="PED_FILTRO='servicos';desenharPedidos();window.scrollTo({top:0})">ver ›</button></div>`;
   return `<div class="ped-card${atrasado ? ' atrasado' : ''}">
     <div class="gar-topo"><strong>${escHtml(o.cliente || 'Cliente')}</strong><button type="button" class="ped-ver" onclick="abrirPedidoVenda(${o.pedido_id})">OS ${escHtml(o.numero || '')} · ver pedido ›</button></div>
-    <div class="gar-meta">${[o.numero_fabrica ? '🏷️ ' + escHtml(o.numero_fabrica) : '', o.valor ? reais(o.valor) : '', fase === 'entregue' && o.data_entrega ? 'instalado em ' + diaBR(o.data_entrega) : (desde ? 'nesta fase há ' + desde + (desde > 1 ? ' dias' : ' dia') : 'nesta fase desde hoje'),
-      fase === 'producao' && prevista ? (atrasado ? '🔴 previsão ' + prevista.toLocaleDateString('pt-BR') + ' (atrasado)' : 'previsão ' + prevista.toLocaleDateString('pt-BR')) : '', orc ? numCDP(orc.numero) : ''].filter(Boolean).join(' · ')}</div>
+    <div class="gar-meta">${[o.numero_fabrica ? '' + escHtml(o.numero_fabrica) : '', o.valor ? reais(o.valor) : '', fase === 'entregue' && o.data_entrega ? 'instalado em ' + diaBR(o.data_entrega) : (desde ? 'nesta fase há ' + desde + (desde > 1 ? ' dias' : ' dia') : 'nesta fase desde hoje'),
+      fase === 'producao' && prevista ? (atrasado ? 'previsão ' + prevista.toLocaleDateString('pt-BR') + ' (atrasado)' : 'previsão ' + prevista.toLocaleDateString('pt-BR')) : '', orc ? numCDP(orc.numero) : ''].filter(Boolean).join(' · ')}</div>
     ${acoes}
   </div>`;
 }
@@ -460,19 +460,19 @@ function desenharPedidosInicio(){
   const travadas = PED_OS.filter(o => [7, 5, 1].includes(Number(o.situacao)) && !pedPagamento(o).instalacao);
   const saldoConferir = pedPodeConferir() ? PED_OS.filter(o => Number(o.situacao) !== 2 && o.saldo_comprovante_em && !o.saldo_validado_em) : [];
   const linhas = [
-    svc.length && ['servicos', '🛠️', svc.length + (svc.length > 1 ? ' OS de serviço em andamento' : ' OS de serviço em andamento'), [svcN('novo') && svcN('novo') + ' para responder', svcN('agir') && svcN('agir') + ' com próximo passo', svcN('espera') + svcN('atras') ? (svcN('espera') + svcN('atras')) + ' aguardando peça' : 0].filter(Boolean).join(' · ') || 'em dia', svcN('atras') + svcN('novo') > 0],
-    saldoConferir.length && ['todos', '💳', saldoConferir.length + (saldoConferir.length > 1 ? ' saldos para conferir no extrato' : ' saldo para conferir no extrato'), 'comprovante recebido · ' + saldoConferir.map(o => primeiroNome(o.cliente)).slice(0, 3).join(', '), true],
-    travadas.length && ['todos', '⛔', travadas.length + (travadas.length > 1 ? ' instalações sem pagamento completo' : ' instalação sem pagamento completo'), 'não confirmar antes de conferir o saldo', true],
-    fabrica.length && ['fabrica', '🏭', fabrica.length + (fabrica.length > 1 ? ' OS para pedir na fábrica' : ' OS para pedir na fábrica'), 'próximo nº: ' + ([proximoNumeroFabrica('D') && 'D' + proximoNumeroFabrica('D'), proximoNumeroFabrica('R') && 'R' + proximoNumeroFabrica('R')].filter(Boolean).join(' · ') || '—'), true],
-    conferir.length && ['producao', '🔎', 'Conferir ' + conferir.map(c => c[1]).join(' e '), 'pedidos em produção · a cada 2 dias', true],
-    pronto.length && ['pronto', '📦', pronto.length + (pronto.length > 1 ? ' prontos para agendar' : ' pronto para agendar'), semMaos.length ? semMaos.length + ' sem conferência em mãos' : 'itens conferidos', false],
-    nfEmitir.length && ['entregue', '🧾', nfEmitir.length + (nfEmitir.length > 1 ? ' notas fiscais para emitir' : ' nota fiscal para emitir'), 'pedidos entregues sem NF no Tiny', true],
-    nfEnviar.length && ['entregue', '📤', nfEnviar.length + (nfEnviar.length > 1 ? ' notas fiscais para enviar' : ' nota fiscal para enviar'), 'NF emitida · falta enviar ao cliente', false],
-    entregue.length && ['entregue', '⭐', entregue.length + (entregue.length > 1 ? ' pedidos de avaliação' : ' pedido de avaliação'), 'instalações dos últimos dias', false],
+    svc.length && ['servicos', ic('ferramenta',16), svc.length + (svc.length > 1 ? ' OS de serviço em andamento' : ' OS de serviço em andamento'), [svcN('novo') && svcN('novo') + ' para responder', svcN('agir') && svcN('agir') + ' com próximo passo', svcN('espera') + svcN('atras') ? (svcN('espera') + svcN('atras')) + ' aguardando peça' : 0].filter(Boolean).join(' · ') || 'em dia', svcN('atras') + svcN('novo') > 0],
+    saldoConferir.length && ['todos', ic('cartao',16), saldoConferir.length + (saldoConferir.length > 1 ? ' saldos para conferir no extrato' : ' saldo para conferir no extrato'), 'comprovante recebido · ' + saldoConferir.map(o => primeiroNome(o.cliente)).slice(0, 3).join(', '), true],
+    travadas.length && ['todos', ic('alerta',16), travadas.length + (travadas.length > 1 ? ' instalações sem pagamento completo' : ' instalação sem pagamento completo'), 'não confirmar antes de conferir o saldo', true],
+    fabrica.length && ['fabrica', ic('etiqueta',16), fabrica.length + (fabrica.length > 1 ? ' OS para pedir na fábrica' : ' OS para pedir na fábrica'), 'próximo nº: ' + ([proximoNumeroFabrica('D') && 'D' + proximoNumeroFabrica('D'), proximoNumeroFabrica('R') && 'R' + proximoNumeroFabrica('R')].filter(Boolean).join(' · ') || '—'), true],
+    conferir.length && ['producao', ic('ver',16), 'Conferir ' + conferir.map(c => c[1]).join(' e '), 'pedidos em produção · a cada 2 dias', true],
+    pronto.length && ['pronto', ic('caixa',16), pronto.length + (pronto.length > 1 ? ' prontos para agendar' : ' pronto para agendar'), semMaos.length ? semMaos.length + ' sem conferência em mãos' : 'itens conferidos', false],
+    nfEmitir.length && ['entregue', ic('documento',16), nfEmitir.length + (nfEmitir.length > 1 ? ' notas fiscais para emitir' : ' nota fiscal para emitir'), 'pedidos entregues sem NF no Tiny', true],
+    nfEnviar.length && ['entregue', ic('email',16), nfEnviar.length + (nfEnviar.length > 1 ? ' notas fiscais para enviar' : ' nota fiscal para enviar'), 'NF emitida · falta enviar ao cliente', false],
+    entregue.length && ['entregue', ic('estrela',16), entregue.length + (entregue.length > 1 ? ' pedidos de avaliação' : ' pedido de avaliação'), 'instalações dos últimos dias', false],
   ].filter(Boolean);
   if(!linhas.length){ box.innerHTML = ''; return; }
   box.innerHTML = `<section class="inicio-bloco">
-    <div class="inicio-bloco-tit"><span>📦 Pedidos</span><button type="button" class="conf-link" onclick="abrirPedidos('todos')">ver todos ›</button></div>
+    <div class="inicio-bloco-tit"><span>${ic('caixa',16)}Pedidos</span><button type="button" class="conf-link" onclick="abrirPedidos('todos')">ver todos ›</button></div>
     <div class="inicio-pend">${linhas.map(([k, em, tit, sub, urg]) => `
       <button type="button" class="inicio-pend-item pend-${urg ? 'atrasado' : 'enviar'}" onclick="abrirPedidos('${k}')">
         <span class="inicio-pend-ic">${em}</span>
@@ -592,7 +592,7 @@ function desenharPedidoVenda(p, o){
       <div class="pedv-forma">${[p.pagamento && p.pagamento.forma, p.pagamento && p.pagamento.meio].filter(Boolean).map(escHtml).join(' · ') || 'Forma de pagamento não informada no Olist'}${p.pagamento && p.pagamento.condicao ? ` <span class="pedv-nota">· ${escHtml(p.pagamento.condicao)}</span>` : ''}</div>
       ${parc.length ? `<div class="pedv-parcelas">${parc.map((x, n) => `
         <div class="pedv-parc${/\bok\b/i.test(x.obs || '') ? ' ok' : ''}">
-          <span class="pedv-parc-n">${/\bok\b/i.test(x.obs || '') ? '✅' : (n + 1) + 'ª'}</span>
+          <span class="pedv-parc-n">${/\bok\b/i.test(x.obs || '') ? '✓' : (n + 1) + 'ª'}</span>
           <div><b>${x.data ? diaBR(x.data) : 'sem data'}${x.forma ? ' · ' + escHtml(x.forma) : ''}</b>${x.obs ? `<span>${escHtml(x.obs)}</span>` : ''}</div>
           <b class="pedv-parc-v">${reais(x.valor)}</b>
         </div>`).join('')}</div>` : '<div class="pedv-nota">Sem parcelas lançadas no Olist.</div>'}
