@@ -44,6 +44,7 @@ async function carregarPedidos(){
   if(!r1.ok) throw new Error('os');
   PED_OS = await r1.json(); PED_CONF = r2.ok ? await r2.json() : []; PED_NUMS = r3.ok ? await r3.json() : [];
   SVC_MAPA = {}; if(r4 && r4.ok) (await r4.json()).forEach(x => SVC_MAPA[x.pedido_id] = x);
+  if(typeof atlCarregar === 'function') await atlCarregar();
   PED_CARREGADO = true;
 }
 async function carregarAgendaPedidos(){
@@ -373,12 +374,12 @@ function desenharPedidos(aviso){
   const grupos = PED_FASES.map(f => ({ f, l: pedNaFase(f) }));
   const lido = PED_OS.reduce((m, o) => o.lido_em > m ? o.lido_em : m, '');
   $('ped-sub').textContent = (PED_OS.filter(o => Number(o.situacao) !== 6).length) + ' OS em andamento' + (lido ? ' · lido do Olist às ' + new Date(lido).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
-  const nSvc = svcEmAndamento().length;
-  $('ped-filtros').innerHTML = [['todos', 'Tudo', grupos.reduce((t, g) => t + g.l.length, 0) + nSvc], ['servicos', 'Serviços', nSvc]].concat(grupos.map(g => [g.f.k, g.f.em + ' ' + g.f.tit.split(' · ')[0], g.l.length]))
+  const nSvc = svcEmAndamento().length, nAtl = typeof atlEmAndamento === 'function' ? atlEmAndamento().length : 0;
+  $('ped-filtros').innerHTML = [['todos', 'Tudo', grupos.reduce((t, g) => t + g.l.length, 0) + nSvc], ['servicos', 'Serviços', nSvc], ['atelie', 'Ateliê', nAtl]].concat(grupos.map(g => [g.f.k, g.f.em + ' ' + g.f.tit.split(' · ')[0], g.l.length]))
     .map(([k, t, n]) => `<button type="button" class="hist-chip${PED_FILTRO === k ? ' on' : ''}" onclick="PED_FILTRO='${k}';desenharPedidos()">${t} <span>${n}</span></button>`).join('')
     + `<span class="ped-vista" role="group" aria-label="Como mostrar"><button type="button" class="${PED_VISTA !== 'lista' ? 'on' : ''}" onclick="pedMudarVista('quadro')">Quadro</button><button type="button" class="${PED_VISTA === 'lista' ? 'on' : ''}" onclick="pedMudarVista('lista')">Lista</button></span>`;
   const mostrar = grupos.filter(g => PED_FILTRO === 'todos' || g.f.k === PED_FILTRO);
-  box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + (PED_FILTRO === 'servicos' ? pedBlocoServicos(false) : '') + `<div class="ped-grupos${PED_FILTRO === 'todos' && PED_VISTA !== 'lista' ? ' quadro' : ''}">` + (PED_FILTRO === 'todos' ? pedBlocoServicos(true) : '') + mostrar.map(g => `
+  box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + (PED_FILTRO === 'servicos' ? pedBlocoServicos(false) : '') + (PED_FILTRO === 'atelie' ? pedBlocoAtelie(false) : '') + `<div class="ped-grupos${PED_FILTRO === 'todos' && PED_VISTA !== 'lista' ? ' quadro' : ''}">` + (PED_FILTRO === 'todos' ? pedBlocoServicos(true) + (typeof pedBlocoAtelie === 'function' ? pedBlocoAtelie(true) : '') : '') + mostrar.map(g => `
     <section class="ped-grupo">
       <div class="inicio-bloco-tit"><span>${g.f.em} ${g.f.tit}</span><strong>${g.l.length}${g.l.length ? `<em class="ped-soma">R$ ${Math.round(g.l.reduce((t, o) => t + Number(o.valor || 0), 0)).toLocaleString('pt-BR')}</em>` : ''}</strong></div>
       ${g.f.k === 'fabrica' && g.l.length ? pedBlocoProximoNumero() : ''}
@@ -460,6 +461,10 @@ function cardOS(o, fase){
   }
   if(o.servico_tipos && !svcEhServico(o)) acoes += `<div class="conf-ctrl"><span class="conf-nota">Tem serviço (${escHtml(o.servico_tipos)}) junto</span><button type="button" class="conf-link" onclick="svcSalvar(${o.pedido_id},{eh_servico:true},'Agora aparece em Serviços.')">acompanhar como serviço</button></div>`;
   else if(svcEhServico(o)) acoes += `<div class="conf-ctrl"><span class="conf-nota">Também em Serviços</span><button type="button" class="conf-link" onclick="PED_FILTRO='servicos';desenharPedidos();window.scrollTo({top:0})">ver ›</button></div>`;
+  if(typeof atlEhAtelie === 'function' && Number(o.situacao) !== 6){
+    if(atlEhAtelie(o)) acoes += `<div class="conf-ctrl"><span class="conf-nota">Ateliê: ${escHtml(atlSituacao(o).txt)}</span><button type="button" class="conf-link" onclick="PED_FILTRO='atelie';desenharPedidos();window.scrollTo({top:0})">ver ›</button></div>`;
+    else if(/TRADICIONAL|TECIDO|ATELI/i.test(o.itens_resumo || '')) acoes += `<div class="conf-ctrl"><span class="conf-nota">Tem cortina em tecido?</span><button type="button" class="conf-link" onclick="atlSalvar(${o.pedido_id},{eh_atelie:true},'Agora aparece no Ateliê.')">acompanhar no ateliê</button></div>`;
+  }
   return `<div class="ped-card${atrasado ? ' atrasado' : ''}">
     <div class="gar-topo"><strong>${escHtml(o.cliente || 'Cliente')}</strong><button type="button" class="ped-ver" onclick="abrirPedidoVenda(${o.pedido_id})">OS ${escHtml(o.numero || '')} · ver pedido ›</button></div>
     <div class="gar-meta">${[o.numero_fabrica ? '' + escHtml(o.numero_fabrica) : '', o.valor ? reais(o.valor) : '', fase === 'entregue' && o.data_entrega ? 'instalado em ' + diaBR(o.data_entrega) : (desde ? 'nesta fase há ' + desde + (desde > 1 ? ' dias' : ' dia') : 'nesta fase desde hoje'),

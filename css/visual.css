@@ -505,3 +505,15 @@ body.lado-a-lado .pasta-wrap{max-width:760px!important}
 .svc-l-o{grid-area:o;font-size:12.5px;color:var(--tinta-suave);line-height:1.35}
 .svc-item.aberto{background:var(--cab)} .svc-item.aberto .ped-card{margin:0 10px 10px}
 .ped-grupos:not(.quadro) .svc-compacto{margin-bottom:14px}
+/* Ateliê em Pedidos (20/11/2026) */
+.atl-topo{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+.atl-topo .conf-nota{flex:1 1 260px}
+.atl-resumo-bt{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px}
+.atl-painel{margin:0 0 12px;display:flex;flex-direction:column;gap:8px}
+.atl-painel textarea{font-family:var(--sans);font-size:13px}
+.atl-bts{display:flex;align-items:center;gap:12px}
+.atl-campos{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;font-size:12.5px;color:var(--tinta-suave)}
+.atl-campos label{display:flex;flex-direction:column;gap:3px}
+.atl-campos .atl-obs{flex:1 1 180px}
+.atl-campos input{min-height:38px;padding:0 10px;border-radius:var(--r2);border:1px solid var(--linha);background:var(--superficie);font:inherit;font-size:14px;color:var(--tinta);min-width:0}
+.svc-compacto .orc-mais{border-top:1px solid var(--linha-suave)}
