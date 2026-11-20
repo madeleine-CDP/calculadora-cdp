@@ -452,8 +452,9 @@ function cardOS(o, fase){
 }
 
 // ═════════ INÍCIO ═════════
-function desenharPedidosInicio(){
-  const box = document.getElementById('inicio-pedidos'); if(!box || !PED_CARREGADO) return;
+// linhas do bloco Pedidos no Início (também usadas pela fila única "Para fazer hoje")
+function pedLinhasInicio(){
+  if(!PED_CARREGADO) return [];
   const n = (k) => PED_OS.filter(o => PED_FASES.find(f => f.k === k).sit.includes(Number(o.situacao)));
   const fabrica = n('fabrica'), producao = n('producao'), pronto = n('pronto'), entregue = n('entregue').filter(avaliacaoPendente);
   const nfEmitir = n('entregue').filter(o => nfEstado(o) === 'emitir'), nfEnviar = n('entregue').filter(o => nfEstado(o) === 'enviar');
@@ -474,6 +475,11 @@ function desenharPedidosInicio(){
     nfEnviar.length && ['entregue', ic('email',16), nfEnviar.length + (nfEnviar.length > 1 ? ' notas fiscais para enviar' : ' nota fiscal para enviar'), 'NF emitida · falta enviar ao cliente', false],
     entregue.length && ['entregue', ic('estrela',16), entregue.length + (entregue.length > 1 ? ' pedidos de avaliação' : ' pedido de avaliação'), 'instalações dos últimos dias', false],
   ].filter(Boolean);
+  return linhas;
+}
+function desenharPedidosInicio(){
+  const box = document.getElementById('inicio-pedidos'); if(!box || !PED_CARREGADO) return;
+  const linhas = pedLinhasInicio();
   if(!linhas.length){ box.innerHTML = ''; return; }
   box.innerHTML = `<section class="inicio-bloco">
     <div class="inicio-bloco-tit"><span>${ic('caixa',16)}Pedidos</span><button type="button" class="conf-link" onclick="abrirPedidos('todos')">ver todos ›</button></div>

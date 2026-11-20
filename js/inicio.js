@@ -130,7 +130,8 @@ async function renderInicio(atualizar){
 
     <div class="ini-grade">
       <div class="ini-fila">
-        <div class="inicio-secao">Para fazer hoje</div>
+        <div id="inicio-fila"></div>
+        <div class="inicio-secao">Por assunto</div>
         <div id="inicio-fechamento"></div>
         <div id="inicio-pedidos"></div>
         <div id="inicio-garantia"></div>
@@ -155,6 +156,7 @@ async function renderInicio(atualizar){
         <div id="inicio-links"></div>
       </div>
     </div>`;
+  FILA_ULTIMO = null; if(typeof filaDesenhar === 'function') filaDesenhar();
   if(typeof carregarFechamentosInicio === 'function') carregarFechamentosInicio();
   if(typeof carregarPedidosInicio === 'function') carregarPedidosInicio();
   if(typeof carregarAgendaHoje === 'function') carregarAgendaHoje();

@@ -26,7 +26,7 @@ with sync_playwright() as p:
     print('3 fechou "Minhas tarefas":', 'fechado' in alvo.get_attribute('class'), '| lista some:', not pg.is_visible('.md-lista'))
     pg.reload(); pg.wait_for_timeout(2500)
     print('4 depois de recarregar continua fechado:', 'fechado' in pg.locator('.dobravel', has_text='Minhas tarefas').get_attribute('class'))
-    pg.click('#inicio-urgentes'); pg.wait_for_timeout(700)
+    pg.evaluate('celIrUrgente()'); pg.wait_for_timeout(700)   # a faixa ficou escondida (a fila única mostra os urgentes)
     print('5 "ver o primeiro" abre o bloco do urgente:', pg.locator('.inicio-pend-item.pend-atrasado, .md-tarefa.atrasada').first.is_visible())
     pg.screenshot(path=f'{S}/shotsT/celular_360.png', full_page=False)
     pg.click('.tab-mais'); pg.wait_for_timeout(300)

@@ -74,7 +74,7 @@ with sync_playwright() as p:
     pg.locator('#gar-filtros >> text=Resolvidos').click(); pg.wait_for_timeout(200)
     pg.locator('.gar-card >> text=reabrir').click(); pg.wait_for_timeout(300); print('  reabrir:', gar[0]['status'])
     # chamado sem cadastro / fora da garantia
-    pg.locator('text=+ Novo chamado').click(); pg.wait_for_timeout(200)
+    pg.locator('text=Novo chamado').click(); pg.wait_for_timeout(200)
     pg.fill('#gar-busca','Fulano Desconhecido'); pg.wait_for_timeout(900)
     pg.locator('.gar-semcad').click(); pg.wait_for_timeout(200)
     print('8 sem cadastro:', pg.inner_text('#gar-situacao')[:90], '| nome:', pg.input_value('#gar-cliente'))

@@ -71,7 +71,7 @@ let CEL_TIMER = null;
 function celObservar(){
   const box = document.getElementById('inicio-conteudo'); if(!box || box.dataset.celObs) return;
   box.dataset.celObs = '1';
-  new MutationObserver(() => { clearTimeout(CEL_TIMER); CEL_TIMER = setTimeout(() => { celPrepararBlocos(box); celFaixaUrgentes(); }, 80); })
+  new MutationObserver(() => { clearTimeout(CEL_TIMER); CEL_TIMER = setTimeout(() => { celPrepararBlocos(box); celFaixaUrgentes(); if(typeof filaDesenhar === 'function') filaDesenhar(); }, 80); })
     .observe(box, { childList: true, subtree: true });
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', celObservar); else celObservar();
