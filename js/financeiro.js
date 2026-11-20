@@ -161,10 +161,10 @@ function desenharFinanceiro(){
 
     <section class="fin-q">
       <div class="fin-q-tit"><h2>Vendas por mês</h2><span>pedidos do Olist · valor final</span></div>
-      <figure class="fin-meses" role="img" aria-label="${V.meses.map(m => MESES_CURTO[m.mes] + ' ' + finR(m.total)).join(', ')}">
+      ${V.meses.some(m => m.total > 0) ? `<figure class="fin-meses" role="img" aria-label="${V.meses.map(m => MESES_CURTO[m.mes] + ' ' + finR(m.total)).join(', ')}">
         <div class="fin-barras">${V.meses.map((m, i) => `<div class="fin-col${i === 5 ? ' atual' : ''}" title="${MESES_CURTO[m.mes]}: ${finR(m.total)} · ${m.n} pedidos"><span>${finMil(m.total)}</span><div style="height:${(m.total / maxMes * 100).toFixed(1)}%"></div></div>`).join('')}</div>
         <div class="fin-rotulos">${V.meses.map((m, i) => `<span>${MESES_CURTO[m.mes]}${i === 5 ? '<small>até dia ' + dia + '</small>' : ''}</span>`).join('')}</div>
-      </figure>
+      </figure>` : '<div class="conf-nota fin-vazio-graf">Ainda sem vendas lidas do Olist nestes 6 meses. Toque em Atualizar ou confira a conexão em Configurações.</div>'}
     </section>
   </div>
 
