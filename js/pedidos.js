@@ -20,6 +20,9 @@ const PED_FASES = [
 ];
 const PED_FABRICAS = [['decore', 'Decore', 'D'], ['real', 'Real', 'R']];
 let PED_OS = [], PED_NUMS = [], PED_CONF = [], SVC_MAPA = {}, PED_CARREGADO = false, PED_SINC_EM = 0, PED_FILTRO = 'todos', PED_AGENDA = null;
+// visual profissional, etapa 4: no computador (≥1100px) "Tudo" vira um quadro com uma coluna por fase; 'lista' volta ao jeito antigo
+let PED_VISTA = (() => { try{ return localStorage.getItem('cdp_ped_vista') || 'quadro'; }catch(e){ return 'quadro'; } })();
+function pedMudarVista(v){ PED_VISTA = v; try{ localStorage.setItem('cdp_ped_vista', v); }catch(e){} desenharPedidos(); }
 const PED_ABERTO = new Set();
 const PED_MARCADAS = new Set();   // marcadas agora: continuam na tela (com desfazer) até recarregar a página
 
@@ -355,15 +358,16 @@ function desenharPedidos(aviso){
   $('ped-sub').textContent = (PED_OS.filter(o => Number(o.situacao) !== 6).length) + ' OS em andamento' + (lido ? ' · lido do Olist às ' + new Date(lido).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
   const nSvc = svcEmAndamento().length;
   $('ped-filtros').innerHTML = [['todos', 'Tudo', grupos.reduce((t, g) => t + g.l.length, 0) + nSvc], ['servicos', 'Serviços', nSvc]].concat(grupos.map(g => [g.f.k, g.f.em + ' ' + g.f.tit.split(' · ')[0], g.l.length]))
-    .map(([k, t, n]) => `<button type="button" class="hist-chip${PED_FILTRO === k ? ' on' : ''}" onclick="PED_FILTRO='${k}';desenharPedidos()">${t} <span>${n}</span></button>`).join('');
+    .map(([k, t, n]) => `<button type="button" class="hist-chip${PED_FILTRO === k ? ' on' : ''}" onclick="PED_FILTRO='${k}';desenharPedidos()">${t} <span>${n}</span></button>`).join('')
+    + `<span class="ped-vista" role="group" aria-label="Como mostrar"><button type="button" class="${PED_VISTA !== 'lista' ? 'on' : ''}" onclick="pedMudarVista('quadro')">Quadro</button><button type="button" class="${PED_VISTA === 'lista' ? 'on' : ''}" onclick="pedMudarVista('lista')">Lista</button></span>`;
   const mostrar = grupos.filter(g => PED_FILTRO === 'todos' || g.f.k === PED_FILTRO);
-  box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + ((PED_FILTRO === 'todos' || PED_FILTRO === 'servicos') ? pedBlocoServicos() : '') + mostrar.map(g => `
+  box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + ((PED_FILTRO === 'todos' || PED_FILTRO === 'servicos') ? pedBlocoServicos() : '') + `<div class="ped-grupos${PED_FILTRO === 'todos' && PED_VISTA !== 'lista' ? ' quadro' : ''}">` + mostrar.map(g => `
     <section class="ped-grupo">
-      <div class="inicio-bloco-tit"><span>${g.f.em} ${g.f.tit}</span><strong>${g.l.length}</strong></div>
+      <div class="inicio-bloco-tit"><span>${g.f.em} ${g.f.tit}</span><strong>${g.l.length}${g.l.length ? `<em class="ped-soma">R$ ${Math.round(g.l.reduce((t, o) => t + Number(o.valor || 0), 0)).toLocaleString('pt-BR')}</em>` : ''}</strong></div>
       ${g.f.k === 'fabrica' && g.l.length ? pedBlocoProximoNumero() : ''}
       ${g.f.k === 'producao' ? pedBlocoConferencia(g.l) : ''}
       ${g.l.length ? `<div class="ped-lista">${g.l.map(o => cardOS(o, g.f.k)).join('')}</div>` : `<div class="conf-nota ped-vazio">Nenhuma OS nesta fase.</div>`}
-    </section>`).join('');
+    </section>`).join('') + '</div>';
 }
 function pedBlocoProximoNumero(){
   const d = proximoNumeroFabrica('D'), r = proximoNumeroFabrica('R');
