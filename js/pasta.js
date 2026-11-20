@@ -86,6 +86,18 @@ function renderPasta(){
   sel.title = EDITING_ORC_ID ? '' : 'Salve o orçamento primeiro para escolher a etapa';
   sel.className = 'etapa-' + atual;
 
+  // visual profissional (etapa 5b): faixa "Próximo passo" com a mesma regra da lista e do Início
+  const pp = $('pasta-prox');
+  if(pp){
+    const st = (e && typeof orcSituacao === 'function') ? orcSituacao(e) : null;
+    if(!st || !st.prox || st.grupo === 'fim'){ pp.innerHTML = ''; pp.hidden = true; }
+    else {
+      pp.hidden = false; pp.className = 'pasta-prox s-' + st.cls;
+      const acao = e.etapa === 'orcamento' ? `<button type="button" class="btn" onclick="abrirPropostaPasta()">${ic('proposta',16)} Gerar proposta</button>` : '';
+      pp.innerHTML = `<span class="pp-ic">${ic(st.cls === 'atr' ? 'alerta' : 'relogio', 18)}</span><div><span class="selo s-${st.cls}">${escHtml(st.selo)}</span><b>Próximo passo: ${escHtml(st.prox)}</b></div>${acao}`;
+    }
+  }
+
   // sem nome do cliente: abre os dados do cliente sozinho
   if(!c.nome) document.body.classList.add('cli-aberto');
   $('pasta-dados').setAttribute('aria-expanded', document.body.classList.contains('cli-aberto'));
@@ -225,15 +237,27 @@ function cardItemPasta(item, n){
   const fora = item.foraDoPadrao || f.foraDoPadrao;
   // Nome do item dentro da pasta: o produto (o ambiente, o vão e a opção já estão nos títulos dos blocos)
   const nomeProd = [String(item.prod || f.prod || '').replace(/^(CORTINA|PERSIANA)\s+/i, '').toLowerCase().replace(/(^|\s|\/)\S/g, c => c.toUpperCase()), item.col || f.colLabel || ''].filter(Boolean).join(' · ') || item.label;
+  // visual profissional (etapa 5b): a descrição vira uma linha só; o preço fica alinhado à direita do nome
+  const desc = linhasDescritivo(item).filter(([k]) => k !== 'Modelo' && k !== 'Coleção' && k !== 'Tecido');
   return `<div class="pasta-item">
     <div class="pasta-item-cab">
-      <div class="pasta-item-nome"><span class="pasta-fab fab-${item.fab}">${escHtml(fabName(item.fab))}</span>${escHtml(nomeProd)}</div>
+      <div class="pasta-item-tx">
+        <div class="pasta-item-nome"><span class="pasta-fab fab-${item.fab}">${escHtml(fabName(item.fab))}</span>${escHtml(nomeProd)}</div>
+        <div class="pasta-item-esp">${desc.map(([k, v]) => `<span title="${escHtml(k)}">${k === 'Medidas' || k === 'Quantidade' ? '' : '<em>' + escHtml(k) + ':</em> '}${escHtml(v)}</span>`).join('')}</div>
+      </div>
+      <div class="pasta-item-preco"><strong>${fmt(item.avista)}</strong><span>à vista · tabela ${fmt(item.tabela)} · cartão ${fmt(item.cartao)}</span></div>
       <span class="pasta-botoes">
         <button type="button" onclick="editarItemCarrinho(${item.id})" title="Editar" aria-label="Editar ${escHtml(item.label)}">${ic('editar',16)}</button>
         <button type="button" onclick="duplicarItemCarrinho(${item.id})" title="Duplicar" aria-label="Duplicar ${escHtml(item.label)}">${ic('copiar',16)}</button>
         <button type="button" onclick="removerItemPasta(${item.id})" title="Remover" aria-label="Remover ${escHtml(item.label)}">${ic('lixeira',16)}</button>
       </span>
     </div>
+    ${avisoTabelaItem(item)}
+    ${fora ? `<div class="pasta-alerta">${ic('alerta',14)} Medida fora do padrão de fabricação${f.minFab ? ' (mín. ' + numBR(f.minFab,2) + ' m)' : ''}: cobrado pelo mínimo.</div>` : ''}
+    <label class="pasta-detalhe${pend ? ' pendente' : ''}">
+      <span>${pend ? ic('alerta',14) + ' Detalhamento — troque os "A DEFINIR"' : 'Detalhamento'}</span>
+      <textarea rows="2" oninput="autoAltura(this); updateItemDetail(${item.id}, this.value); this.closest('.pasta-detalhe').classList.toggle('pendente', this.value.toUpperCase().includes('A DEFINIR'))">${escHtml(item.detail||'')}</textarea>
+    </label>
     <div class="pasta-item-ctrl">
       <label class="pasta-vao" title="Janela, porta ou parede deste item">Vão
         <input type="text" value="${escHtml(item.vao || '')}" placeholder="—" onchange="mudarVaoItem(${item.id}, this.value)" ${orcTravado() ? 'disabled' : ''}></label>
@@ -241,20 +265,6 @@ function cardItemPasta(item, n){
         <select onchange="mudarOpcaoItem(${item.id}, this.value)" ${orcTravado() ? 'disabled' : ''}>
           <option value="">—</option>${LETRAS_OPCAO.map(l => `<option value="${l}"${item.opcao === l ? ' selected' : ''}>${l}</option>`).join('')}
         </select></label>
-    </div>
-    <dl class="pasta-desc">
-      ${linhasDescritivo(item).map(([k,v]) => `<div><dt>${k}</dt><dd>${escHtml(v)}</dd></div>`).join('')}
-    </dl>
-    ${avisoTabelaItem(item)}
-    ${fora ? `<div class="pasta-alerta">${ic('alerta',14)} Medida fora do padrão de fabricação${f.minFab ? ' (mín. ' + numBR(f.minFab,2) + ' m)' : ''}: cobrado pelo mínimo.</div>` : ''}
-    <label class="pasta-detalhe${pend ? ' pendente' : ''}">
-      <span>${pend ? ic('alerta',14) + ' Detalhamento — troque os "A DEFINIR"' : ic('nota',14) + ' Detalhamento'}</span>
-      <textarea rows="3" oninput="autoAltura(this); updateItemDetail(${item.id}, this.value); this.closest('.pasta-detalhe').classList.toggle('pendente', this.value.toUpperCase().includes('A DEFINIR'))">${escHtml(item.detail||'')}</textarea>
-    </label>
-    <div class="pasta-valores">
-      <div><span>${ic('etiqueta',14)} Tabela</span><strong>${fmt(item.tabela)}</strong></div>
-      <div><span>${ic('cartao',14)} Cartão</span><strong>${fmt(item.cartao)}</strong></div>
-      <div class="av"><span>${ic('dinheiro',14)} À vista</span><strong>${fmt(item.avista)}</strong></div>
     </div>
   </div>`;
 }
