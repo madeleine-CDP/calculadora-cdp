@@ -52,7 +52,7 @@ with sync_playwright() as p:
     pg.locator('#inicio-posvenda >> text=desfazer').click(); pg.wait_for_timeout(300)
     print('  desfazer →', pv[1]['contato_em'] is None, '|', pg.locator('#inicio-posvenda .pv-item').first.inner_text().replace('\n',' / '))
     # novo chamado
-    pg.locator('.inicio-atalhos >> text=Garantia / problema').click(); pg.wait_for_timeout(300)
+    pg.locator('.inicio-atalhos:visible >> text=Garantia / problema, .ini-atalhos-pc:visible >> text=Garantia / problema').first.click() if pg.locator('.inicio-atalhos:visible, .ini-atalhos-pc:visible').count() else pg.evaluate('novaGarantia()'); pg.wait_for_timeout(300)
     pg.fill('#gar-busca','Carla'); pg.wait_for_timeout(900)
     pg.locator('#gar-busca-res .olist-item').first.click(); pg.wait_for_timeout(600)
     print('3 OS:', pg.inner_text('#gar-os').replace('\n',' / '), '| situação:', pg.inner_text('#gar-situacao'))

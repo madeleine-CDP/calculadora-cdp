@@ -12,6 +12,9 @@ const FECH_ABERTO = new Set();          // mensagens abertas
 let FECH_OLIST = {};                    // cadastro/OS lidos do Olist, por orçamento (só na tela)
 
 const fechEhDona = () => { const a = (typeof AUTH !== 'undefined' && AUTH) || {}; return a.papel === 'dona'; };
+// conferir no extrato: a Madeleine, ou a Bruna quando a Madeleine avisa (fica "Madeleine (marcado por Bruna)") — pedido da Bru, 19/11/2026
+const fechPodeConferir = () => { const a = (typeof AUTH !== 'undefined' && AUTH) || {}; return a.papel === 'dona' || a.papel === 'admin'; };
+const fechRotuloConferir = () => fechEhDona() ? 'Conferi no extrato: pagamento entrou' : 'Madeleine conferiu: pagamento entrou';
 const reais = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // ── banco ──
@@ -122,8 +125,8 @@ function fechProximo(e, f){
   if(!f.os_enviada_em) return { n: 3, txt: 'Enviar a OS e a forma de pagamento' };
   if(!f.comprovante_em){
     const cb = fechCobranca(f);
-    if(cb && cb.avisarDona) return { n: 4, txt: '⚠️ ' + cb.dias + ' dias úteis sem pagamento: avisar a Madeleine', cobrar: cb.devida, alerta: true };
-    if(cb && cb.devida) return { n: 4, txt: '📣 Cobrar retorno do cliente (OS enviada há ' + cb.dias + (cb.dias === 1 ? ' dia útil)' : ' dias úteis)'), cobrar: true };
+    if(cb && cb.avisarDona) return { n: 4, txt: '' + cb.dias + ' dias úteis sem pagamento: avisar a Madeleine', cobrar: cb.devida, alerta: true };
+    if(cb && cb.devida) return { n: 4, txt: 'Cobrar retorno do cliente (OS enviada há ' + cb.dias + (cb.dias === 1 ? ' dia útil)' : ' dias úteis)'), cobrar: true };
     return { n: 4, txt: 'Aguardando o pagamento do cliente' + (cb ? ' · próxima cobrança ' + fechDataCurta(cb.proxima) : '') };
   }
   if(!f.validado_em) return { n: 5, txt: 'Madeleine conferir o pagamento no extrato' };
@@ -140,7 +143,7 @@ async function renderFechamentoPasta(){
   const f = FECH_MAPA[e.id] || {};
   const prox = fechProximo(e, f);
   const id = e.id;
-  const feito = (passo, rotulo) => `<div class="fc-feito">✅ ${rotulo} <span>${escHtml([f[passo + '_por'], f[passo + '_em'] ? new Date(f[passo + '_em']).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''].filter(Boolean).join(' · '))}</span> <button type="button" class="conf-link" onclick="fechMarcar(${id},'${passo}',false)">desfazer</button></div>`;
+  const feito = (passo, rotulo) => `<div class="fc-feito">${rotulo} <span>${escHtml([f[passo + '_por'], f[passo + '_em'] ? new Date(f[passo + '_em']).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''].filter(Boolean).join(' · '))}</span> <button type="button" class="conf-link" onclick="fechMarcar(${id},'${passo}',false)">desfazer</button></div>`;
   const msgBox = (chave, texto, rotuloEnviei, passo) => {
     const ab = FECH_ABERTO.has(id + ':' + chave);
     return `<button type="button" class="conf-btn conf-wa${ab ? ' on' : ''}" onclick="fechVer(${id},'${chave}')">${ic('chat',15)} ${ab ? 'Fechar mensagem' : 'Mensagem'}</button>
@@ -152,26 +155,26 @@ async function renderFechamentoPasta(){
   const passos = [];
   // 1 · dados
   const cad = FECH_OLIST[id] && FECH_OLIST[id].cadastro;
-  passos.push(['🪪', 'Dados para a OS', !!f.dados_ok_em, f.dados_ok_em ? feito('dados_ok', 'Dados completos no Olist') : `
+  passos.push(['', 'Dados para a OS', !!f.dados_ok_em, f.dados_ok_em ? feito('dados_ok', 'Dados completos no Olist') : `
     <div class="fc-linha"><span class="gar-rot">Cliente é:</span>
       <button type="button" class="hist-chip${f.tipo_pessoa === 'pf' ? ' on' : ''}" onclick="fechCampo(${id},{tipo_pessoa:'pf'})">Pessoa física</button>
       <button type="button" class="hist-chip${f.tipo_pessoa === 'pj' ? ' on' : ''}" onclick="fechCampo(${id},{tipo_pessoa:'pj'})">Empresa (PJ)</button></div>
     <div class="fc-sub">${f.tipo_pessoa === 'pj' ? 'Precisa: razão social, CNPJ, e-mail, inscrição estadual (se tiver) e endereço completo com CEP.' : 'Precisa: nome completo, CPF, e-mail e endereço completo com CEP.'}</div>
-    <div class="fc-olist" id="fc-olist-${id}">${cad ? fechTextoCadastro(cad, f.tipo_pessoa) : `<button type="button" class="conf-link" onclick="fechVerCadastro(${id})">🔎 ver o que já está no cadastro do Olist</button>`}</div>
+    <div class="fc-olist" id="fc-olist-${id}">${cad ? fechTextoCadastro(cad, f.tipo_pessoa) : `<button type="button" class="conf-link" onclick="fechVerCadastro(${id})">ver o que já está no cadastro do Olist</button>`}</div>
     ${f.dados_pedidos_em ? feito('dados_pedidos', 'Dados pedidos ao cliente') : msgBox('dados', fechMsgDados(e), 'Já pedi os dados', 'dados_pedidos')}
     <div class="conf-acoes"><button type="button" class="conf-btn ok" onclick="fechMarcar(${id},'dados_ok',true)">${ic('ok',15)} Dados completos no Olist</button></div>`]);
   // 2 · OS no Tiny
   const os = FECH_OLIST[id] && FECH_OLIST[id].os;
-  passos.push(['🧾', 'OS no Tiny', !!f.os_conferida_em, f.os_conferida_em ? feito('os_conferida', 'OS #' + escHtml(e.pedidoTiny || '') + (f.os_valor ? ' · ' + reais(f.os_valor) : '') + ' conferida') : `
+  passos.push(['', 'OS no Tiny', !!f.os_conferida_em, f.os_conferida_em ? feito('os_conferida', 'OS #' + escHtml(e.pedidoTiny || '') + (f.os_valor ? ' · ' + reais(f.os_valor) : '') + ' conferida') : `
     <div class="fc-sub">Gere a OS no Tiny a partir da proposta (Guia de Processos, Parte III) e salve o PDF na pasta IMPRESSÃO.</div>
     <div class="fc-linha"><input type="text" id="fc-os-${id}" class="fc-input" inputmode="numeric" placeholder="nº da OS no Tiny" value="${escHtml(e.pedidoTiny || '')}">
-      <button type="button" class="conf-btn" onclick="fechConferirOS(${id})">🔎 Conferir no Olist</button></div>
+      <button type="button" class="conf-btn" onclick="fechConferirOS(${id})">Conferir no Olist</button></div>
     <div id="fc-os-res-${id}">${os ? fechTextoOS(e, os) : ''}</div>`]);
   // 3 · enviar OS + pagamento
-  passos.push(['📤', 'Enviar OS e forma de pagamento', !!f.os_enviada_em, f.os_enviada_em ? feito('os_enviada', 'OS e pagamento enviados' + (f.forma_pagamento ? ' (' + (f.forma_pagamento === 'pix' ? 'PIX' : 'cartão') + ')' : '')) : `
+  passos.push(['', 'Enviar OS e forma de pagamento', !!f.os_enviada_em, f.os_enviada_em ? feito('os_enviada', 'OS e pagamento enviados' + (f.forma_pagamento ? ' (' + (f.forma_pagamento === 'pix' ? 'PIX' : 'cartão') + ')' : '')) : `
     <div class="fc-linha"><span class="gar-rot">Pagamento:</span>
-      <button type="button" class="hist-chip${f.forma_pagamento === 'pix' ? ' on' : ''}" onclick="fechCampo(${id},{forma_pagamento:'pix'})">💠 PIX · 15% (50% + 50%)</button>
-      <button type="button" class="hist-chip${f.forma_pagamento === 'cartao' ? ' on' : ''}" onclick="fechCampo(${id},{forma_pagamento:'cartao'})">💳 Cartão · 5% (até 8x)</button></div>
+      <button type="button" class="hist-chip${f.forma_pagamento === 'pix' ? ' on' : ''}" onclick="fechCampo(${id},{forma_pagamento:'pix'})">PIX · 15% (50% + 50%)</button>
+      <button type="button" class="hist-chip${f.forma_pagamento === 'cartao' ? ' on' : ''}" onclick="fechCampo(${id},{forma_pagamento:'cartao'})">Cartão · 5% (até 8x)</button></div>
     ${f.forma_pagamento ? `
       <div class="fc-linha"><span class="gar-rot">Total:</span><input type="text" class="fc-input fc-valor" inputmode="decimal" value="${fechTotal(e, f).toFixed(2).replace('.', ',')}" onchange="fechCampo(${id},{os_valor: Number(this.value.replace(/[^0-9,]/g,'').replace(',','.'))||null})">
         <span class="conf-nota">${f.os_valor ? 'valor da OS' : (f.forma_pagamento === 'pix' ? 'à vista do orçamento' : 'cartão do orçamento')}: confira com a OS</span></div>
@@ -180,30 +183,30 @@ async function renderFechamentoPasta(){
       ${f.forma_pagamento === 'pix' ? `<div class="fc-sub">E a chave PIX numa mensagem separada (para o cliente copiar fácil):</div>${msgBox('pix', fechMsgPix(), 'Já enviei OS e chave', 'os_enviada')}` : ''}`
     : '<div class="fc-sub">Escolha a forma de pagamento para montar a mensagem com os valores.</div>'}`]);
   // 4 · aguardando pagamento
-  passos.push(['⏳', 'Aguardando pagamento', !!f.comprovante_em, f.comprovante_em ? feito('comprovante', 'Cliente mandou o comprovante') : `
+  passos.push(['', 'Aguardando pagamento', !!f.comprovante_em, f.comprovante_em ? feito('comprovante', 'Cliente mandou o comprovante') : `
     ${(() => {
       const cb = fechCobranca(f); if(!cb) return '';
       return `<div class="fc-sub">OS enviada em ${new Date(f.os_enviada_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} · ${cb.dias ? 'há ' + cb.dias + (cb.dias === 1 ? ' dia útil' : ' dias úteis') : 'hoje'}.</div>
-        ${cb.avisarDona ? '<div class="ped-alerta">⚠️ 5 ou mais dias úteis sem pagamento: avise a Madeleine.</div>' : ''}
-        ${cb.ultima ? `<div class="fc-feito">📣 Última cobrança <span>${escHtml([f.followup_por, new Date(cb.ultima).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })].filter(Boolean).join(' · '))}</span> <button type="button" class="conf-link" onclick="fechDesfazerCobranca(${id})">desfazer</button></div>` : ''}
-        <div class="fc-sub${cb.devida ? ' fc-atraso' : ''}">📣 ${cb.devida ? '<b>Cobrar retorno hoje</b> com a mensagem do Guia.' : 'Próxima cobrança: ' + fechDataCurta(cb.proxima) + ' (1 dia útil depois do envio, depois a cada 2).'}</div>
+        ${cb.avisarDona ? '<div class="ped-alerta">5 ou mais dias úteis sem pagamento: avise a Madeleine.</div>' : ''}
+        ${cb.ultima ? `<div class="fc-feito">Última cobrança <span>${escHtml([f.followup_por, new Date(cb.ultima).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })].filter(Boolean).join(' · '))}</span> <button type="button" class="conf-link" onclick="fechDesfazerCobranca(${id})">desfazer</button></div>` : ''}
+        <div class="fc-sub${cb.devida ? ' fc-atraso' : ''}">${cb.devida ? '<b>Cobrar retorno hoje</b> com a mensagem do Guia.' : 'Próxima cobrança: ' + fechDataCurta(cb.proxima) + ' (1 dia útil depois do envio, depois a cada 2).'}</div>
         ${msgBox('followup', fechMsgFollowup(e), 'Já cobrei', 'followup')}`;
     })()}
     <div class="conf-acoes"><button type="button" class="conf-btn ok" onclick="fechMarcar(${id},'comprovante',true)">${ic('ok',15)} Cliente mandou o comprovante</button></div>
-    <div class="conf-nota">⚠️ Comprovante não é pagamento: a Madeleine confere no extrato antes da produção.</div>`]);
+    <div class="conf-nota">Comprovante não é pagamento: a Madeleine confere no extrato antes da produção.</div>`]);
   // 5 · validação (só a Madeleine)
   const prazo = f.comprovante_em ? somarHorasUteis(f.comprovante_em, 4) : null;
-  passos.push(['💳', 'Pagamento conferido no extrato', !!f.validado_em, f.validado_em ? (fechEhDona() ? feito('validado', 'Conferido no extrato') : `<div class="fc-feito">✅ Conferido no extrato <span>${escHtml([f.validado_por, new Date(f.validado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })].join(' · '))}</span></div>`) : `
+  passos.push(['', 'Pagamento conferido no extrato', !!f.validado_em, f.validado_em ? (fechPodeConferir() ? feito('validado', 'Conferido no extrato') : `<div class="fc-feito">Conferido no extrato <span>${escHtml([f.validado_por, new Date(f.validado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })].join(' · '))}</span></div>`) : `
     ${f.comprovante_em ? `<div class="fc-sub ${prazo < new Date() ? 'fc-atraso' : ''}">Prazo da Madeleine: até ${prazo.toLocaleString('pt-BR', { weekday: 'short', hour: '2-digit', minute: '2-digit' })} (4h úteis).</div>` : '<div class="fc-sub">Depois do comprovante.</div>'}
-    ${fechEhDona() ? `<div class="conf-acoes"><button type="button" class="conf-btn ok" ${f.comprovante_em ? '' : 'disabled'} onclick="fechMarcar(${id},'validado',true)">${ic('ok',15)} Conferi no extrato: pagamento entrou</button></div>` : '<div class="conf-nota">Só a Madeleine marca este passo.</div>'}`]);
+    ${fechPodeConferir() ? `<div class="conf-acoes"><button type="button" class="conf-btn ok" onclick="fechMarcar(${id},'validado',true)">${ic('ok',15)} ${fechRotuloConferir()}</button></div>${f.comprovante_em ? '' : '<div class="conf-nota">Ainda sem comprovante marcado: confira se o pagamento entrou mesmo.</div>'}` : '<div class="conf-nota">Só a Madeleine (ou a Bruna, avisada por ela) marca este passo.</div>'}`]);
   // 6 · confirmado
-  passos.push(['✅', 'Pagamento confirmado ao cliente', !!f.confirmado_em, f.confirmado_em ? feito('confirmado', 'Cliente avisado') + '<div class="fc-sub">Agora: OS no grupo da equipe e status <b>"Aprovado"</b> no Tiny. A OS aparece em 📦 Pedidos → "Fazer pedido na fábrica".</div>' : `
+  passos.push(['', 'Pagamento confirmado ao cliente', !!f.confirmado_em, f.confirmado_em ? feito('confirmado', 'Cliente avisado') + '<div class="fc-sub">Agora: OS no grupo da equipe e status <b>"Aprovado"</b> no Tiny. A OS aparece em Pedidos → "Fazer pedido na fábrica".</div>' : `
     ${f.validado_em ? `${msgBox('confirmado', fechMsgConfirmado(e), 'Já enviei', 'confirmado')}
-      <ul class="fc-lembrete"><li>📣 Publicar a OS no grupo de OS da equipe</li><li>🧾 Mudar a OS no Tiny para <b>"Aprovado"</b></li></ul>` : '<div class="fc-sub">Depois da conferência no extrato.</div>'}`]);
+      <ul class="fc-lembrete"><li>Publicar a OS no grupo de OS da equipe</li><li>Mudar a OS no Tiny para <b>"Aprovado"</b></li></ul>` : '<div class="fc-sub">Depois da conferência no extrato.</div>'}`]);
 
   box.innerHTML = `<section class="fc-card">
-    <div class="fc-topo"><span>🤝 Fechamento</span><strong>${prox.n > 6 ? '✅ concluído' : 'passo ' + prox.n + ' de 6'}</strong></div>
-    <div class="fc-prox">${prox.n > 6 ? '🎉 ' : '👉 '}${escHtml(prox.txt)}</div>
+    <div class="fc-topo"><span>Fechamento</span><strong>${prox.n > 6 ? 'concluído' : 'passo ' + prox.n + ' de 6'}</strong></div>
+    <div class="fc-prox">${prox.n > 6 ? '' : ''}${escHtml(prox.txt)}</div>
     <ol class="fc-passos">${passos.map(([em, tit, ok, corpo], i) => `
       <li class="fc-passo${ok ? ' ok' : ''}${i + 1 === prox.n ? ' atual' : ''}">
         <div class="fc-passo-tit"><span class="fc-n">${ok ? '✓' : i + 1}</span> ${em} ${escHtml(tit)}</div>
@@ -247,7 +250,7 @@ function fechTextoCadastro(c, tipo){
   ];
   const falta = itens.filter(x => !x[1]).map(x => x[0]);
   return `<div class="fc-cad">${itens.map(([n, ok]) => `<span class="fc-cad-i ${ok ? 'ok' : 'falta'}">${ok ? '✓' : '✗'} ${n}</span>`).join('')}</div>
-    <div class="conf-nota">${falta.length ? 'No Olist falta: ' + falta.join(', ') + '.' : 'Cadastro do Olist completo. 🎉'}</div>`;
+    <div class="conf-nota">${falta.length ? 'No Olist falta: ' + falta.join(', ') + '.' : 'Cadastro do Olist completo. '}</div>`;
 }
 // OS no Tiny: lê no Olist e compara o valor com o orçamento
 async function fechConferirOS(id){
@@ -270,8 +273,8 @@ function fechTextoOS(e, os){
   const nomeOk = primeiroNome(os.cliente).toLowerCase() === primeiroNome(e.client).toLowerCase();
   return `<div class="fc-os ${bate && nomeOk ? 'ok' : 'alerta'}">
       <div><b>OS #${escHtml(os.numero)}</b> · ${escHtml(os.cliente)} · ${escHtml(os.situacao)}</div>
-      <div>Valor da OS: <b>${reais(v)}</b> ${bate ? `✅ bate com o valor <b>${bate}</b> do orçamento` : `⚠️ não bate com o orçamento (à vista ${reais(e.totalAvista)} · cartão ${reais(e.totalCartao)} · tabela ${reais(e.totalTabela)})`}</div>
-      ${nomeOk ? '' : '<div>⚠️ O nome do cliente na OS é diferente do orçamento.</div>'}
+      <div>Valor da OS: <b>${reais(v)}</b> ${bate ? `bate com o valor <b>${bate}</b> do orçamento` : `não bate com o orçamento (à vista ${reais(e.totalAvista)} · cartão ${reais(e.totalCartao)} · tabela ${reais(e.totalTabela)})`}</div>
+      ${nomeOk ? '' : '<div>O nome do cliente na OS é diferente do orçamento.</div>'}
     </div>
     <div class="conf-acoes"><button type="button" class="conf-btn ok" onclick="fechMarcar(${e.id},'os_conferida',true,{os_valor:${v || 'null'}})">${ic('ok',15)} ${bate && nomeOk ? 'OS conferida' : 'Conferi, está certo assim'}</button></div>`;
 }
@@ -293,16 +296,16 @@ function desenharFechamentosInicio(){
     const f = FECH_MAPA[e.id] || {}, p = fechProximo(e, f);
     const atrasoVal = (p.n === 5 && somarHorasUteis(f.comprovante_em, 4) < new Date()) || p.alerta;
     return `<button type="button" class="inicio-pend-item pend-${atrasoVal ? 'atrasado' : (p.cobrar ? 'follow' : 'enviar')}" onclick="reopenOrc(${e.id})">
-      <span class="inicio-pend-ic">${p.n === 5 ? '💳' : (p.cobrar || p.alerta ? '📣' : '🤝')}</span>
+      <span class="inicio-pend-ic">${ic(p.n === 5 ? 'cartao' : (p.cobrar || p.alerta ? 'sino' : 'documento'), 16)}</span>
       <span class="inicio-pend-txt"><strong>${escHtml(e.client)}</strong><span>${escHtml(numCDP(e.numero))} · passo ${p.n} de 6</span><em>${escHtml(p.txt)}${p.n === 5 ? ' · até ' + somarHorasUteis(f.comprovante_em, 4).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</em></span>
       <span class="inicio-pend-seta">›</span></button>`;
   };
-  box.innerHTML = `${fechEhDona() && validar.length ? `<section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>💳 Validar pagamentos</span><strong>${validar.length} · prazo 4h úteis</strong></div>
+  box.innerHTML = `${fechPodeConferir() && validar.length ? `<section class="inicio-bloco">
+      <div class="inicio-bloco-tit"><span>${ic('cartao',16)}Validar pagamentos</span><strong>${validar.length} · prazo 4h úteis</strong></div>
       <div class="inicio-pend">${validar.map(item).join('')}</div></section>` : ''}
     <section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>🤝 Fechamentos em andamento</span><strong>${l.length}${cobrar ? ' · ' + cobrar + ' para cobrar' : ''}</strong></div>
-      <div class="inicio-pend">${l.filter(e => !(fechEhDona() && validar.includes(e))).slice(0, 6).map(item).join('') || '<div class="conf-nota">Os que dependem de você estão acima.</div>'}</div>
+      <div class="inicio-bloco-tit"><span>${ic('documento',16)}Fechamentos em andamento</span><strong>${l.length}${cobrar ? ' · ' + cobrar + ' para cobrar' : ''}</strong></div>
+      <div class="inicio-pend">${l.filter(e => !(fechPodeConferir() && validar.includes(e))).slice(0, 6).map(item).join('') || '<div class="conf-nota">Os que dependem de você estão acima.</div>'}</div>
     </section>`;
 }
 async function carregarFechamentosInicio(){

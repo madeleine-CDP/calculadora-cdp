@@ -13,6 +13,8 @@
 //   POST posvenda  → lê as OS "Entregue" de 5 a 13 meses atrás e guarda a data real da instalação na tabela posvenda (equipe)
 //   POST os        → lê as OS em andamento (aberta → entregue nos últimos 30 dias, com a nota fiscal) e guarda em os_acompanhamento (equipe)
 //   POST os_numero → { numero } → OS do Tiny por número: valor, situação, cliente (para conferir com o orçamento) (equipe)
+//   POST historico → { id?, cpfCnpj?, celular?, nome? } → cadastro + TODOS os pedidos de venda do cliente (os 12 mais recentes com itens e entrega) (equipe)
+//   POST vendas    → { meses } → pedidos de venda criados nos últimos N meses (valor final, situação) para o painel Financeiro (equipe)
 //   POST pedido    → { id } → pedido de venda completo (cliente, itens, totais, pagamento, parcelas, observações) para a tela de detalhe (equipe)
 //   POST renovar   → renova a autorização (agendamento a cada 3h)  (aberto; não devolve dados)
 // Só leitura no Tiny: nada é criado nem alterado lá.
@@ -225,6 +227,36 @@ function numeroFabrica(d: any) {
   const l = [...achar(d?.numeroOrdemCompra), ...achar(d?.observacoesInternas), ...achar(d?.observacoes)];
   return [...new Set(l)].join(" / ") || (String(d?.numeroOrdemCompra ?? "").trim() || null);
 }
+// Serviços na OS (acompanhamento das OS de serviço, 20/11/2026): tipos de serviço nos itens, se há produto novo
+// (cortina/persiana/toldo) e se a OS tem a tag "SERVIÇO" no Olist.
+const RE_SERVICO = /(INSTALA|DESINSTALA|LAVAGEM|LAVAR|MANUTEN|CONSERTO|REPARO|REVIS[AÃ]O|AJUSTE|REDU[CÇ][AÃ]O D|TROCA D|SERVI[CÇ]O|M[AÃ]O DE OBRA|VISITA T[EÉ]CNICA)/i;
+function lerItensServico(d: any) {
+  const itens = (d?.itens ?? []).map((i: any) => ({ desc: String(i.produto?.descricao ?? i.descricao ?? ""), tipo: String(i.produto?.tipo ?? ""), qtd: num(i.quantidade) }));
+  const tipos = new Set<string>();
+  let temProduto = false;
+  for (const i of itens) {
+    const u = i.desc.toUpperCase();
+    const servico = i.tipo === "S" || RE_SERVICO.test(u);
+    if (servico) {
+      if (/DESINSTALA/.test(u)) tipos.add("desinstalação");
+      else if (/INSTALA/.test(u)) tipos.add("instalação");
+      if (/LAVAGEM|LAVAR/.test(u)) tipos.add("lavagem");
+      if (/MANUTEN|CONSERTO|REPARO|REVIS|M[AÃ]O DE OBRA/.test(u)) tipos.add("manutenção");
+      if (/AJUSTE|REDU[CÇ][AÃ]O D|TROCA D/.test(u)) tipos.add("ajuste");
+      if (/VISITA/.test(u)) tipos.add("visita");
+      if (![...tipos].length) tipos.add("serviço");
+    } else if (/CORTINA|PERSIANA|TOLDO/.test(u) && !/^([A-Z]+\s*[–-]\s*)?(CORDA|SUPORTE|TRILHO|PE[CÇ]A|COMPONENTE|ACESS[OÓ]RIO|CONTROLE|MOTOR\b|BAND[OÔ]|GUIA|TECIDO|CAT[AÁ]LOGO|AMOSTRA)/.test(u)) {
+      temProduto = true;
+    }
+  }
+  const marcadores = (d?.marcadores ?? []).map((m: any) => String(m?.descricao ?? m?.nome ?? m ?? ""));
+  return {
+    itens_resumo: itens.map((i: any) => (i.qtd && i.qtd !== 1 ? String(i.qtd).replace(".", ",") + "× " : "") + i.desc).join(" · ").slice(0, 1000) || null,
+    servico_tipos: [...tipos].join(", ") || null,
+    tem_produto: temProduto,
+    marcado_servico: marcadores.some((m: string) => /SERVI[CÇ]O/i.test(m)),
+  };
+}
 async function sincronizarOS() {
   const hoje = new Date();
   const desde = new Date(hoje); desde.setDate(desde.getDate() - 30);   // entregues dos últimos 30 dias (avaliação + nota fiscal)
@@ -244,7 +276,7 @@ async function sincronizarOS() {
   }
 
   const ids = [...vistos.keys()];
-  const { data: jaRows } = ids.length ? await admin.from("os_acompanhamento").select("pedido_id,situacao,numero_fabrica,data_entrega,nf_id,nf_numero,nf_situacao,nf_checado_em").in("pedido_id", ids) : { data: [] };
+  const { data: jaRows } = ids.length ? await admin.from("os_acompanhamento").select("pedido_id,situacao,numero_fabrica,data_entrega,nf_id,nf_numero,nf_situacao,nf_checado_em,itens_resumo,servico_tipos,tem_produto,marcado_servico,itens_lidos_em").in("pedido_id", ids) : { data: [] };
   const ja = new Map((jaRows ?? []).map((r: any) => [Number(r.pedido_id), r]));
   const agora = new Date().toISOString();
   const linhas: any[] = [];
@@ -262,11 +294,14 @@ async function sincronizarOS() {
       numero_fabrica: antes?.numero_fabrica ?? null, data_entrega: antes?.data_entrega ?? null,
       // nota fiscal: mantém o que já foi lido (o upsert em lote não pode apagar)
       nf_id: antes?.nf_id ?? null, nf_numero: antes?.nf_numero ?? null, nf_situacao: antes?.nf_situacao ?? null, nf_checado_em: antes?.nf_checado_em ?? null,
+      // itens e serviços: idem (lidos uma vez do detalhe; de novo quando a situação muda, porque a OS pode ter sido editada)
+      itens_resumo: antes?.itens_resumo ?? null, servico_tipos: antes?.servico_tipos ?? null, tem_produto: antes?.tem_produto ?? null,
+      marcado_servico: antes?.marcado_servico ?? null, itens_lidos_em: antes?.itens_lidos_em ?? null,
     };
     // entregue sem nota ligada: procura de novo no máximo a cada 6h (limite de 60 consultas/min do Olist)
     const procurarNF = sit === 6 && !linha.nf_id && (!linha.nf_checado_em || Date.now() - new Date(linha.nf_checado_em).getTime() > 6 * 3600e3);
     // detalhe só quando precisa (nº da fábrica a partir da produção; data de entrega das entregues) — limite do Olist
-    const precisa = ([4, 7, 5, 1, 6].includes(sit) && !linha.numero_fabrica) || (sit === 6 && !linha.data_entrega) || (antes && Number(antes.situacao) !== sit) || procurarNF;
+    const precisa = ([4, 7, 5, 1, 6].includes(sit) && !linha.numero_fabrica) || (sit === 6 && !linha.data_entrega) || (antes && Number(antes.situacao) !== sit) || procurarNF || !linha.itens_lidos_em;
     if (precisa && detalhes < 25) {
       detalhes++;
       try {
@@ -274,6 +309,7 @@ async function sincronizarOS() {
         linha.numero_fabrica = numeroFabrica(d) ?? linha.numero_fabrica;
         linha.data_entrega = soData(d?.dataEntrega) ?? linha.data_entrega;
         if (d?.valorTotalPedido != null) linha.valor = Number(d.valorTotalPedido);
+        if (Array.isArray(d?.itens)) Object.assign(linha, lerItensServico(d), { itens_lidos_em: agora });
         if (d?.idNotaFiscal) {
           linha.nf_id = Number(d.idNotaFiscal);
           if (!antes?.nf_id && String(d?.cliente?.email ?? "").includes("@")) enviadasPorEmail.push(id);
@@ -373,6 +409,64 @@ async function pedidoDetalhe(id: number) {
   };
 }
 
+// Histórico do cliente (busca + histórico): cadastro e todos os pedidos de venda. Só leitura.
+const semAcento = (t: unknown) => String(t ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
+async function historicoCliente(c: { id?: number; cpfCnpj?: string; celular?: string; nome?: string }) {
+  let cad: ReturnType<typeof cliente> | null = null;
+  if (c.id) { try { const k = await tiny(`/contatos/${c.id}`); if (k?.id) cad = cliente(k); } catch { /* segue */ } }
+  if (!cad && (so(c.cpfCnpj).length >= 11 || so(c.celular).length >= 8)) {
+    try { const l = await buscar(so(c.cpfCnpj).length >= 11 ? String(c.cpfCnpj) : String(c.celular)); cad = l[0] ?? null; } catch { /* segue */ }
+  }
+  if (!cad && String(c.nome ?? "").trim().length >= 3) {
+    try { const l = await buscar(String(c.nome)); cad = l.find((x) => semAcento(x.nome) === semAcento(c.nome)) ?? null; } catch { /* segue */ }
+  }
+  if (cad?.id) { try { const k = await tiny(`/contatos/${cad.id}`); if (k?.id) cad = cliente(k); } catch { /* fica o resumo */ } }
+  const doc = String(cad?.cpfCnpj || c.cpfCnpj || "");
+  const nome = String(cad?.nome || c.nome || "");
+  if (!so(doc) && nome.trim().length < 3) return { cliente: cad, pedidos: [] };
+  const q = so(doc) ? "cpfCnpj=" + encodeURIComponent(doc) : "nomeCliente=" + encodeURIComponent(nome);
+  const lista: any[] = [];
+  for (let off = 0; off < 200; off += 100) {
+    const d = await tiny(`/pedidos?${q}&orderBy=desc&limit=100&offset=${off}`);
+    const it = d?.itens ?? []; lista.push(...it);
+    if (it.length < 100) break;
+  }
+  // pela busca por nome, só os do mesmo nome (o Olist acha nomes parecidos)
+  const doCliente = so(doc) ? lista : lista.filter((p) => semAcento(p.cliente?.nome) === semAcento(nome));
+  const pedidos = doCliente.map((p: any) => ({
+    id: Number(p.id), numero: String(p.numeroPedido ?? ""), data: soData(p.dataCriacao), valor: Number(p.valor ?? 0),
+    situacaoCod: Number(p.situacao), situacao: SITUACAO[String(p.situacao)] ?? String(p.situacao ?? ""),
+    itens: null as any, dataEntrega: null as string | null, dataPrevista: soData(p.dataPrevista), numeroFabrica: null as string | null, nf: false,
+  })).sort((a: any, b: any) => String(b.data).localeCompare(String(a.data)));
+  // detalhe (itens e data de entrega) dos 12 mais recentes, sem estourar o limite do Olist (60 por minuto)
+  for (const p of pedidos.slice(0, 12)) {
+    try {
+      const d = await tiny(`/pedidos/${p.id}`);
+      p.itens = (d?.itens ?? []).map((i: any) => ({ descricao: i.produto?.descricao ?? i.descricao ?? "", tipo: i.produto?.tipo ?? "", quantidade: num(i.quantidade) }));
+      p.dataEntrega = soData(d?.dataEntrega); p.numeroFabrica = numeroFabrica(d); p.nf = !!d?.idNotaFiscal;
+      if (d?.valorTotalPedido != null) p.valor = num(d.valorTotalPedido);
+    } catch { /* fica sem detalhe */ }
+  }
+  return { cliente: cad, pedidos };
+}
+
+// Vendas (painel Financeiro e vendas): pedidos de venda criados nos últimos N meses (1 a 13), com o valor final. Só leitura.
+async function vendasPeriodo(meses: number) {
+  const n = Math.min(Math.max(Math.trunc(meses) || 6, 1), 13);
+  const hoje = new Date();
+  const ini = new Date(hoje.getFullYear(), hoje.getMonth() - (n - 1), 1);
+  const lista: any[] = [];
+  for (let off = 0; off < 3000; off += 100) {
+    const d = await tiny(`/pedidos?dataInicial=${isoDia(ini)}&dataFinal=${isoDia(hoje)}&limit=100&offset=${off}`);
+    const it = d?.itens ?? []; lista.push(...it);
+    if (it.length < 100) break;
+  }
+  return {
+    desde: isoDia(ini),
+    pedidos: lista.map((p: any) => ({ id: Number(p.id), numero: String(p.numeroPedido ?? ""), data: soData(p.dataCriacao), valor: Number(p.valor ?? 0), situacao: Number(p.situacao), cliente: p.cliente?.nome ?? "" })),
+  };
+}
+
 // ── Rotas ──
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
@@ -438,6 +532,11 @@ Deno.serve(async (req) => {
     if (rota === "pedidos") return json(req, { pedidos: await pedidos(String(corpo.cpfCnpj ?? ""), String(corpo.nome ?? "")) });
     if (rota === "posvenda") return json(req, await sincronizarPosvenda());
     if (rota === "os") return json(req, await sincronizarOS());
+    if (rota === "vendas") return json(req, await vendasPeriodo(Number(corpo.meses ?? 6)));
+    if (rota === "historico") {
+      const id = Number(corpo.id);
+      return json(req, await historicoCliente({ id: Number.isInteger(id) && id > 0 ? id : undefined, cpfCnpj: String(corpo.cpfCnpj ?? ""), celular: String(corpo.celular ?? ""), nome: String(corpo.nome ?? "") }));
+    }
     if (rota === "pedido") {
       const id = Number(corpo.id);
       if (!Number.isInteger(id) || id <= 0) return json(req, { erro: "id" }, 400);

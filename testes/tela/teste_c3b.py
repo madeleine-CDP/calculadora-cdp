@@ -44,7 +44,7 @@ with sync_playwright() as p:
     pg.locator('#passo-avancar').click() if pg.evaluate('document.body.dataset.tela')=='calc' and pg.evaluate('PASSO')==4 else pg.evaluate('addToCart()'); pg.wait_for_timeout(300)
     print('4 adicionado → tela:', tela(pg), '| itens:', pg.inner_text('#pasta-n'), '| sujo:', pg.evaluate('ORC_SUJO'), '| aviso:', pg.inner_text('#aviso-topo'))
     resposta['confirm']=False
-    pg.locator('button.tab-btn[data-tab=hist]').click(); pg.wait_for_timeout(200)
+    pg.locator('#tab-orc .novo-voltar:visible, button.tab-btn[data-tab=hist]:visible').first.click(); pg.wait_for_timeout(200)
     print('5 sair → janela aberta:', pg.is_visible('#modal-sair'), '| texto:', pg.inner_text('#modal-sair .modal-corpo'))
     pg.screenshot(path=S+'/sair-janela.png')
     pg.locator('#modal-sair [data-r=ficar]').last.click(); pg.wait_for_timeout(200)
@@ -73,7 +73,7 @@ with sync_playwright() as p:
     print('   aviso:', pg.inner_text('#aviso-topo'), '| barra escura:', pg.is_visible('#orc-resumo-bar'))
     pg.screenshot(path=f'{S}/c3b-salvo.png')
     # fluxo novo orçamento → item → pasta → salvar
-    pg.locator('.btn-novo-orc').click(); pg.fill('#novo-nome','Ana'); pg.fill('#novo-tel','(81) 99999-0000'); pg.fill('#novo-bairro','Boa Viagem'); pg.locator('.novo-opcao').first.click(); pg.locator('#novo-criar').click(); pg.wait_for_timeout(500)
+    (pg.click('.tab-mais'), pg.click('.criar-op[data-acao=orc]')) if pg.is_visible('.tab-mais') else pg.locator('.btn-topo.pri:visible, .btn-novo-orc:visible').first.click(); pg.fill('#novo-nome','Ana'); pg.fill('#novo-tel','(81) 99999-0000'); pg.fill('#novo-bairro','Boa Viagem'); pg.locator('.novo-opcao').first.click(); pg.locator('#novo-criar').click(); pg.wait_for_timeout(500)
     print('11 criado → tela:', tela(pg), '| botão:', pg.inner_text('.pasta-add'))   # desde 12/11/2026 abre a pasta, não a calculadora
     print('   pasta vazia:', pg.inner_text('#pasta-lista').replace('\n',' '), '| etapa:', pg.input_value('#pasta-etapa'))
     pg.locator('#pasta-salvar').click(); pg.wait_for_timeout(400)

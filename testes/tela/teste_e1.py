@@ -22,17 +22,16 @@ with sync_playwright() as p:
         print(nome, '| tela:', pg.evaluate('document.body.dataset.tela'), '| largura:', pg.evaluate('document.documentElement.scrollWidth'), '| cliente visível:', pg.is_visible('.cli-bar'))
         if nome=='360':
             print('  topo:', pg.inner_text('.inicio-topo').replace('\n',' | '))
-            print('  em aberto:', pg.inner_text('.inicio-bloco >> nth=0').replace('\n',' | '))
+            print('  números:', pg.inner_text('.ini-numeros').replace('\n',' | '))
             print('  atenção:'); [print('    -', t.replace('\n',' | ')) for t in pg.eval_on_selector_all('.inicio-pend-item','e=>e.map(x=>x.innerText)')]
-            print('  mês:', pg.inner_text('.inicio-mes').replace('\n',' | '))
         pg.screenshot(path=f'shotsB/e1-inicio-{nome}.png', full_page=True)
         if nome=='360':
-            pg.locator('.inicio-etapa', has_text='Pré-orçamento').click(); pg.wait_for_timeout(400)
+            pg.locator('.ini-etapa', has_text='Pré-orçamento').click(); pg.wait_for_timeout(400)
             print('  toque em Pré-orçamento → tela:', pg.evaluate('document.body.dataset.tela'), '| filtro:', pg.evaluate('HIST_ETAPA'), '| cards:', pg.eval_on_selector_all('.hist-client','e=>e.map(x=>x.textContent)'))
             pg.locator('button.tab-btn[data-tab=inicio]').click(); pg.wait_for_timeout(400)
             pg.locator('.inicio-pend-item').first.click(); pg.wait_for_timeout(400)
             print('  toque na 1ª pendência → tela:', pg.evaluate('document.body.dataset.tela'), '|', pg.inner_text('#pasta-nome'))
-            pg.locator('button.tab-btn[data-tab=inicio]').click(); pg.wait_for_timeout(400)
+            pg.evaluate("switchTab('inicio')"); pg.wait_for_timeout(400)   # no celular a barra de baixo some dentro da pasta (tem "‹ Orçamentos")
             print('  aba Início com orçamento aberto → tela:', pg.evaluate('document.body.dataset.tela'))
         pg.close()
     b.close()

@@ -41,6 +41,12 @@ function pendenciasDoDia(){
       return;
     }
     if(e.etapa === 'pre_orcamento'){
+      // pré-orçamento ainda não enviado: enviar no mesmo dia (2+ dias = atrasado)
+      const d = diasCorridos(e.createdAt || ref);
+      if(d >= 1) lista.push({ e, peso: d >= 2 ? 3 : 2, tipo: d >= 2 ? 'atrasado' : 'enviar',
+        titulo: d >= 2 ? 'Pré-orçamento atrasado' : 'Enviar o pré-orçamento',
+        sub: 'Pedido há ' + d + (d > 1 ? ' dias' : ' dia') + ' · depois de enviar, mude a etapa para "Pré enviado".' });
+    } else if(e.etapa === 'pre_enviado'){
       const d = diasCorridos(ref);
       if(d >= 3){
         const lembrete = qtd ? qtd + 1 : Math.min(Math.floor(d / 3), 3);
@@ -63,6 +69,7 @@ function pendenciasDoDia(){
 }
 
 async function renderInicio(atualizar){
+  if(typeof finAbrirSeDona === 'function' && finAbrirSeDona()) return;   // a Madeleine abre direto no Financeiro
   const box = $('inicio-conteudo');
   if(atualizar && HIST_CARREGADO){ try{ HISTORY_CACHE = await sbFetchHistory(); }catch(err){} }
   if(typeof carregarRetornos === 'function' && (atualizar || !RET_CARREGADO)){ try{ await carregarRetornos(); }catch(err){} }
@@ -91,63 +98,68 @@ async function renderInicio(atualizar){
 
   const pend = pendenciasDoDia();
 
-  box.innerHTML = `
-    <div class="inicio-topo">
-      <div class="inicio-data">${escHtml(hoje)}</div>
-      <div class="hist-titulo">${saudacao()}${nome ? ', ' + escHtml(nome) : ''}</div>
+  const valFech = fechados.reduce((s,e)=>s+(e.totalAvista||0),0);
+  const kpi = (rot, n, sub, acao, cls) => `<button type="button" class="ini-kpi${cls ? ' ' + cls : ''}" onclick="${acao}"><span class="ini-kpi-r">${rot}</span><span class="ini-kpi-v">${n}</span><span class="ini-kpi-s">${sub}</span></button>`;
+  box.innerHTML = `${typeof abasPainel === 'function' ? abasPainel('inicio') : ''}
+    <div class="inicio-topo ini-cab">
+      <div>
+        <div class="inicio-data">${escHtml(hoje)}</div>
+        <div class="hist-titulo">${saudacao()}${nome ? ', ' + escHtml(nome) : ''}</div>
+      </div>
+      <div class="ini-atalhos-pc">
+        <button type="button" class="btn-topo" onclick="novoRetorno()">${ic('chat',16)}Lançar retorno</button>
+        ${typeof novaGarantia === 'function' ? `<button type="button" class="btn-topo" onclick="novaGarantia()">${ic('escudo',16)}Garantia / problema</button>` : ''}
+      </div>
     </div>
     <div class="inicio-atalhos">
       <button type="button" class="btn" onclick="novoOrcamento()">${ic('mais',18)} Novo orçamento</button>
-      <button type="button" class="btn-outline" onclick="switchTab('calc')"><span class="at-em">🧮</span> Cálculo rápido</button>
-      <button type="button" class="btn-outline" onclick="novoRetorno()"><span class="at-em">💬</span> Lançar retorno</button>
-      ${typeof novaGarantia === 'function' ? `<button type="button" class="btn-outline" onclick="novaGarantia()"><span class="at-em">🛡️</span> Garantia / problema</button>` : ''}
+      <button type="button" class="btn-outline" onclick="switchTab('calc')"><span class="at-em">${ic('calculadora',16)}</span> Cálculo rápido</button>
+      <button type="button" class="btn-outline" onclick="novoRetorno()"><span class="at-em">${ic('chat',16)}</span> Lançar retorno</button>
+      ${typeof novaGarantia === 'function' ? `<button type="button" class="btn-outline" onclick="novaGarantia()"><span class="at-em">${ic('escudo',16)}</span> Garantia / problema</button>` : ''}
     </div>
 
-    <div class="inicio-secao">📌 Para fazer hoje</div>
-    <div id="inicio-fechamento"></div>
-    <div id="inicio-pedidos"></div>
-    <div id="inicio-garantia"></div>
-    ${blocoRetornosInicio()}
-    <div id="inicio-confirmar"></div>
-    <section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>⏳ Orçamentos parados</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' orçamentos' : ' orçamento') : ''}</strong></div>
-      ${pend.length ? `<div class="inicio-pend">${pend.map(p => `
-        <button type="button" class="inicio-pend-item pend-${p.tipo}" onclick="reopenOrc(${p.e.id})">
-          <span class="inicio-pend-ic">${ic(p.tipo === 'aguardando' ? 'info' : 'alerta', 16)}</span>
-          <span class="inicio-pend-txt"><strong>${escHtml(p.titulo)}</strong><span>${escHtml(p.e.client)} · ${numCDP(p.e.numero)} · ${fmt(p.e.totalAvista||0)}</span><em>${escHtml(p.sub)}</em></span>
-          <span class="inicio-pend-seta">›</span>
-        </button>`).join('')}</div>`
-      : `<div class="inicio-ok">${ic('ok',18)} Tudo em dia. Nenhum orçamento parado.</div>`}
-    </section>
-
-    <div id="inicio-agenda"></div>
-    <div id="inicio-posvenda"></div>
-
-    <div class="inicio-secao">📊 Números</div>
-    <section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>Em aberto</span><strong>${ativos.length} · ${fmt(totalAberto)} à vista</strong></div>
-      <div class="inicio-etapas">${porEtapa.map(x => `
-        <button type="button" class="inicio-etapa etapa-borda-${x.id}" onclick="abrirListaEtapa('${x.id}')">
-          <span class="inicio-etapa-n">${x.n}</span>
-          <span class="inicio-etapa-nome">${x.nome}</span>
-          <span class="inicio-etapa-valor">${x.n ? fmt(x.valor) : '—'}</span>
-        </button>`).join('')}
+    <section class="ini-numeros" aria-label="Números">
+      <div class="ini-kpis">
+        ${kpi('Orçamentos em aberto', ativos.length, fmt(totalAberto) + ' à vista', "abrirListaEtapa('todos')")}
+        ${kpi('Novos em ' + escHtml(nomeMes), criadosMes, 'orçamentos criados', "abrirListaEtapa('todos')")}
+        ${kpi('Fechados em ' + escHtml(nomeMes), fechados.length, fechados.length ? fmt(valFech) + ' à vista' : '—', "abrirListaEtapa('fechado')", 'ok')}
+        ${kpi('Perdidos em ' + escHtml(nomeMes), perdidos.length, Object.entries(motivos).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([m,n]) => escHtml(m) + ' (' + n + ')').join(' · ') || '—', "abrirListaEtapa('perdido')")}
       </div>
-    </section>
-    <section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>Resumo de ${escHtml(nomeMes)}</span></div>
-      <div class="inicio-mes">
-        <div><span>Novos orçamentos</span><strong>${criadosMes}</strong></div>
-        <div class="mes-fechado"><span>Fechados</span><strong>${fechados.length}</strong><em>${fmt(fechados.reduce((s,e)=>s+(e.totalAvista||0),0))} à vista</em></div>
-        <div class="mes-perdido"><span>Perdidos</span><strong>${perdidos.length}</strong><em>${Object.entries(motivos).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([m,n]) => escHtml(m) + ' (' + n + ')').join(' · ') || '—'}</em></div>
-      </div>
+      <div class="ini-etapas">${porEtapa.map(x => `<button type="button" class="ini-etapa" onclick="abrirListaEtapa('${x.id}')"><span>${x.nome}</span><b>${x.n}</b>${x.n ? `<em>${fmt(x.valor)}</em>` : ''}</button>`).join('')}</div>
     </section>
 
-    <div id="inicio-links"></div>`;
+    <div class="ini-grade">
+      <div class="ini-fila">
+        <div class="inicio-secao">Para fazer hoje</div>
+        <div id="inicio-fechamento"></div>
+        <div id="inicio-pedidos"></div>
+        <div id="inicio-garantia"></div>
+        ${blocoRetornosInicio()}
+        <div id="inicio-confirmar"></div>
+        <section class="inicio-bloco">
+          <div class="inicio-bloco-tit"><span>${ic('relogio',16)}Orçamentos parados</span><strong>${pend.length ? pend.length + (pend.length > 1 ? ' orçamentos' : ' orçamento') : ''}</strong></div>
+          ${pend.length ? `<div class="inicio-pend">${pend.map(p => `
+            <button type="button" class="inicio-pend-item pend-${p.tipo}" onclick="reopenOrc(${p.e.id})">
+              <span class="inicio-pend-ic">${ic(p.tipo === 'aguardando' ? 'info' : 'alerta', 16)}</span>
+              <span class="inicio-pend-txt"><strong>${escHtml(p.titulo)}</strong><span>${escHtml(p.e.client)} · ${numCDP(p.e.numero)} · ${fmt(p.e.totalAvista||0)}</span><em>${escHtml(p.sub)}</em></span>
+              <span class="inicio-pend-seta">›</span>
+            </button>`).join('')}</div>`
+          : `<div class="inicio-ok">${ic('ok',18)} Tudo em dia. Nenhum orçamento parado.</div>`}
+        </section>
+        <div id="inicio-posvenda"></div>
+      </div>
+      <div class="ini-lado">
+        <div id="inicio-agenda"></div>
+        <div id="inicio-meudia"></div>
+        <div id="inicio-notas"></div>
+        <div id="inicio-links"></div>
+      </div>
+    </div>`;
   if(typeof carregarFechamentosInicio === 'function') carregarFechamentosInicio();
   if(typeof carregarPedidosInicio === 'function') carregarPedidosInicio();
   if(typeof carregarAgendaHoje === 'function') carregarAgendaHoje();
   if(typeof carregarLinksInicio === 'function') carregarLinksInicio();
+  if(typeof carregarMeuDiaInicio === 'function') carregarMeuDiaInicio();
   if(typeof carregarBlocosGarantia === 'function') carregarBlocosGarantia();
   if(typeof carregarConfirmarAmanha === 'function'){
     if(typeof CONF_DIAS !== 'undefined' && CONF_DIAS.length && !atualizar) desenharBlocoConfirmar($('inicio-confirmar'));
@@ -166,7 +178,7 @@ function blocoRetornosInicio(){
   const l = retornosParaHoje(), eu = meuNome();
   const badge = document.getElementById('ret-badge');
   const meus = l.filter(r => r.responsavel === eu).length;
-  if(badge){ badge.hidden = !meus; badge.textContent = meus; }
+  [badge, document.getElementById('ret-badge-topo')].forEach(b => { if(b){ b.hidden = !meus; b.textContent = meus; } });
   const pn = (typeof painelRetornos === 'function') ? painelRetornos() : { linhas: [] };
   if(!l.length && !pn.linhas.length) return '';
   const cel = (nome, filtro, n, cls) => `<button type="button" class="rg-n${n ? ' ' + cls : ' zero'}" onclick="abrirRetornos('${nome}','${filtro}')" aria-label="${n}">${n}</button>`;
@@ -175,11 +187,11 @@ function blocoRetornosInicio(){
       ${cel(total ? '' : x.nome, 'todos', x.atrasados, 'atr')}${cel(total ? '' : x.nome, 'todos', x.hoje, 'hj')}${cel(total ? '' : x.nome, 'todos', x.abertos, 'ab')}${cel(total ? '' : x.nome, 'feitos', x.feitos, 'ok')}
     </div>`;
   const grade = pn.linhas.length ? `<div class="rg-grade" role="table" aria-label="Retornos por responsável">
-      <div class="rg-linha rg-cab"><span>Quem</span><span>⚠️<br>Atrasados</span><span>📅<br>Hoje</span><span>⏳<br>Em aberto</span><span>✅<br>Feitos 7d</span></div>
+      <div class="rg-linha rg-cab"><span>Quem</span><span><br>Atrasados</span><span><br>Hoje</span><span><br>Em aberto</span><span><br>Feitos 7d</span></div>
       ${pn.linhas.map(x => linha(x)).join('')}${pn.linhas.length > 1 ? linha(pn.total, true) : ''}
     </div>` : '';
   return `<section class="inicio-bloco">
-      <div class="inicio-bloco-tit"><span>💬 Retornos</span><strong>${pn.total ? pn.total.abertos + ' em aberto' : ''}${meus ? ' · ' + meus + ' comigo hoje' : ''}</strong></div>
+      <div class="inicio-bloco-tit"><span>${ic('chat',16)}Retornos</span><strong>${pn.total ? pn.total.abertos + ' em aberto' : ''}${meus ? ' · ' + meus + ' comigo hoje' : ''}</strong></div>
       ${grade}
       ${l.length ? `<div class="rg-sub">Para hoje e atrasados</div>` : ''}
       <div class="inicio-pend">${l.slice(0, 6).map(r => `

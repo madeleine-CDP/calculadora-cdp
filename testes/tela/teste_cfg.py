@@ -44,7 +44,7 @@ def rodar(nome, papel):
         print('  config tela:', pg.evaluate('document.body.dataset.tela'), '| seções:', pg.locator('.cfg-tit').all_inner_texts())
         if papel=='admin':
             print('  conexões:', pg.inner_text('#cfg-conexoes').replace('\n',' / ')[:220])
-            pg.locator('text=➕ Novo link').click(); pg.wait_for_timeout(200)
+            pg.locator('text=Novo link').click(); pg.wait_for_timeout(200)
             pg.fill('#lk-titulo','Planilha CALC'); pg.fill('#lk-url','planilha'); pg.locator('#modal-ok').click(); pg.wait_for_timeout(200)
             print('  link inválido →', pg.inner_text('#modal-erro'))
             pg.fill('#lk-url','https://docs.google.com/spreadsheets/z'); pg.locator('#modal-ok').click(); pg.wait_for_timeout(600)
