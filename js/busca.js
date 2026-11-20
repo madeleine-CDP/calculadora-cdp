@@ -18,7 +18,7 @@ const bDiaMes = (d) => d ? d.toLocaleDateString('pt-BR', { day: '2-digit', month
 const bDia = (d) => d ? d.toLocaleDateString('pt-BR') : '';
 const bReais = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const bReaisCurto = (v) => 'R$ ' + Math.round(Number(v || 0)).toLocaleString('pt-BR');
-const B_ETAPA = { pre: 'pré-orçamento', orcamento: 'orçamento', enviado: 'enviado', fechado: 'fechado', perdido: 'perdido' };
+const B_ETAPA = { pre: 'pré-orçamento', pre_orcamento: 'pré-orçamento', pre_enviado: 'pré enviado', visita: 'visita agendada', orcamento: 'pós-visita', enviado: 'pós enviado', fechado: 'fechado', perdido: 'perdido' };
 
 // ── dados do sistema (lidos uma vez e guardados por 2 minutos) ──
 async function buscaCarregar(forcar){

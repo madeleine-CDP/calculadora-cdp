@@ -93,7 +93,7 @@ function renderPasta(){
     if(!st || !st.prox || st.grupo === 'fim'){ pp.innerHTML = ''; pp.hidden = true; }
     else {
       pp.hidden = false; pp.className = 'pasta-prox s-' + st.cls;
-      const acao = e.etapa === 'orcamento' ? `<button type="button" class="btn" onclick="abrirPropostaPasta()">${ic('proposta',16)} Gerar proposta</button>` : '';
+      const acao = (e.etapa === 'orcamento' || e.etapa === 'pre_orcamento') ? `<button type="button" class="btn" onclick="abrirPropostaPasta()">${ic('proposta',16)} Gerar proposta</button>` : '';
       pp.innerHTML = `<span class="pp-ic">${ic(st.cls === 'atr' ? 'alerta' : 'relogio', 18)}</span><div><span class="selo s-${st.cls}">${escHtml(st.selo)}</span><b>Próximo passo: ${escHtml(st.prox)}</b></div>${acao}`;
     }
   }
@@ -359,7 +359,7 @@ function renderEvolucao(){
   const semRegistro = CART.some(i => !i.tabelaVer);
   const avisoCopia = (e.anteriorId && semRegistro) ? `<div class="pasta-evol-aviso aviso-preco">${ic('alerta',16)}<span>Itens copiados ${pai ? 'do <strong>' + numCDP(pai.numero) + '</strong> ' : ''}com os preços da época${pai && pai.date ? ' (' + escHtml(pai.date) + ')' : ''}. Se a tabela de alguma fábrica mudou desde então, edite o item e adicione de novo para recalcular.</span></div>` : '';
   if(e.etapa === 'fechado' || e.etapa === 'perdido' || !CART.length){ box.innerHTML = avisoCopia; return; }   // sem itens não há o que evoluir
-  const destino = e.etapa === 'pre_orcamento' ? 'visita / orçamento final' : 'nova versão do orçamento';
+  const destino = (e.etapa === 'pre_orcamento' || e.etapa === 'pre_enviado') ? 'visita / orçamento final' : 'nova versão do orçamento';
   box.innerHTML = avisoCopia + `<button type="button" class="pasta-evoluir" onclick="evoluirOrcamento()">
       ${ic('raio',18)}<span><strong>Evoluir para ${destino}</strong><em>Cria um novo orçamento com cópia dos itens; este fica guardado.</em></span></button>`;
 }
@@ -368,7 +368,7 @@ async function evoluirOrcamento(){
   const e = orcEmEdicao();
   if(!e) return;
   if(ORC_SUJO){ alert('Este orçamento tem alterações não salvas.\n\nToque em "Salvar e fechar" primeiro e depois abra de novo para evoluir.'); return; }
-  const novaEtapa = e.etapa === 'pre_orcamento' ? 'visita' : 'orcamento';
+  const novaEtapa = (e.etapa === 'pre_orcamento' || e.etapa === 'pre_enviado') ? 'visita' : 'orcamento';
   if(!confirm('Criar um novo orçamento a partir do ' + numCDP(e.numero) + '?\n\n• Os itens são copiados para você ajustar (ex.: medidas da visita), com os preços de quando foram calculados — se a tabela da fábrica mudou, edite o item para recalcular.\n• O ' + numCDP(e.numero) + ' fica guardado como "Evoluído", com os valores que o cliente recebeu.\n• O novo começa na etapa "' + ETAPA_NOME[novaEtapa] + '".')) return;
   const itens = (e.items || []).map((it, i) => ({ ...it, id: Date.now() + i }));
   let linha;

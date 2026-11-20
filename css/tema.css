@@ -281,6 +281,7 @@ body[data-tela=inicio] .cli-bar,body[data-tela=hist] .cli-bar,body[data-tela=ret
 .hist-empty{padding:28px 16px;text-align:center;color:var(--tinta-suave);background:#fff;border:1px dashed var(--linha);border-radius:var(--r);line-height:1.6}
 /* cores por etapa (etiqueta e bolinha) */
 .etapa-pre_orcamento{background:var(--areia)!important;color:var(--dourado-texto)!important}
+.etapa-pre_enviado{background:#FFF6DA!important;color:#7D5411!important}
 .etapa-visita{background:#E6EEF4!important;color:#2E5671!important}
 .etapa-orcamento{background:var(--vinho-suave)!important;color:var(--vinho)!important}
 .etapa-enviado{background:var(--linho)!important;color:#6B4A2B!important}

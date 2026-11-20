@@ -41,6 +41,12 @@ function pendenciasDoDia(){
       return;
     }
     if(e.etapa === 'pre_orcamento'){
+      // pré-orçamento ainda não enviado: enviar no mesmo dia (2+ dias = atrasado)
+      const d = diasCorridos(e.createdAt || ref);
+      if(d >= 1) lista.push({ e, peso: d >= 2 ? 3 : 2, tipo: d >= 2 ? 'atrasado' : 'enviar',
+        titulo: d >= 2 ? 'Pré-orçamento atrasado' : 'Enviar o pré-orçamento',
+        sub: 'Pedido há ' + d + (d > 1 ? ' dias' : ' dia') + ' · depois de enviar, mude a etapa para "Pré enviado".' });
+    } else if(e.etapa === 'pre_enviado'){
       const d = diasCorridos(ref);
       if(d >= 3){
         const lembrete = qtd ? qtd + 1 : Math.min(Math.floor(d / 3), 3);

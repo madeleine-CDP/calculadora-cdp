@@ -62,7 +62,7 @@ function numeroDaProposta(){
 function prepararTipoProposta(){
   const e = (typeof orcEmEdicao === 'function') ? orcEmEdicao() : null;
   const sel = $('p-tipo'); if(!sel || !e) return;
-  sel.value = e.etapa === 'pre_orcamento' ? 'PRÉ-ORÇAMENTO' : 'ORÇAMENTO PÓS-VISITA';
+  sel.value = (e.etapa === 'pre_orcamento' || e.etapa === 'pre_enviado') ? 'PRÉ-ORÇAMENTO' : 'ORÇAMENTO PÓS-VISITA';
   if(typeof onPTipo === 'function') onPTipo();
 }
 

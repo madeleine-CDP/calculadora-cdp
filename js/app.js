@@ -1100,8 +1100,10 @@ function getHistory(){ return HISTORY_CACHE; }
 
 // ── Lista de orçamentos (C1): busca + filtro por etapa ──
 const ETAPAS = [
-  ['pre_orcamento','Pré-orçamento'], ['visita','Visita'], ['orcamento','Orçamento'],
-  ['enviado','Enviado'], ['fechado','Fechado'], ['perdido','Perdido']
+  // passos do orçamento (Bru, 20/11/2026): Pré-orçamento → Pré enviado → Visita agendada → Pós-visita → Pós enviado → Fechado ou perdido
+  // (os valores antigos continuam guardados no banco; só 'pre_enviado' é novo — sql/2026-11-passos-orcamento.sql)
+  ['pre_orcamento','Pré-orçamento'], ['pre_enviado','Pré enviado'], ['visita','Visita agendada'], ['orcamento','Pós-visita'],
+  ['enviado','Pós enviado'], ['fechado','Fechado'], ['perdido','Perdido']
 ];
 const ETAPA_NOME = Object.fromEntries(ETAPAS);
 let HIST_ETAPA = 'todos';
@@ -1176,7 +1178,7 @@ function filtrarHistorico(){
   const sit = new Map(vis.map(e => [e.id, orcSituacao(e)]));
   const GRUPOS = [
     ['agir', 'Fazer agora', 'atrasados e de hoje'], ['esp', 'Esperando o cliente', 'acompanhar'],
-    ['neu', 'Visita marcada', 'sem pendência até a visita'], ['fim', 'Fechados e perdidos', '']
+    ['neu', 'Visita agendada', 'sem pendência até a visita'], ['fim', 'Fechados e perdidos', '']
   ];
   const ordem = { atr: 0, hoje: 1, esp: 2, neu: 3, ok: 4 };
   const linha = e => {
@@ -1221,16 +1223,17 @@ function orcSituacao(e){
   if(evoluidoPara(e.id)) return { grupo: 'fim', cls: 'neu', selo: 'Evoluído', prox: 'Continua no ' + numCDP(evoluidoPara(e.id).numero) };
   if(p){
     const cls = (p.tipo === 'atrasado' || p.tipo === 'perdido') ? 'atr' : p.tipo === 'aguardando' ? 'esp' : 'hoje';
-    const curto = { 'Orçamento atrasado': 'Atrasado', 'Enviar orçamento hoje': 'Enviar hoje', 'Follow-up do pré-orçamento': 'Lembrar hoje', 'Aguardando o cliente': 'Sem resposta', 'Contato combinado atrasado': 'Contato atrasado', 'Contato combinado para hoje': 'Contato hoje' }[p.titulo] || (p.tipo === 'perdido' ? 'Sem resposta' : p.titulo);
-    const acao = { 'Orçamento atrasado': 'Enviar o orçamento', 'Enviar orçamento hoje': 'Enviar o orçamento', 'Follow-up do pré-orçamento': 'Mandar lembrete', 'Aguardando o cliente': 'Cobrar retorno' }[p.titulo] || (p.tipo === 'perdido' ? 'Marcar como perdido?' : 'Falar com o cliente');
+    const curto = { 'Orçamento atrasado': 'Atrasado', 'Enviar orçamento hoje': 'Enviar hoje', 'Follow-up do pré-orçamento': 'Lembrar hoje', 'Enviar o pré-orçamento': 'Enviar hoje', 'Pré-orçamento atrasado': 'Atrasado', 'Aguardando o cliente': 'Sem resposta', 'Contato combinado atrasado': 'Contato atrasado', 'Contato combinado para hoje': 'Contato hoje' }[p.titulo] || (p.tipo === 'perdido' ? 'Sem resposta' : p.titulo);
+    const acao = { 'Orçamento atrasado': 'Enviar o orçamento', 'Enviar orçamento hoje': 'Enviar o orçamento', 'Follow-up do pré-orçamento': 'Mandar lembrete', 'Enviar o pré-orçamento': 'Enviar o pré-orçamento', 'Pré-orçamento atrasado': 'Enviar o pré-orçamento', 'Aguardando o cliente': 'Cobrar retorno' }[p.titulo] || (p.tipo === 'perdido' ? 'Marcar como perdido?' : 'Falar com o cliente');
     return { grupo: cls === 'esp' ? 'esp' : 'agir', cls, selo: curto, prox: acao + ' · ' + p.sub.split(' · ')[0].replace(/\.$/, '').replace(/^Parado há /, 'parado há ').replace(/^Sem contato há /, 'sem contato há ').replace(/^Enviado há /, 'enviado há ') };
   }
   const ref = e.ultimoContato || e.updatedAt || e.createdAt;
   if(e.proximoContato) return { grupo: 'esp', cls: 'esp', selo: 'Contato combinado', prox: 'Falar de novo em ' + new Date(e.proximoContato + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) };
-  if(e.etapa === 'pre_orcamento') return { grupo: 'esp', cls: 'esp', selo: 'Pré enviado ' + dias(dc(ref)), prox: 'Lembrar o cliente a cada 3 dias' };
-  if(e.etapa === 'visita') return { grupo: 'neu', cls: 'neu', selo: 'Visita', prox: 'Fazer a visita técnica' };
-  if(e.etapa === 'orcamento') return { grupo: 'agir', cls: 'hoje', selo: 'Montar e enviar', prox: 'Prazo: 1 dia útil depois da visita' };
-  if(e.etapa === 'enviado') return { grupo: 'esp', cls: 'esp', selo: 'Enviado ' + dias(dc(ref)), prox: 'Aguardar a resposta do cliente' };
+  if(e.etapa === 'pre_orcamento') return { grupo: 'agir', cls: 'hoje', selo: 'Montar o pré', prox: 'Montar e enviar o pré-orçamento' };
+  if(e.etapa === 'pre_enviado') return { grupo: 'esp', cls: 'esp', selo: 'Pré enviado ' + dias(dc(ref)), prox: 'Lembrar a cada 3 dias · agendar a visita ou marcar perdido' };
+  if(e.etapa === 'visita') return { grupo: 'neu', cls: 'neu', selo: 'Visita agendada', prox: 'Fazer a visita técnica' };
+  if(e.etapa === 'orcamento') return { grupo: 'agir', cls: 'hoje', selo: 'Montar o pós', prox: 'Enviar o pós-visita em 1 dia útil' };
+  if(e.etapa === 'enviado') return { grupo: 'esp', cls: 'esp', selo: 'Pós enviado ' + dias(dc(ref)), prox: 'Aguardar a resposta do cliente' };
   return { grupo: 'esp', cls: 'esp', selo: ETAPA_NOME[e.etapa] || 'Em aberto', prox: '' };
 }
 let ORC_PEND_CACHE = new Map();
