@@ -69,7 +69,7 @@
       <div id="busca-lista" class="busca-lista" hidden></div>
     </div>
     <button type="button" class="busca-bt-cel" onclick="abrirBuscaTela()" aria-label="Buscar"><svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
-    <button type="button" class="ret-topo" onclick="switchTab('ret')" aria-label="Retornos"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.8A8 8 0 1 1 21 12z"/></svg><span class="tab-badge" id="ret-badge-topo" hidden></span></button>
+    <button type="button" class="topo-ret" onclick="switchTab('ret')" aria-label="Retornos"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-4.8A8 8 0 1 1 21 12z"/></svg><span class="tab-badge" id="ret-badge-topo" hidden></span></button>
     <div class="topo-acoes">
       <button type="button" class="btn-topo" onclick="switchTab('calc')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2M8 18h8"/></svg>Cálculo rápido</button>
       <button type="button" class="btn-topo pri" onclick="novoOrcamento()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Novo orçamento</button>
@@ -428,7 +428,7 @@
       <div class="hist-titulo">Retornos</div>
       <div class="hist-sub" id="ret-contagem">Carregando…</div>
     </div>
-    <button type="button" class="btn ret-btn-novo" onclick="novoRetorno()">+ Novo retorno</button>
+    <button type="button" class="btn ret-btn-novo" onclick="novoRetorno()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Novo retorno</button>
   </div>
   <div class="hist-filtros" id="ret-filtros" role="tablist" aria-label="Filtrar retornos"></div>
   <div id="ret-pessoas"></div>
@@ -462,7 +462,7 @@
       <div class="hist-titulo">Garantia</div>
       <div class="hist-sub" id="gar-contagem">Carregando…</div>
     </div>
-    <button type="button" class="btn ret-btn-novo" onclick="novaGarantia()">+ Novo chamado</button>
+    <button type="button" class="btn ret-btn-novo" onclick="novaGarantia()"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Novo chamado</button>
   </div>
   <div class="hist-filtros" id="gar-filtros" role="tablist" aria-label="Filtrar chamados"></div>
   <div id="gar-lista" class="gar-lista"></div>

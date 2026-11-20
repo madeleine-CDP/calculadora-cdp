@@ -92,7 +92,7 @@ body{font-size:14.5px;font-variant-numeric:tabular-nums;letter-spacing:-.003em}
 
 /* ═══ ETAPA 2 · MENU (20/11/2026) ═══
    computador (≥1000px): menu lateral fixo · tablet: abas em cima como antes · celular (≤720px): barra embaixo com "+" */
-.nav-logo,.nav-grupo,.nav-eu,.tab-mais,.topo-acoes,.ret-topo{display:none}
+.nav-logo,.nav-grupo,.nav-eu,.tab-mais,.topo-acoes,.topo-ret{display:none}
 .fab-novo{display:none!important}
 
 @media (min-width:1000px){
@@ -159,8 +159,8 @@ body{font-size:14.5px;font-variant-numeric:tabular-nums;letter-spacing:-.003em}
   #orc-resumo-bar{bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
   body[data-tela=calc] #orc-resumo-bar,body[data-tela=proposta] #orc-resumo-bar{bottom:78px!important}
   /* Retornos ganha um atalho no topo (com o número dos seus) */
-  .ret-topo{display:inline-flex;position:relative;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--r2);border:1px solid var(--linha);background:var(--superficie);color:var(--tinta-suave);cursor:pointer;margin-left:8px}
-  .ret-topo .tab-badge{position:absolute;top:-5px;right:-5px}
+  .topo-ret{display:inline-flex;position:relative;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--r2);border:1px solid var(--linha);background:var(--superficie);color:var(--tinta-suave);cursor:pointer;margin-left:8px}
+  .topo-ret .tab-badge{position:absolute;top:-5px;right:-5px}
   .busca-bt-cel{border-radius:var(--r2)!important;width:40px!important;height:40px!important}
   .inicio-atalhos > .btn:first-child{display:none}
   .btn-sair{font-size:0!important;width:40px;padding:0!important;justify-content:center;border-radius:var(--r2)!important}
@@ -469,3 +469,19 @@ body.lado-a-lado .pasta-wrap{max-width:760px!important}
 }
 /* a fila única já mostra os urgentes no topo: a faixa "N itens urgentes" saiu */
 .cel-urgentes{display:none!important}
+
+/* ═══ REVISÃO DE DESIGN (20/11/2026) ═══ */
+/* busca em tela cheia (celular): sem borda dupla, foco vinho só no campo de fora */
+.busca-campo input{border:0!important;box-shadow:none!important;padding:0!important;min-height:0!important;background:transparent!important}
+.busca-tela-topo .busca-campo{border-width:1px!important;box-shadow:0 0 0 3px var(--vinho-suave)}
+/* calculadora: o bloco "Ambiente" segue o padrão das outras caixas (branco com borda) */
+#ambiente-card{background:var(--superficie)!important;border:1px solid var(--linha)!important}
+#ambiente-card .card-title .ic-tile{background:var(--vinho-suave)}
+/* proposta: textos longos quebram em vez de passar da tela */
+#p-from-calc,#p-detalhes-itens{overflow-wrap:anywhere}
+/* botões com ícone + texto alinhados */
+.ret-btn-novo{display:inline-flex!important;align-items:center;gap:6px}
+@media (max-width:720px){
+  /* item da pasta no celular: só o à vista embaixo do preço (tabela e cartão estão nos totais) */
+  .pasta-item-preco span{display:none}
+}

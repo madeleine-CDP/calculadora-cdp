@@ -2614,7 +2614,7 @@ function syncPropostaFromCart(){
   const info = $('p-from-calc');
   if(CART.length){
     info.innerHTML = ic('ok',16)+' <b>' + CART.length + ' item' + (CART.length>1?'s':'') + '</b> no orçamento: ' +
-      CART.map((i,n) => '<b>'+(n+1)+'.</b> '+i.label).join(' | ');
+      CART.map((i,n) => '<b>'+(n+1)+'.</b> '+escHtml(nomeItemCurto(i))).join(' | ');
     info.style.background = 'rgba(46,125,82,.08)';
     info.style.borderColor = 'rgba(46,125,82,.25)';
     info.style.color = 'var(--grn)';
@@ -2634,6 +2634,11 @@ function syncPropostaFromCart(){
   if(typeof renderCombosProposta === 'function') renderCombosProposta();
 }
 
+// nome do item para listas (itens antigos podem não ter o nome guardado)
+function nomeItemCurto(i){
+  return i.label || [i.ambiente || i.name, i.vao, i.opcao ? 'Opção ' + i.opcao : ''].filter(Boolean).join(' · ') || [i.prod, i.col].filter(Boolean).join(' · ') || 'Item';
+}
+
 function renderPropostaDetalhes(){
   const wrap = $('p-detalhes-itens');
   if(!wrap) return;
@@ -2641,7 +2646,7 @@ function renderPropostaDetalhes(){
   wrap.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Detalhamento por item (editável — troque os "A DEFINIR")</div>' +
     CART.map((item,i) => `
     <div style="margin-bottom:10px">
-      <div style="font-size:11.5px;font-weight:600;color:var(--tx);margin-bottom:3px">${i+1}. ${item.label}</div>
+      <div style="font-size:11.5px;font-weight:600;color:var(--tx);margin-bottom:3px">${i+1}. ${escHtml(nomeItemCurto(item))}</div>
       <textarea oninput="updateItemDetail(${item.id}, this.value)" rows="2" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:11.5px;color:var(--tx);resize:vertical;background:var(--s2)">${item.detail||''}</textarea>
     </div>`).join('');
 }
