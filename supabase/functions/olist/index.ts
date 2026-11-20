@@ -255,6 +255,7 @@ function lerItensServico(d: any) {
     servico_tipos: [...tipos].join(", ") || null,
     tem_produto: temProduto,
     marcado_servico: marcadores.some((m: string) => /SERVI[CÇ]O/i.test(m)),
+    marcadores: marcadores.filter(Boolean).join(", ").slice(0, 500) || null,   // todas as tags (ex.: ATELIE), 20/11/2026
   };
 }
 async function sincronizarOS() {
@@ -276,7 +277,7 @@ async function sincronizarOS() {
   }
 
   const ids = [...vistos.keys()];
-  const { data: jaRows } = ids.length ? await admin.from("os_acompanhamento").select("pedido_id,situacao,numero_fabrica,data_entrega,nf_id,nf_numero,nf_situacao,nf_checado_em,itens_resumo,servico_tipos,tem_produto,marcado_servico,itens_lidos_em").in("pedido_id", ids) : { data: [] };
+  const { data: jaRows } = ids.length ? await admin.from("os_acompanhamento").select("pedido_id,situacao,numero_fabrica,data_entrega,nf_id,nf_numero,nf_situacao,nf_checado_em,itens_resumo,servico_tipos,tem_produto,marcado_servico,marcadores,itens_lidos_em").in("pedido_id", ids) : { data: [] };
   const ja = new Map((jaRows ?? []).map((r: any) => [Number(r.pedido_id), r]));
   const agora = new Date().toISOString();
   const linhas: any[] = [];
@@ -296,7 +297,7 @@ async function sincronizarOS() {
       nf_id: antes?.nf_id ?? null, nf_numero: antes?.nf_numero ?? null, nf_situacao: antes?.nf_situacao ?? null, nf_checado_em: antes?.nf_checado_em ?? null,
       // itens e serviços: idem (lidos uma vez do detalhe; de novo quando a situação muda, porque a OS pode ter sido editada)
       itens_resumo: antes?.itens_resumo ?? null, servico_tipos: antes?.servico_tipos ?? null, tem_produto: antes?.tem_produto ?? null,
-      marcado_servico: antes?.marcado_servico ?? null, itens_lidos_em: antes?.itens_lidos_em ?? null,
+      marcado_servico: antes?.marcado_servico ?? null, marcadores: antes?.marcadores ?? null, itens_lidos_em: antes?.itens_lidos_em ?? null,
     };
     // entregue sem nota ligada: procura de novo no máximo a cada 6h (limite de 60 consultas/min do Olist)
     const procurarNF = sit === 6 && !linha.nf_id && (!linha.nf_checado_em || Date.now() - new Date(linha.nf_checado_em).getTime() > 6 * 3600e3);

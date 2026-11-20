@@ -11,7 +11,8 @@ def os_(i,num,cli,sit,**k):
 OS=[os_(1,'1700','Lavagem Teste',3,servico_tipos='lavagem',tem_produto=False,itens_resumo='CDP – LAVAGEM DE CORTINA'),
     os_(2,'1701','Manutencao Teste',3,servico_tipos='manutenção',tem_produto=False,itens_resumo='CDP – MANUTENÇÃO DE CORTINAS'),
     os_(3,'1702','Produto Tag Teste',4,servico_tipos='instalação',tem_produto=True,marcado_servico=True,numero_fabrica='D2400',itens_resumo='DECORE – CORTINA ROLÔ · CDP – INSTALAÇÃO'),
-    os_(4,'1703','Produto Normal Teste',4,servico_tipos='instalação',tem_produto=True,numero_fabrica='D2401')]
+    os_(4,'1703','Produto Normal Teste',4,servico_tipos='instalação',tem_produto=True,numero_fabrica='D2401'),
+    os_(5,'1704','Entregue Svc Teste',6,servico_tipos='lavagem',tem_produto=False,itens_resumo='CDP – LAVAGEM')]
 SVC={}
 def rest(route):
     r=route.request; u=r.url
@@ -36,6 +37,10 @@ with sync_playwright() as p:
     pg.goto('http://localhost:8766/'); pg.wait_for_timeout(2200)
     print('1 Início:', [l for l in pg.inner_text('#inicio-pedidos').split('\n') if 'serviço' in l])
     pg.click('.tab-btn[data-tab=ped]'); pg.wait_for_timeout(1300)
+    print('2a Tudo: serviços enxutos (linhas):', pg.locator('#ped-servicos .svc-linha').count(), '· cartões fechados:', pg.locator('#ped-servicos .svc-card').count(), '· entregue fora:', pg.locator('#ped-servicos', has_text='Entregue Svc').count()==0)
+    pg.locator('#ped-servicos .svc-linha', has_text='Manutencao').click(); pg.wait_for_timeout(200)
+    print('  tocar abre o cartão:', pg.locator('#ped-servicos .svc-card').count())
+    pg.locator('#ped-filtros .hist-chip', has_text='Serviços').click(); pg.wait_for_timeout(300)
     print('2 serviços na lista:', pg.locator('#ped-servicos .svc-card strong').all_inner_texts())
     print('  produto normal fora de Serviços e com link:', card(pg,'Produto Normal').count()==0, pg.locator('.ped-card', has_text='Produto Normal').locator('text=acompanhar como serviço').count())
     print('  só-serviço fora de "Fazer pedido na fábrica":', pg.locator('.ped-grupo:not(#ped-servicos) .ped-card', has_text='Lavagem Teste').count()==0)
@@ -58,7 +63,9 @@ with sync_playwright() as p:
     card(pg,'Manutencao').locator('.svc-et.ok >> text=desfazer').click(); pg.wait_for_timeout(300)
     print('  desfez peça pedida:', SVC[2].get('peca_pedida_em'), '|', card(pg,'Manutencao').locator('.svc-sit').inner_text())
     pg.screenshot(path=f'{S}/shotsT/servicos_360.png', full_page=True)
+    pg.locator('#ped-filtros .hist-chip', has_text='Tudo').click(); pg.wait_for_timeout(300)
     pg.locator('.ped-card', has_text='Produto Normal').locator('text=acompanhar como serviço').click(); pg.wait_for_timeout(300)
+    pg.locator('#ped-filtros .hist-chip', has_text='Serviços').click(); pg.wait_for_timeout(300)
     print('5 marcado à mão:', card(pg,'Produto Normal').count(), SVC[4].get('eh_servico'))
     card(pg,'Produto Normal').locator('text=não é OS de serviço').click(); pg.wait_for_timeout(300)
     print('  desmarcado:', card(pg,'Produto Normal').count(), SVC[4].get('eh_servico'))
