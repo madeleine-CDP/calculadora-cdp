@@ -203,7 +203,8 @@ function svcEhServico(o){
 const svcSoServico = (o) => svcEhServico(o) && !o.tem_produto;
 const svcTipos = (o) => String(o.servico_tipos || '').split(',').map(t => t.trim()).filter(Boolean);
 function svcEmAndamento(){
-  return PED_OS.filter(o => svcEhServico(o) && Number(o.situacao) !== 2 && !(SVC_MAPA[o.pedido_id] || {}).concluido_em)
+  // entregue (6) ou cancelada (2) no Olist = terminou, sai da lista sozinha (pedido da Bru, 20/11/2026)
+  return PED_OS.filter(o => svcEhServico(o) && Number(o.situacao) !== 2 && Number(o.situacao) !== 6 && !(SVC_MAPA[o.pedido_id] || {}).concluido_em)
     .sort((a, b) => String(a.data_venda || '').localeCompare(String(b.data_venda || '')));
 }
 // etapas conforme as respostas (onde é feito; se precisa de peça)
@@ -215,7 +216,7 @@ function svcEtapas(s){
 const svcDias = (iso) => iso ? Math.floor((Date.now() - new Date(iso)) / 864e5) : 0;
 function svcSituacao(o){
   const s = SVC_MAPA[o.pedido_id] || {};
-  if(!s.local || s.precisa_peca === null || s.precisa_peca === undefined) return { cls: 'novo', txt: '🆕 Responder: onde é feito e se precisa de peça' };
+  if(!s.local || s.precisa_peca === null || s.precisa_peca === undefined) return { cls: 'novo', txt: 'Responder: onde é feito e se precisa de peça' };
   const et = svcEtapas(s), prox = et.find(([k]) => !s[k + '_em']);
   if(!prox) return { cls: 'ok', txt: 'Tudo feito · falta concluir' };
   if(prox[0] === 'peca_chegou') return { cls: svcDias(s.peca_pedida_em) >= 7 ? 'atras' : 'espera', txt: 'Aguardando ' + (s.peca_desc || 'a peça') + (s.peca_fabrica ? ' (' + s.peca_fabrica + ')' : '') + (svcDias(s.peca_pedida_em) ? ' há ' + svcDias(s.peca_pedida_em) + (svcDias(s.peca_pedida_em) === 1 ? ' dia' : ' dias') : ' · pedida hoje') };
@@ -292,12 +293,28 @@ function cardServico(o){
 }
 const SIT_TINY = { 0: 'Em aberto no Tiny', 3: 'Aprovada no Tiny', 4: 'Preparando envio no Tiny', 7: 'Pronto para envio no Tiny', 5: 'Enviada no Tiny', 1: 'Faturada no Tiny', 6: 'Entregue no Tiny' };
 const buscaSituacaoTiny = (o) => SIT_TINY[Number(o.situacao)] || '';
-function pedBlocoServicos(){
+// Em "Tudo" os serviços aparecem enxutos (uma linha por OS; tocar abre o cartão); no filtro Serviços, os cartões inteiros.
+const SVC_ABERTO = new Set();
+const SVC_SELO = { novo: ['s-hoje', 'Responder'], agir: ['s-hoje', 'Próximo passo'], espera: ['s-esp', 'Aguardando'], atras: ['s-atr', 'Atrasado'], ok: ['s-ok', 'Concluir'] };
+function svcLinha(o){
+  const sit = svcSituacao(o), [cls, rot] = SVC_SELO[sit.cls] || ['s-neu', ''], aberto = SVC_ABERTO.has(o.pedido_id);
+  const tipos = svcTipos(o);
+  return `<div class="svc-item${aberto ? ' aberto' : ''}"><button type="button" class="svc-linha" aria-expanded="${aberto}" onclick="svcAbrir(${o.pedido_id})">
+      <span class="svc-l-q"><b>${escHtml(o.cliente || 'Cliente')}</b><span>OS ${escHtml(o.numero || '')} · ${escHtml((tipos.length ? tipos : ['serviço']).join(', '))}</span></span>
+      <span class="selo ${cls}">${rot}</span>
+      <span class="svc-l-o">${escHtml(sit.txt)}</span>
+      <span class="fila-seta">${aberto ? '‹' : '›'}</span></button>
+    ${aberto ? cardServico(o) : ''}</div>`;
+}
+function svcAbrir(id){ if(SVC_ABERTO.has(id)) SVC_ABERTO.delete(id); else SVC_ABERTO.add(id); pedRedesenhar(); }
+function pedBlocoServicos(compacto){
   const l = svcEmAndamento();
-  return `<section class="ped-grupo" id="ped-servicos">
+  const ordem = { atras: 0, novo: 1, agir: 2, ok: 3, espera: 4 };
+  if(compacto) l.sort((a, b) => (ordem[svcSituacao(a).cls] ?? 5) - (ordem[svcSituacao(b).cls] ?? 5));
+  return `<section class="ped-grupo${compacto ? ' svc-compacto' : ''}" id="ped-servicos">
     <div class="inicio-bloco-tit"><span>${ic('ferramenta',16)}Serviços em andamento</span><strong>${l.length}</strong></div>
-    <div class="conf-nota svc-explica">OS com a tag SERVIÇO no Olist, ou com serviço e sem cortina/persiana nova. Responda onde é feito e se precisa de peça; o sistema monta as etapas.</div>
-    ${l.length ? `<div class="ped-lista">${l.map(cardServico).join('')}</div>` : '<div class="conf-nota ped-vazio">Nenhuma OS de serviço em andamento.</div>'}
+    ${compacto ? '' : '<div class="conf-nota svc-explica">OS com a tag SERVIÇO no Olist, ou com serviço e sem cortina/persiana nova. Responda onde é feito e se precisa de peça; o sistema monta as etapas. Entregue no Olist = sai daqui sozinha.</div>'}
+    ${l.length ? (compacto ? `<div class="svc-linhas">${l.map(svcLinha).join('')}</div>` : `<div class="ped-lista">${l.map(cardServico).join('')}</div>`) : '<div class="conf-nota ped-vazio">Nenhuma OS de serviço em andamento.</div>'}
   </section>`;
 }
 
@@ -361,7 +378,7 @@ function desenharPedidos(aviso){
     .map(([k, t, n]) => `<button type="button" class="hist-chip${PED_FILTRO === k ? ' on' : ''}" onclick="PED_FILTRO='${k}';desenharPedidos()">${t} <span>${n}</span></button>`).join('')
     + `<span class="ped-vista" role="group" aria-label="Como mostrar"><button type="button" class="${PED_VISTA !== 'lista' ? 'on' : ''}" onclick="pedMudarVista('quadro')">Quadro</button><button type="button" class="${PED_VISTA === 'lista' ? 'on' : ''}" onclick="pedMudarVista('lista')">Lista</button></span>`;
   const mostrar = grupos.filter(g => PED_FILTRO === 'todos' || g.f.k === PED_FILTRO);
-  box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + ((PED_FILTRO === 'todos' || PED_FILTRO === 'servicos') ? pedBlocoServicos() : '') + `<div class="ped-grupos${PED_FILTRO === 'todos' && PED_VISTA !== 'lista' ? ' quadro' : ''}">` + mostrar.map(g => `
+  box.innerHTML = (aviso ? `<div class="ag-aviso">${ic('info',16)} <span>${escHtml(aviso)}</span></div>` : '') + (PED_FILTRO === 'servicos' ? pedBlocoServicos(false) : '') + `<div class="ped-grupos${PED_FILTRO === 'todos' && PED_VISTA !== 'lista' ? ' quadro' : ''}">` + (PED_FILTRO === 'todos' ? pedBlocoServicos(true) : '') + mostrar.map(g => `
     <section class="ped-grupo">
       <div class="inicio-bloco-tit"><span>${g.f.em} ${g.f.tit}</span><strong>${g.l.length}${g.l.length ? `<em class="ped-soma">R$ ${Math.round(g.l.reduce((t, o) => t + Number(o.valor || 0), 0)).toLocaleString('pt-BR')}</em>` : ''}</strong></div>
       ${g.f.k === 'fabrica' && g.l.length ? pedBlocoProximoNumero() : ''}

@@ -47,7 +47,8 @@ function pendenciasDoDia(){
         titulo: d >= 2 ? 'Pré-orçamento atrasado' : 'Enviar o pré-orçamento',
         sub: 'Pedido há ' + d + (d > 1 ? ' dias' : ' dia') + ' · depois de enviar, mude a etapa para "Pré enviado".' });
     } else if(e.etapa === 'pre_enviado'){
-      const d = diasCorridos(ref);
+      // conta do último contato ou da criação (a mudança de passos de 20/11/2026 mexeu na data de alteração)
+      const d = diasCorridos(e.ultimoContato || e.createdAt || ref);
       if(d >= 3){
         const lembrete = qtd ? qtd + 1 : Math.min(Math.floor(d / 3), 3);
         const perdido = qtd >= 3 || (!qtd && d >= 9);

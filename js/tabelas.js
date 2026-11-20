@@ -81,7 +81,7 @@ let TP_FAB = 'dec', TP_EDITADOS = {}, TP_LOTES = [];
 const tpEhGestora = () => { const a = (typeof AUTH !== 'undefined' && AUTH) || {}; return a.papel === 'admin' || a.papel === 'dona'; };
 const fmtP = v => 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pctTexto = v => (v > 0 ? '+' : '') + v.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '%';
-function numBR(t){ const s = String(t || '').trim().replace(/\s|%|R\$/g, ''); if(!s) return NaN; return Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s); }
+function numDoTexto(t){ const s = String(t || '').trim().replace(/\s|%|R\$/g, ''); if(!s) return NaN; return Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s); }
 
 async function abrirTabelasPreco(){
   irParaTab('precos');
@@ -153,7 +153,7 @@ function renderBuscaPreco(){
   }).join('') : '<div class="olist-msg">Nada encontrado.</div>';
 }
 function editarPrecoItem(el){
-  const v = numBR(el.value);
+  const v = numDoTexto(el.value);
   if(!el.value.trim()){ delete TP_EDITADOS[el.dataset.k]; }
   else if(!(v > 0)){ avisoTopo('Preço inválido.'); el.value = ''; delete TP_EDITADOS[el.dataset.k]; }
   else TP_EDITADOS[el.dataset.k] = Math.round(v * 100) / 100;
@@ -168,7 +168,7 @@ function renderEditados(){
 
 // Monta a lista de mudanças (reajuste geral + itens) sem salvar
 function montarMudancas(){
-  const pct = numBR($('tp-pct').value);
+  const pct = numDoTexto($('tp-pct').value);
   const escopo = $('tp-escopo').value;
   const mud = new Map();
   if(!isNaN(pct) && pct !== 0){

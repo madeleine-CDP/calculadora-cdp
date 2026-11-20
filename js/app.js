@@ -1230,7 +1230,7 @@ function orcSituacao(e){
   const ref = e.ultimoContato || e.updatedAt || e.createdAt;
   if(e.proximoContato) return { grupo: 'esp', cls: 'esp', selo: 'Contato combinado', prox: 'Falar de novo em ' + new Date(e.proximoContato + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) };
   if(e.etapa === 'pre_orcamento') return { grupo: 'agir', cls: 'hoje', selo: 'Montar o pré', prox: 'Montar e enviar o pré-orçamento' };
-  if(e.etapa === 'pre_enviado') return { grupo: 'esp', cls: 'esp', selo: 'Pré enviado ' + dias(dc(ref)), prox: 'Lembrar a cada 3 dias · agendar a visita ou marcar perdido' };
+  if(e.etapa === 'pre_enviado') return { grupo: 'esp', cls: 'esp', selo: 'Pré enviado ' + dias(dc(e.ultimoContato || e.createdAt || ref)), prox: 'Lembrete a cada 3 dias até agendar a visita' };
   if(e.etapa === 'visita') return { grupo: 'neu', cls: 'neu', selo: 'Visita agendada', prox: 'Fazer a visita técnica' };
   if(e.etapa === 'orcamento') return { grupo: 'agir', cls: 'hoje', selo: 'Montar o pós', prox: 'Enviar o pós-visita em 1 dia útil' };
   if(e.etapa === 'enviado') return { grupo: 'esp', cls: 'esp', selo: 'Pós enviado ' + dias(dc(ref)), prox: 'Aguardar a resposta do cliente' };
