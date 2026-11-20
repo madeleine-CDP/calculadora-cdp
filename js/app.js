@@ -1158,53 +1158,82 @@ function filtrarHistorico(){
   const abertos = h.filter(e => e.etapa !== 'fechado' && e.etapa !== 'perdido' && !evoluidoPara(e.id)).length;
   $('hist-contagem').textContent = h.length ? abertos + ' em aberto · ' + h.length + ' no total' : '';
 
-  // filtros: "Todos" + só as etapas que têm orçamento (ou a que está selecionada)
-  const cont = {}; h.forEach(e => { cont[e.etapa] = (cont[e.etapa]||0) + 1; });
-  const chip = (id, nome, n) => `<button type="button" role="tab" class="hist-chip${HIST_ETAPA===id?' on':''}" aria-selected="${HIST_ETAPA===id}" onclick="escolherEtapaFiltro('${id}')">${nome} <span>${n}</span></button>`;
-  $('hist-filtros').innerHTML = chip('todos','Todos',h.length) +
-    ETAPAS.filter(([id]) => cont[id] || HIST_ETAPA===id).map(([id,nome]) => chip(id, nome, cont[id]||0)).join('');
+  // resumo por etapa no topo (visual profissional, etapa 5): quantidade e valor; tocar filtra
+  const cont = {}, soma = {}; h.forEach(e => { cont[e.etapa] = (cont[e.etapa]||0) + 1; soma[e.etapa] = (soma[e.etapa]||0) + (e.totalAvista||0); });
+  const pendIds = new Set((typeof pendenciasDoDia === 'function' ? pendenciasDoDia() : []).filter(p => p.tipo === 'atrasado' || p.tipo === 'perdido').map(p => p.e.id));
+  const chip = (id, nome, n, v, alerta) => `<button type="button" role="tab" class="hist-chip etapa-tile${HIST_ETAPA===id?' on':''}" aria-selected="${HIST_ETAPA===id}" onclick="escolherEtapaFiltro('${id}')"><span>${nome}${alerta ? '<i class="pt-atr" title="tem atrasado"></i>' : ''}</span><b>${n}</b><small>${v ? fmt(v) : '—'}</small></button>`;
+  $('hist-filtros').innerHTML = chip('todos','Todos',h.length, h.filter(e => e.etapa !== 'fechado' && e.etapa !== 'perdido').reduce((t,e)=>t+(e.totalAvista||0),0)) +
+    ETAPAS.filter(([id]) => cont[id] || HIST_ETAPA===id).map(([id,nome]) => chip(id, nome, cont[id]||0, soma[id]||0, h.some(e => e.etapa === id && pendIds.has(e.id)))).join('');
 
   if(!h.length){ list.innerHTML = '<div class="hist-empty">Nenhum orçamento salvo ainda.<br>Toque em <strong>Novo orçamento</strong> para começar.</div>'; return; }
 
+  ORC_PEND_CACHE = new Map((typeof pendenciasDoDia === 'function' ? pendenciasDoDia() : []).map(p => [p.e.id, p]));
   const termo = semAcento(($('hist-busca') && $('hist-busca').value || '').trim());
   const vis = h.filter(e => (HIST_ETAPA==='todos' || e.etapa===HIST_ETAPA) && combinaBusca(e, termo));
   if(!vis.length){ list.innerHTML = '<div class="hist-empty">Nenhum orçamento encontrado'+(termo?' para “'+escHtml(termo)+'”':'')+'.</div>'; return; }
 
-  list.innerHTML = vis.map(e => {
-    const isMulti = !!e.items;
+  // agrupado por urgência: o que fazer agora → esperando o cliente → visita marcada → fechados e perdidos
+  const sit = new Map(vis.map(e => [e.id, orcSituacao(e)]));
+  const GRUPOS = [
+    ['agir', 'Fazer agora', 'atrasados e de hoje'], ['esp', 'Esperando o cliente', 'acompanhar'],
+    ['neu', 'Visita marcada', 'sem pendência até a visita'], ['fim', 'Fechados e perdidos', '']
+  ];
+  const ordem = { atr: 0, hoje: 1, esp: 2, neu: 3, ok: 4 };
+  const linha = e => {
+    const st = sit.get(e.id), isMulti = !!e.items;
     const totalAv = isMulti ? e.totalAvista : (e.full ? e.full.avista : 0);
-    const amb = ambientesDe(e);
-    const linha2 = [numCDP(e.numero), e.bairro && e.bairro !== '-' ? e.bairro : '', amb ? amb + (amb>1?' ambientes':' ambiente') : ''].filter(Boolean).map(escHtml).join(' · ');
-    const etapa = e.etapa || 'orcamento';
+    const amb = ambientesDe(e), etapa = e.etapa || 'orcamento';
+    const sub = [numCDP(e.numero), e.bairro && e.bairro !== '-' ? e.bairro : '', amb ? amb + (amb>1?' ambientes':' ambiente') : ''].filter(Boolean).map(escHtml).join(' · ');
+    const tags = [evoluidoPara(e.id) ? 'evoluído → ' + numCDP(evoluidoPara(e.id).numero) : '', e.anteriorId && HISTORY_CACHE.find(x=>x.id===e.anteriorId) ? 'veio do ' + numCDP(HISTORY_CACHE.find(x=>x.id===e.anteriorId).numero) : '',
+      e.ref ? 'Tiny #' + e.ref : '', e.pedidoTiny ? 'Pedido #' + e.pedidoTiny : ''].filter(Boolean);
     return `
-    <div class="hist-item hist-card" onclick="reopenOrc(${e.id})">
-      <div class="hist-avatar etapa-${etapa}" aria-hidden="true">${escHtml(iniciais(e.client))}</div>
-      <div class="hist-info">
-        <div class="hist-client">${escHtml(e.client)}</div>
-        <div class="hist-detail">${linha2}</div>
-        <div class="hist-meta">
-          <span class="hist-etapa etapa-${etapa}">${ETAPA_NOME[etapa]||escHtml(etapa)}</span>
-          ${evoluidoPara(e.id) ? '<span class="hist-evol">'+ic('raio',13)+' Evoluído → '+numCDP(evoluidoPara(e.id).numero)+'</span>' : ''}
-          ${e.anteriorId && HISTORY_CACHE.find(x=>x.id===e.anteriorId) ? '<span class="hist-tiny">veio do '+numCDP(HISTORY_CACHE.find(x=>x.id===e.anteriorId).numero)+'</span>' : ''}
-          ${e.ref ? '<span class="hist-tiny">Tiny #'+escHtml(e.ref)+'</span>' : ''}
-          ${e.pedidoTiny ? '<span class="hist-tiny">Pedido #'+escHtml(e.pedidoTiny)+'</span>' : ''}
-          ${e.etapa==='perdido' && e.motivoPerda ? '<span class="hist-tiny">'+escHtml(e.motivoPerda)+'</span>' : ''}
-        </div>
-      </div>
-      <div class="hist-valor">
-        <div class="hist-cost">${fmt(totalAv)}</div>
-        <div class="hist-cost-lbl">à vista</div>
-      </div>
-      <div class="hist-rodape">
-        <span class="hist-date">${escHtml(e.date)}${e.criadoPor ? ' · '+ic('usuario',13)+' '+escHtml(e.criadoPor) : ''}</span>
-        <span class="hist-acoes">
-          <button class="btn-outline hist-abrir" onclick="event.stopPropagation();reopenOrc(${e.id})">${ic('editar',15)} Abrir</button>
-          <button class="hist-del" onclick="event.stopPropagation();delOrc(${e.id})" title="Excluir" aria-label="Excluir orçamento de ${escHtml(e.client)}">${ic('lixeira',16)}</button>
-        </span>
-      </div>
+    <div class="hist-item hist-card orc-l" onclick="reopenOrc(${e.id})">
+      <div class="o-cli"><div class="hist-client">${escHtml(e.client)}</div><div class="hist-detail">${sub}${tags.length ? ' · <span class="o-tag">' + tags.map(escHtml).join(' · ') + '</span>' : ''}</div></div>
+      <span class="o-et">${ETAPA_NOME[etapa]||escHtml(etapa)}</span>
+      <span class="o-prox"><span class="selo s-${st.cls}">${escHtml(st.selo)}</span><span class="o-pt">${escHtml(st.prox)}</span></span>
+      <span class="o-val hist-cost">${totalAv ? fmt(totalAv) : '<span class="o-nada">—</span>'}</span>
+      <span class="o-at">${escHtml(e.date || '')}${e.criadoPor ? '<br><span>' + escHtml(e.criadoPor) + '</span>' : ''}</span>
+      <span class="o-acoes">
+        <button class="btn-outline hist-abrir" onclick="event.stopPropagation();reopenOrc(${e.id})" aria-label="Abrir orçamento de ${escHtml(e.client)}">${ic('editar',15)}<span>Abrir</span></button>
+        <button class="hist-del" onclick="event.stopPropagation();delOrc(${e.id})" title="Excluir" aria-label="Excluir orçamento de ${escHtml(e.client)}">${ic('lixeira',16)}</button>
+      </span>
     </div>`;
-  }).join('');
+  };
+  const cab = `<div class="orc-cab"><span>Cliente</span><span>Etapa</span><span>Situação e próximo passo</span><span style="text-align:right">À vista</span><span>Atualizado</span><span></span></div>`;
+  list.innerHTML = '<div class="orc-lista">' + cab + GRUPOS.map(([g, nome, dica]) => {
+    let l = vis.filter(e => sit.get(e.id).grupo === g).sort((a, b) => ordem[sit.get(a.id).cls] - ordem[sit.get(b.id).cls] || String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+    if(!l.length) return '';
+    const total = l.length, valor = l.reduce((t, e) => t + (e.totalAvista||0), 0);
+    const cortar = g === 'fim' && !HIST_VER_FIM && !termo && HIST_ETAPA === 'todos' && l.length > 10;
+    if(cortar) l = l.slice(0, 10);
+    return `<div class="orc-gr"><div class="orc-gr-cab ${g}"><b>${nome}</b><span class="cont">${total}</span>${dica ? `<span class="o-dica">${dica}</span>` : ''}<span class="tot-g">${valor ? fmt(valor) : ''}</span></div>${l.map(linha).join('')}${cortar ? `<button type="button" class="orc-mais" onclick="HIST_VER_FIM=true;filtrarHistorico()">Ver todos os ${total} fechados e perdidos</button>` : ''}</div>`;
+  }).join('') + '</div>';
 }
+let HIST_VER_FIM = false;
+
+// Situação de cada orçamento na lista: em que grupo fica, cor do selo, texto do selo e o próximo passo
+function orcSituacao(e){
+  const p = (typeof pendenciasDoDia === 'function') ? (ORC_PEND_CACHE.get(e.id)) : null;
+  const dc = typeof diasCorridos === 'function' ? diasCorridos : () => 0;
+  const dias = n => n === 0 ? 'hoje' : n === 1 ? 'há 1 dia' : 'há ' + n + ' dias';
+  if(e.etapa === 'fechado') return { grupo: 'fim', cls: 'ok', selo: 'Fechado' + (e.fechadoEm ? ' ' + new Date(e.fechadoEm).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''), prox: e.pedidoTiny ? 'OS #' + e.pedidoTiny + ' no Tiny' : 'Seguir o fechamento (OS e pagamento)' };
+  if(e.etapa === 'perdido') return { grupo: 'fim', cls: 'neu', selo: 'Perdido', prox: e.motivoPerda ? 'Motivo: ' + e.motivoPerda : 'Sem motivo registrado' };
+  if(evoluidoPara(e.id)) return { grupo: 'fim', cls: 'neu', selo: 'Evoluído', prox: 'Continua no ' + numCDP(evoluidoPara(e.id).numero) };
+  if(p){
+    const cls = (p.tipo === 'atrasado' || p.tipo === 'perdido') ? 'atr' : p.tipo === 'aguardando' ? 'esp' : 'hoje';
+    const curto = { 'Orçamento atrasado': 'Atrasado', 'Enviar orçamento hoje': 'Enviar hoje', 'Follow-up do pré-orçamento': 'Lembrar hoje', 'Aguardando o cliente': 'Sem resposta', 'Contato combinado atrasado': 'Contato atrasado', 'Contato combinado para hoje': 'Contato hoje' }[p.titulo] || (p.tipo === 'perdido' ? 'Sem resposta' : p.titulo);
+    const acao = { 'Orçamento atrasado': 'Enviar o orçamento', 'Enviar orçamento hoje': 'Enviar o orçamento', 'Follow-up do pré-orçamento': 'Mandar lembrete', 'Aguardando o cliente': 'Cobrar retorno' }[p.titulo] || (p.tipo === 'perdido' ? 'Marcar como perdido?' : 'Falar com o cliente');
+    return { grupo: cls === 'esp' ? 'esp' : 'agir', cls, selo: curto, prox: acao + ' · ' + p.sub.split(' · ')[0].replace(/\.$/, '').replace(/^Parado há /, 'parado há ').replace(/^Sem contato há /, 'sem contato há ').replace(/^Enviado há /, 'enviado há ') };
+  }
+  const ref = e.ultimoContato || e.updatedAt || e.createdAt;
+  if(e.proximoContato) return { grupo: 'esp', cls: 'esp', selo: 'Contato combinado', prox: 'Falar de novo em ' + new Date(e.proximoContato + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) };
+  if(e.etapa === 'pre_orcamento') return { grupo: 'esp', cls: 'esp', selo: 'Pré enviado ' + dias(dc(ref)), prox: 'Lembrar o cliente a cada 3 dias' };
+  if(e.etapa === 'visita') return { grupo: 'neu', cls: 'neu', selo: 'Visita', prox: 'Fazer a visita técnica' };
+  if(e.etapa === 'orcamento') return { grupo: 'agir', cls: 'hoje', selo: 'Montar e enviar', prox: 'Prazo: 1 dia útil depois da visita' };
+  if(e.etapa === 'enviado') return { grupo: 'esp', cls: 'esp', selo: 'Enviado ' + dias(dc(ref)), prox: 'Aguardar a resposta do cliente' };
+  return { grupo: 'esp', cls: 'esp', selo: ETAPA_NOME[e.etapa] || 'Em aberto', prox: '' };
+}
+let ORC_PEND_CACHE = new Map();
 
 function reopenOrc(id){
   const h = getHistory();

@@ -275,3 +275,75 @@ body{font-size:14.5px;font-variant-numeric:tabular-nums;letter-spacing:-.003em}
   .ped-grupos.quadro .ped-num,.ped-grupos.quadro .ped-conf{margin-bottom:8px}
   .ped-grupos.quadro .ped-conf{display:flex;flex-direction:column;gap:6px}
 }
+
+/* ═══ ETAPA 5a · LISTA DE ORÇAMENTOS (20/11/2026) ═══
+   resumo por etapa no topo; lista agrupada por urgência; cada linha: cliente · etapa · situação + próximo passo · valor · atualizado */
+.selo{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.selo::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.s-atr{color:var(--atr);background:var(--atr-bg);border-color:var(--atr-bd)}
+.s-hoje{color:var(--hoje);background:var(--hoje-bg);border-color:var(--hoje-bd)}
+.s-esp{color:var(--esp);background:var(--esp-bg);border-color:var(--esp-bd)}
+.s-ok{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-bd)}
+.s-neu{color:#52525B;background:#F4F4F5;border-color:#E4E4E7}
+.pt-atr{width:7px;height:7px;border-radius:50%;background:var(--atr);display:inline-block}
+
+#hist-filtros{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:0!important;background:var(--superficie);border:1px solid var(--linha);border-radius:var(--r);overflow:hidden;margin:12px 0 16px!important;padding:0!important}
+#hist-filtros .etapa-tile{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:11px 14px;border-right:1px solid var(--linha);cursor:pointer;position:relative;min-width:0;font-family:var(--sans)}
+#hist-filtros .etapa-tile:last-child{border-right:0}
+#hist-filtros .etapa-tile:hover{background:var(--cab)}
+#hist-filtros .etapa-tile span{font-size:12.5px;color:var(--tinta-fraca);font-weight:500;display:flex;align-items:center;gap:6px;white-space:nowrap}
+#hist-filtros .etapa-tile b{font-size:20px;font-weight:650;letter-spacing:-.02em;line-height:1.25;color:var(--tinta)}
+#hist-filtros .etapa-tile small{font-size:12px;color:var(--tinta-fraca);white-space:nowrap}
+#hist-filtros .etapa-tile.on{background:var(--vinho-suave)}
+#hist-filtros .etapa-tile.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--vinho)}
+#hist-filtros .etapa-tile.on span,#hist-filtros .etapa-tile.on b{color:var(--vinho)}
+#hist-filtros .etapa-tile:focus-visible{outline:2px solid var(--vinho);outline-offset:-2px}
+
+.orc-lista{background:var(--superficie);border:1px solid var(--linha);border-radius:var(--r);overflow:hidden}
+.orc-cab,#hist-list .orc-l{display:grid;grid-template-columns:minmax(170px,1.3fr) 108px minmax(220px,1.7fr) 104px 96px 112px;gap:14px;align-items:center;padding:0 16px}
+.orc-cab{height:34px;font-size:12px;font-weight:500;color:var(--tinta-fraca);background:var(--cab);border-bottom:1px solid var(--linha)}
+.orc-gr+.orc-gr{border-top:1px solid var(--linha)}
+.orc-gr-cab{display:flex;align-items:center;gap:8px;padding:14px 16px 6px;font-size:13px}
+.orc-gr-cab b{font-weight:650;color:var(--tinta)}
+.orc-gr-cab.agir b{color:var(--atr)}
+.orc-gr-cab .o-dica{font-size:12.5px;color:var(--tinta-fraca)}
+.orc-gr-cab .tot-g{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--tinta-suave);padding-right:126px}
+#hist-list .orc-l{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(170px,1.3fr) 108px minmax(220px,1.7fr) 104px 96px 112px;gap:14px;align-items:center;padding:9px 16px;min-height:58px;border-top:1px solid var(--linha-suave);cursor:pointer;font-family:var(--sans);font-size:13.5px;color:var(--tinta);width:100%}
+#hist-list .orc-gr-cab+.orc-l{border-top:0}
+#hist-list .orc-l:hover{background:var(--cab)}
+#hist-list .o-cli{min-width:0}
+#hist-list .hist-client{font-size:14px!important;font-weight:600!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tinta)}
+#hist-list .hist-detail{font-size:12.5px!important;color:var(--tinta-fraca);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hist-list .o-tag{color:var(--tinta-suave)}
+#hist-list .o-et{font-size:13px;color:var(--tinta-suave)}
+#hist-list .o-prox{display:flex;align-items:center;gap:10px;min-width:0}
+#hist-list .o-pt{font-size:13px;color:var(--tinta-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hist-list .o-val{text-align:right;font-weight:650!important;font-size:14px!important;white-space:nowrap;color:var(--tinta)!important;font-family:var(--sans)!important}
+#hist-list .o-nada{color:var(--tinta-fraca);font-weight:400}
+#hist-list .o-at{font-size:12.5px;color:var(--tinta-suave);line-height:1.35}
+#hist-list .o-at span{color:var(--tinta-fraca)}
+#hist-list .o-acoes{display:flex;gap:6px;justify-content:flex-end}
+#hist-list .hist-abrir{height:32px!important;min-height:0!important;padding:0 10px!important;font-size:13px!important;display:inline-flex;align-items:center;gap:6px}
+#hist-list .hist-del{width:32px!important;height:32px!important;border-radius:var(--r2)!important}
+.orc-mais{display:block;width:100%;padding:12px;border:0;border-top:1px solid var(--linha-suave);background:none;font:inherit;font-size:13px;font-weight:600;color:var(--vinho);cursor:pointer}
+.orc-mais:hover{background:var(--cab)}
+
+@media (max-width:899px){
+  .orc-cab{display:none}
+  #hist-list .orc-l{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"cli val" "prox acoes";gap:6px 10px;padding:11px 12px}
+  #hist-list .o-cli{grid-area:cli} #hist-list .o-val{grid-area:val;align-self:start} #hist-list .o-prox{grid-area:prox}
+  #hist-list .o-acoes{grid-area:acoes;gap:4px}
+  #hist-list .hist-abrir{width:32px;padding:0!important;justify-content:center}
+  #hist-list .hist-abrir span{display:none}
+  #hist-list .o-et,#hist-list .o-at{display:none}
+  .orc-gr-cab{padding:12px 12px 4px}
+  .orc-gr-cab .o-dica{display:none}
+  .orc-gr-cab .tot-g{padding-right:0}
+}
+@media (max-width:720px){
+  #hist-filtros{display:flex!important;overflow-x:auto;scrollbar-width:none;border-radius:0;border-left:0;border-right:0;margin:10px -16px 14px!important}
+  #hist-filtros::-webkit-scrollbar{display:none}
+  #hist-filtros .etapa-tile{flex:none;min-width:104px;padding:9px 12px}
+  #hist-filtros .etapa-tile b{font-size:17px}
+}
+#hist-list .o-prox .selo{flex:none}
