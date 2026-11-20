@@ -20,3 +20,11 @@ update public.orcamentos set etapa = 'pre_enviado'
 update public.orcamentos o set etapa = 'pre_enviado'
   where o.etapa = 'enviado' and o.como_comecou = 'pre_orcamento'
     and not exists (select 1 from public.orcamentos f where f.anterior_id = o.id);
+
+-- APLICADO em 20/11/2026 com o ok da Bru (execute_sql). Resultado: pre_enviado 18 · enviado 6 · visita 4.
+-- Orçamentos que mudaram (id → nº CDP · etapa antiga), para desfazer à mão se precisar:
+--   enviado → pre_enviado: ids 8,9,10,13,14,15,16,17,19,20,22,23,24,25,28,29,30 (CDP-0006,7,8,11,12,13,14,15,17,18,20,21,22,23,26,27,28)
+--   pre_orcamento → pre_enviado: id 32 (CDP-0030)
+--   desfazer: update public.orcamentos set etapa='enviado' where id in (8,9,10,13,14,15,16,17,19,20,22,23,24,25,28,29,30);
+--             update public.orcamentos set etapa='pre_orcamento' where id = 32;
+--   (a regra 'pre_enviado' pode ficar mesmo se desfizer)

@@ -58,7 +58,7 @@ Regras:
 - Lembrete de cobrança da OS: 1 dia útil, depois a cada 2; 5+ dias úteis → avisar a Madeleine (dia útil = seg–sex).
 - NF: entregue sem NF = emitir; com NF = enviar; cliente com e-mail no Olist = considera enviada por e-mail pelo Olist (com desfazer); NF de serviço (Tinus) = botão "fora do Tiny"; olhar entregues dos últimos 30 dias.
 - Links úteis visíveis para todos; sem o doc de Credenciais e sem o Notion.
-- **Passos do orçamento (20/11/2026):** Pré-orçamento → Pré enviado → Visita agendada → Pós-visita → Pós enviado → Fechado ou perdido. Depois do pré enviado: visita agendada ou perdido; perdido pode ser marcado em qualquer passo. Visita direta (sem pré) e quem espera a visita sem pré entram direto em "Visita agendada". No banco hoje são 6 etapas antigas (pre_orcamento, visita, orcamento, enviado, fechado, perdido): a troca precisa de etapa nova + migração dos orçamentos, com SQL ensaiado e ok da Bru.
+- **Passos do orçamento (20/11/2026):** Pré-orçamento → Pré enviado → Visita agendada → Pós-visita → Pós enviado → Fechado ou perdido. Depois do pré enviado: visita agendada ou perdido; perdido pode ser marcado em qualquer passo. Visita direta (sem pré) e quem espera a visita sem pré entram direto em "Visita agendada". **Aplicado em 20/11/2026** (`sql/2026-11-passos-orcamento.sql`): só `pre_enviado` é valor novo; os outros passos reaproveitam os valores antigos com nome novo na tela.
 - 3B (agendar pelo sistema) **adiado de propósito** até a equipe usar o sistema no dia a dia. Make (automações do SOP) não está rodando.
 
 ## 6. TRABALHO EM ANDAMENTO — revisão do cadastro de produtos do Olist
