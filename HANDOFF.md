@@ -58,6 +58,7 @@ Regras:
 - Lembrete de cobrança da OS: 1 dia útil, depois a cada 2; 5+ dias úteis → avisar a Madeleine (dia útil = seg–sex).
 - NF: entregue sem NF = emitir; com NF = enviar; cliente com e-mail no Olist = considera enviada por e-mail pelo Olist (com desfazer); NF de serviço (Tinus) = botão "fora do Tiny"; olhar entregues dos últimos 30 dias.
 - Links úteis visíveis para todos; sem o doc de Credenciais e sem o Notion.
+- **Passos do orçamento (20/11/2026):** Pré-orçamento → Pré enviado → Visita agendada → Pós-visita → Pós enviado → Fechado ou perdido. Depois do pré enviado: visita agendada ou perdido; perdido pode ser marcado em qualquer passo. Visita direta (sem pré) e quem espera a visita sem pré entram direto em "Visita agendada". No banco hoje são 6 etapas antigas (pre_orcamento, visita, orcamento, enviado, fechado, perdido): a troca precisa de etapa nova + migração dos orçamentos, com SQL ensaiado e ok da Bru.
 - 3B (agendar pelo sistema) **adiado de propósito** até a equipe usar o sistema no dia a dia. Make (automações do SOP) não está rodando.
 
 ## 6. TRABALHO EM ANDAMENTO — revisão do cadastro de produtos do Olist
@@ -110,6 +111,13 @@ Não colocar a planilha nem dados exportados do Olist no repositório (usar a pa
 - No ar: redução de peso não cobrada em dobro; itens antigos recuperam acessórios ao editar; comparação com redução automática; tubo 55mm da Real pela tabela; orçamento novo abre a pasta; calculadora em gaveta no computador; Ambiente · Vão · Opção (passo 1, pasta, proposta com 3 jeitos de total); "cotar na outra fábrica como outra opção"; cores por coleção (`js/cores.js`); detalhamento acompanha as medidas.
 - Com a Bru: recalcular orçamentos da Decore em aberto (nº 1, 3, 4, 5, 6, 7, 11, 15, 18, 22, 23); nº 29 (Juliana) desmarcar a redução manual; nº 22 (Viviane) trocar o Box 70; nº 4 (Douglas) e 22 corrigir o texto "SEM BANDÔ".
 - Pendente: R\$ 20 por peça do tubo da Real (caso Joseane, nº 28) — a Bru está investigando com a Real; conversa com o gerente da Decore sobre as guias; planilhas (revisão do Olist; tradicionais e serviços) com a Bru.
+
+## 6D. Visual novo do sistema (protótipo aprovado em 20/11/2026)
+- Protótipo clicável: https://claude.ai/artifact/XkMRyQH9nAjdvSwubd55VP (curadoria de referências: https://claude.ai/artifact/7qok6Z9ZF3bC5zWm1uZhk3).
+- Direção: cara de sistema profissional. Letra única Inter; cinzas puxados para o cinza-areia da logo; vinho só na ação principal e no menu; 4 cores de situação (atrasado, fazer hoje, esperando, ok); cantos de 8px; ícones de traço **no lugar dos emojis**; Cormorant só no logo e na proposta. Logo completa no menu lateral, símbolo (ripas) no celular, tela de entrada escura com as ripas da marca; etiquetas Decore/Real com as cores atuais.
+- Navegação: menu lateral no computador; barra embaixo no celular com "+" (orçamento, cálculo rápido, retorno, garantia, tarefa); busca com Ctrl+K.
+- Orçamentos (pedido da Bru: escaneabilidade e hierarquia): resumo por passo no topo, lista agrupada por urgência com "próximo passo" escrito e valor alinhado; pasta com nome em destaque, passos compactos, faixa "Próximo passo" com a ação, itens com preços numa coluna e total à vista grande na lateral.
+- Ordem combinada para construir na `dev`: 1) peças, cores, letra, logo e tela de entrada; 2) menu lateral + barra do celular; 3) Início novo; 4) Pedidos em colunas; 5) pasta e calculadora. Passos novos do orçamento = etapa separada (mexe no banco). A proposta ao cliente (Word) não muda.
 
 ## 7. Backlog completo (ordem sugerida; confirmar com a Bru)
 1. **Revisão de produtos do Olist** (seção 6) — em andamento.
