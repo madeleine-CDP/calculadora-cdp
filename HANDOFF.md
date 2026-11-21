@@ -132,7 +132,7 @@ Não colocar a planilha nem dados exportados do Olist no repositório (usar a pa
 7. 4B: ficha do ateliê. 3B: agendar pelo sistema (adiado).
 8. Apresentação do sistema para a Madeleine.
 
-**Pendências com a Bru (não são código):** decidir tornar o repositório privado (conferir antes o impacto na Netlify); atualizar Canva e guias; criar a conta do Ricardo no Supabase Auth (ela cria com senha provisória; o Claude inclui em `perfis` e o apelido em `USUARIOS_EMAIL`); apagar o projeto vazio do Supabase; conferir saldo de créditos da Netlify após ~25/10.
+**Pendências com a Bru (não são código):** decidir tornar o repositório privado (conferir antes o impacto na Netlify); atualizar Canva e guias; apagar o projeto vazio do Supabase; conferir saldo de créditos da Netlify após ~25/10.
 
 ## 8. Como testar (antes de pedir aprovação)
 - `bash testes/rodar_tela.sh` → todos "ok" (banco/Olist simulados; 360px).

@@ -11,7 +11,7 @@ Leia este arquivo inteiro antes de qualquer alteração.
 - **Antes de mexer em qualquer coisa, apresente o plano** (o que vai mudar, onde, e os riscos) e espere a aprovação.
 - Faça **uma mudança por vez**. Se o pedido for grande, proponha dividir em etapas.
 - Quando algo travar ou der erro repetido, explique em linguagem de leiga o que está acontecendo e como ela pode ajudar, em vez de insistir.
-- Usuários da calculadora: Bruna, Mirelle (atendimento), Ricardo (vendas) e Madeleine (dona). Pense sempre em quem vai usar no celular, no meio do atendimento.
+- Usuários da calculadora: Bruna, Mirelle (atendimento) e Madeleine (dona). (Ricardo saiu em 21/11/2026: não criar conta para ele.) Pense sempre em quem vai usar no celular, no meio do atendimento.
 
 ## O que é o projeto
 
@@ -42,6 +42,7 @@ Estas fórmulas foram confirmadas pela Bru. Qualquer mudança exige confirmaçã
 - **À vista** = custo × 2 × 0,975 (desconto extra de 2,5%, só na Real).
 - Tabela e cartão são recalculados a partir desse à vista menor.
 - **Rolô com altura acima de 2,00m:** +R$ 20,00 por peça no preço de tabela, com os 20% de desconto (= +R$ 16 no custo). Conferido no portal da Real em 21/11/2026 (2,00m não paga, 2,01m paga; não depende do tubo: 2,00×1,80 com tubo 40mm não paga) e aprovado pela Bru. `extraAlturaReal()`, aplicada no cálculo normal (`calcAccCost()`) e na comparação entre fábricas. Com isso os 9 casos testados (BK Pinpoint) batem centavo a centavo com o custo do portal.
+- **Comando redutor** (conferido no portal em 21/11/2026, aprovado pela Bru): Elegance e Nuette = `r_redel` R$ 99,00; Romana = `r_romred` R$ 55,00; os dois **com** os 20% da Real (saíram do `SEM_DESCONTO`, nos dois lugares). O `r_red` da Rolô (tubo 55mm, R$ 98,68, sem desconto) não foi conferido e ficou como estava. Nessas cortinas a altura não muda nada além dos m². Celular: o portal estava com **40%** de desconto em 21/11/2026 (o sistema usa 20%) — aguarda a Bru dizer se é promoção.
 - **Nuette** e **Persiana Horizontal 50mm PVC** só existem na Real. A calculadora já filtra por fábrica.
 
 ### Cortina Tradicional em Tecido (CDP)

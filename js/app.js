@@ -693,7 +693,7 @@ function calcAccCost(){
     // Controles Real — preço fixo
     'r_rc1','r_rc15','r_rctimer','r_hub',
     // Outros opcionais Real — "não se aplicam descontos" na tabela
-    'r_junc','r_red','r_redplus','r_supduplo','r_romred',
+    'r_junc','r_red','r_redplus','r_supduplo',   // r_romred e r_redel têm o desconto da Real (portal, 21/11/2026)
     // Motorização Decore — sem desconto ("não se aplicam descontos de Revendedores")
     'd_mmec','d_mrf','d_mele','d_mt38','d_mt38wf','d_mwmec','d_mwele','d_rmmot','d_rmmotwf','d_ph50mot','d_ph50motwf',
     // Controles Decore — sem desconto
@@ -1420,7 +1420,7 @@ function calcCmpAccCost(otherFabKey){
     'r_m6n','r_mmaxi','r_m4f','r_mwifi','r_mbat','r_fonte',
     'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf','r_mcel','r_mcelwf','r_mcelbat',
     'r_rc1','r_rc15','r_rctimer','r_hub',
-    'r_junc','r_red','r_redplus','r_supduplo','r_romred',
+    'r_junc','r_red','r_redplus','r_supduplo',   // r_romred e r_redel têm o desconto da Real (portal, 21/11/2026)
     'd_mmec','d_mrf','d_mele','d_mt38','d_mt38wf','d_mwmec','d_mwele','d_rmmot','d_rmmotwf','d_ph50mot','d_ph50motwf',
     'd_dc1','d_dc16','d_bpi1','d_bpi15','d_jmt',
     'd_ph50mono','d_ph25mono','d_ph25ev','d_red',
