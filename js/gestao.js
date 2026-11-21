@@ -74,7 +74,7 @@ function gesTabelas(){
   const desatualizados = orcs.filter(e => (Array.isArray(e.items) ? e.items : []).some(i => {
     const fab = i.fab || (i.fabrica === 'Decore' ? 'dec' : i.fabrica === 'Real' ? 'real' : null);
     const atual = fab && TABELAS_INFO[fab] ? TABELAS_INFO[fab].tabela : null;
-    return i.tabelaVer && atual && i.tabelaVer !== atual;
+    return (i.tabelaVer && atual && i.tabelaVer !== atual) || (typeof campItemVencida === 'function' && campItemVencida(i));
   }));
   return { desatualizados };
 }
@@ -147,7 +147,7 @@ function desenharGestao(carregando){
     <section class="fin-q">
       <div class="fin-q-tit"><h2>Tabelas de preço</h2>${typeof abrirTabelasPreco === 'function' ? `<button type="button" class="conf-link" onclick="abrirTabelasPreco()">abrir tabelas ›</button>` : ''}</div>
       ${['dec', 'real', 'cdp'].map(k => { const t = TABELAS_INFO[k]; const sem = !t.data && k === 'cdp'; return `<div class="fin-fase"><span>${escHtml(t.nome)}${k === 'cdp' ? ' (tradicional)' : ''}</span><span class="ges-tag ${sem ? 't-o' : 't-v'}">${sem ? 'sem data registrada' : escHtml(t.tabela)}</span></div>`; }).join('')}
-      ${T.desatualizados.length ? `<div class="ges-desat"><b>${T.desatualizados.length} ${T.desatualizados.length === 1 ? 'orçamento em aberto calculado' : 'orçamentos em aberto calculados'} com tabela antiga</b>
+      ${T.desatualizados.length ? `<div class="ges-desat"><b>${T.desatualizados.length} ${T.desatualizados.length === 1 ? 'orçamento em aberto calculado' : 'orçamentos em aberto calculados'} com tabela antiga ou campanha que já acabou</b>
         <div class="ges-desat-l">${T.desatualizados.slice(0, 12).map(e => `<button type="button" class="conf-link" onclick="reopenOrc(${e.id})">${escHtml(numCDP(e.numero))} · ${escHtml(e.client)}</button>`).join('')}</div>
         <div class="fin-sub">Abra, edite o item e adicione de novo para recalcular antes de gerar a OS.</div></div>`
         : `<div class="inicio-ok">${ic('ok',18)} Todos os orçamentos em aberto usam as tabelas vigentes.</div>`}

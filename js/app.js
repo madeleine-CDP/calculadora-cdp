@@ -878,11 +878,17 @@ function calcular(){
 
   // Desconto
   const isPromo = colInfo.promo || data.isPromo || false;
+  // Campanha da fábrica no período (ex.: Black November): o desconto dela substitui o principal (js/campanhas.js)
+  const camp = typeof campanhaAtiva === 'function' ? campanhaAtiva(STATE.fab, STATE.prod, STATE.fam, STATE.col) : null;
   let discPct = 0, discPct2 = 0;
   let subtDesconto = 0;
   if(STATE.fab==='real'){
-    discPct = STATE.discReal;
+    discPct = camp ? Number(camp.desconto) : STATE.discReal;
     subtDesconto = subtecido * (1 - discPct/100);
+  } else if(camp){
+    discPct  = Number(camp.desconto);
+    discPct2 = STATE.discDecNorm2||3;
+    subtDesconto = subtecido * (1 - discPct/100) * (1 - discPct2/100);
   } else if(isPromo){
     discPct = STATE.discDecPromo;
     subtDesconto = subtecido * (1 - discPct/100);
@@ -931,7 +937,8 @@ function calcular(){
     extras: EXTRAS.map(e=>({...e})), extrasTotal,
     avista, tabela, cartao,
     tubo: STATE.tubo, reducao: STATE.reducao,
-    foraDoPadrao, minFab: data.minFab
+    foraDoPadrao, minFab: data.minFab,
+    campanha: typeof campResumo === 'function' ? campResumo(camp) : null
   };
 
   renderResult(STATE.lastResult);
@@ -951,8 +958,9 @@ function renderResult(r){
   rows += `<div class="brow"><span class="k">Área calculada</span><span class="v">${r.usedArea.toFixed(2)} m²${r.usedArea>r.area?' (mínimo)':''}</span></div>`;
   rows += `<div class="brow"><span class="k">Preço tabela/m²</span><span class="v">${fmtDec(r.priceM2)}</span></div>`;
   if(r.isPromo) rows += `<div class="brow"><span class="k" style="color:var(--gold)">Tabela Promocional</span><span class="v" style="color:var(--gold)">✓</span></div>`;
+  if(r.campanha) rows += `<div class="brow camp-row"><span class="k">Campanha ${escHtml(r.campanha.nome)}${r.campanha.fim ? ' · até ' + new Date(r.campanha.fim + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''}</span><span class="v">${r.campanha.desconto}% de desconto da fábrica</span></div>`;
   rows += `<div class="brow"><span class="k">Subtotal tecido (tabela)</span><span class="v">${fmtDec(r.subtecido)}</span></div>`;
-  if(r.fab==='dec' && !r.isPromo && r.discPct2){
+  if(r.fab==='dec' && (!r.isPromo || r.campanha) && r.discPct2){
     const apos1desc = r.subtecido * (1 - r.discPct/100);
     rows += `<div class="brow disc-row"><span class="k">1º Desconto ${r.discPct}%</span><span class="v">-${fmtDec(r.subtecido - apos1desc)}</span></div>`;
     rows += `<div class="brow"><span class="k">Após 1º desconto</span><span class="v">${fmtDec(apos1desc)}</span></div>`;
@@ -1531,10 +1539,14 @@ function runCompare(){
   const usedArea = Math.max(r.w*r.h, otherData.minM2||1.20);
   const subtecido = usedArea * colInfo.p;
   const isPromo = colInfo.promo || otherData.isPromo || false;
+  const campCmp = typeof campanhaAtiva === 'function' ? campanhaAtiva(otherFab, r.prod, r.fam, cmpCol) : null;
   let discPct = 0, subtDesc = 0;
   if(otherFab==='real'){
-    discPct = STATE.discReal;
+    discPct = campCmp ? Number(campCmp.desconto) : STATE.discReal;
     subtDesc = subtecido * (1 - discPct/100);
+  } else if(campCmp){
+    discPct = Number(campCmp.desconto);
+    subtDesc = subtecido * (1 - discPct/100) * (1 - (STATE.discDecNorm2||3)/100);
   } else if(isPromo){
     discPct = STATE.discDecPromo;
     subtDesc = subtecido * (1 - discPct/100);
@@ -2121,7 +2133,10 @@ function editarItemCarrinho(id){
   // de desconto agora (eles são globais da sessão, não por item — não mexe sozinho pra
   // não afetar outros itens que você ainda vai calcular).
   let avisoDesconto = '', avisoAcc = '';
-  if(item.fab === 'real' && full.discPct != null && full.discPct !== STATE.discReal){
+  if(full.campanha){
+    // item calculado com campanha: o desconto diferente é da campanha (volta ao normal quando ela acaba)
+    avisoDesconto = (typeof campItemVencida === 'function' && campItemVencida(item)) ? `\n\nℹ️ Este item usou a campanha ${full.campanha.nome}, que já acabou: ao calcular de novo, volta o desconto normal.` : '';
+  } else if(item.fab === 'real' && full.discPct != null && full.discPct !== STATE.discReal){
     avisoDesconto = `\n\n⚠️ Este item foi calculado com desconto de ${full.discPct}% (campo atual: ${STATE.discReal}%). Ajuste o campo de desconto Real se quiser manter o valor original.`;
   } else if(item.fab === 'dec' && full.discPct != null){
     const atual = full.isPromo ? STATE.discDecPromo : STATE.discDecNorm;
@@ -3093,7 +3108,7 @@ function gerarProposta(){
           <div class="pp-sec" style="${C_OBS_SEC}">💳 <u>CONDIÇÕES COMERCIAIS:</u></div>
           <div class="pp-bloco" style="${C_OBS}"><b>05. Condições de pagamento:</b> <u>PIX / À VISTA:</u> 50% de entrada + 50% restantes até 1 dia útil antes da instalação. O agendamento da instalação será confirmado somente após a quitação do saldo residual. <u>CARTÃO DE CRÉDITO:</u> 100% do valor na entrada.</div>
           <div class="pp-bloco" style="${C_OBS}"><b>06. Produção sob medida:</b> todos os produtos são fabricados exclusivamente sob medida após confirmação e pagamento da entrada. <u>Após a aprovação, não é possível realizar alterações, cancelamentos ou devoluções em razão da personalização.</u></div>
-          <div class="pp-bloco" style="${C_OBS}"><b>07. Validade:</b> proposta válida por 7 dias corridos a partir da data de emissão, sujeita a reajuste de tabela após esse prazo.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>07. Validade:</b> proposta válida por 7 dias corridos a partir da data de emissão, sujeita a reajuste de tabela após esse prazo.${typeof campTextoProposta === 'function' ? escHtml(campTextoProposta(CART)) : ''}</div>
 
           <div class="pp-sec" style="${C_OBS_SEC}">🚚 <u>ENTREGA E INSTALAÇÃO:</u></div>
           <div class="pp-bloco" style="${C_OBS}"><b>08. Prazo de fabricação, entrega e instalação:</b> <u>o prazo inicia a contagem somente após confirmação de pagamento</u>. Eventuais ajustes de agenda de entrega e instalação serão alinhados com o cliente conforme disponibilidade da equipe técnica. Para novos produtos adquiridos na Central das Persianas, a entrega e instalação profissional estão inclusas no investimento final total.</div>

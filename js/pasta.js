@@ -245,7 +245,7 @@ function cardItemPasta(item, n){
         <div class="pasta-item-nome"><span class="pasta-fab fab-${item.fab}">${escHtml(fabName(item.fab))}</span>${escHtml(nomeProd)}</div>
         <div class="pasta-item-esp">${desc.map(([k, v]) => `<span title="${escHtml(k)}">${k === 'Medidas' || k === 'Quantidade' || String(v).toLowerCase().startsWith(k.toLowerCase()) ? '' : '<em>' + escHtml(k) + ':</em> '}${escHtml(v)}</span>`).join('')}</div>
       </div>
-      <div class="pasta-item-preco"><strong>${fmt(item.avista)}</strong><span>à vista · tabela ${fmt(item.tabela)} · cartão ${fmt(item.cartao)}</span></div>
+      <div class="pasta-item-preco"><strong>${fmt(item.avista)}</strong><span>à vista · tabela ${fmt(item.tabela)} · cartão ${fmt(item.cartao)}</span>${typeof campEtiquetaItem === 'function' ? campEtiquetaItem(item) : ''}</div>
       <span class="pasta-botoes">
         <button type="button" onclick="editarItemCarrinho(${item.id})" title="Editar" aria-label="Editar ${escHtml(item.label)}">${ic('editar',16)}</button>
         <button type="button" onclick="duplicarItemCarrinho(${item.id})" title="Duplicar" aria-label="Duplicar ${escHtml(item.label)}">${ic('copiar',16)}</button>
