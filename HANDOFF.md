@@ -11,7 +11,7 @@ Plano geral do projeto (fases e jornada): https://claude.ai/code/artifact/e1ec3b
 - **Antes de mexer, apresente o plano e espere o ok.** Uma mudança por vez; pedido grande = etapas.
 - Banco (criar/alterar tabelas e colunas), login/senhas e **fórmulas de preço** = só com aprovação explícita.
 - Nunca digitar senhas, chaves ou tokens; nunca criar contas; nunca colocar chave `service_role`, senha ou dado de cliente no repositório. Ao relatar dados reais, só **contagens**, nunca nomes de clientes.
-- Equipe que usa: Bruna (admin), Mirelle (atendimento), Madeleine (dona — única que valida pagamento no extrato), Ricardo (vendas, conta ainda não criada). Pensar no uso **no celular**.
+- Equipe que usa: Bruna (admin), Mirelle (atendimento), Madeleine (dona — única que valida pagamento no extrato) (Ricardo saiu em 21/11/2026; não criar conta). Pensar no uso **no celular**.
 - Mensagens para cliente seguem o **Guia de Mensagens** da loja; padrão do sistema: mensagem para **copiar** (nunca link wa.me), botão "Já enviei" registra, **toda ação tem desfazer**.
 
 ## 2. Onde está cada coisa (acessos)
