@@ -517,3 +517,19 @@ body.lado-a-lado .pasta-wrap{max-width:760px!important}
 .atl-campos .atl-obs{flex:1 1 180px}
 .atl-campos input{min-height:38px;padding:0 10px;border-radius:var(--r2);border:1px solid var(--linha);background:var(--superficie);font:inherit;font-size:14px;color:var(--tinta);min-width:0}
 .svc-compacto .orc-mais{border-top:1px solid var(--linha-suave)}
+/* Campanhas de desconto das fábricas (21/11/2026) */
+.camp-tag{display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:11.5px;font-weight:600;color:var(--ok);background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:var(--r-pill);padding:2px 8px;white-space:nowrap}
+.camp-tag.vencida{color:var(--atr);background:var(--atr-bg);border-color:var(--atr-bd)}
+.pasta-item-preco .camp-tag{align-self:flex-end}
+.brow.camp-row .k,.brow.camp-row .v{color:var(--ok);font-weight:600}
+.camp-card .camp-lista{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.camp-l{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border:1px solid var(--linha);border-radius:var(--r2);padding:10px 12px;background:var(--superficie)}
+.camp-l-tx b{font-weight:600}
+.camp-l-bts{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none}
+.camp-nova{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px;margin-top:8px}
+.camp-form{display:flex;flex-direction:column;gap:8px;margin-top:10px;border-top:1px solid var(--linha-suave);padding-top:10px}
+.camp-regras-tit{font-size:13px;font-weight:600;margin-top:4px}
+.camp-regra{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:6px;align-items:center}
+.camp-regra select,.camp-regra input{min-height:38px;padding:0 8px;border-radius:var(--r2);border:1px solid var(--linha);background:var(--superficie);font:inherit;font-size:13.5px;color:var(--tinta);min-width:0}
+.camp-form-bts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+@media (max-width:720px){ .camp-regra{grid-template-columns:1fr 1fr} .camp-regra input{grid-column:1 / -1} }

@@ -1,7 +1,9 @@
 import json, datetime as dt, urllib.parse as up
 from playwright.sync_api import sync_playwright
 errs=[]; banco={}
-hoje=dt.date.today(); am=(hoje+dt.timedelta(days=1)).isoformat()
+hoje=dt.date.today(); _am=hoje+dt.timedelta(days=1)
+if _am.weekday()==6: _am+=dt.timedelta(days=1)   # domingo não conta: o sistema confirma o próximo dia útil
+am=_am.isoformat()
 EV=[{'id':'e1|1','titulo':'C [ÀS 9H] - Visita - Ana Teste (Boa Viagem)','inicio':am+'T09:30:00-03:00','fim':am+'T10:30:00-03:00','diaInteiro':False,'descricao':'Contato: 98888-1111\nReferência: x','local':'','cor':None},
     {'id':'e2|1','titulo':'C/M- Instalação - Beto Teste (Casa Forte)','inicio':am+'T14:00:00-03:00','fim':am+'T16:00:00-03:00','diaInteiro':False,'descricao':'Contato: 97777-2222 (Beto) e 96666-3333 (portaria)','local':'','cor':None},
     {'id':'e3|1','titulo':'M - CURSO','inicio':am+'T08:00:00-03:00','fim':am+'T09:00:00-03:00','diaInteiro':False,'descricao':'','local':'','cor':None},

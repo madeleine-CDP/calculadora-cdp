@@ -693,7 +693,7 @@ function calcAccCost(){
     // Controles Real — preço fixo
     'r_rc1','r_rc15','r_rctimer','r_hub',
     // Outros opcionais Real — "não se aplicam descontos" na tabela
-    'r_junc','r_red','r_redplus','r_supduplo','r_romred',
+    'r_junc','r_red','r_redplus','r_supduplo',   // r_romred e r_redel têm o desconto da Real (portal, 21/11/2026)
     // Motorização Decore — sem desconto ("não se aplicam descontos de Revendedores")
     'd_mmec','d_mrf','d_mele','d_mt38','d_mt38wf','d_mwmec','d_mwele','d_rmmot','d_rmmotwf','d_ph50mot','d_ph50motwf',
     // Controles Decore — sem desconto
@@ -779,8 +779,21 @@ function calcAccCost(){
     total += 75;
     lines.push({label:'Redução de Peso (auto — sem desconto)', cost:75, costOrig:75, disc:0, semDesconto:true});
   }
+  // Real: Rolô com altura acima de 2,00m paga +R$ 20,00 por peça no preço de tabela, com o desconto da Real
+  // (conferido no portal da Real em 21/11/2026: 2,00m não paga, 2,01m paga; não depende do tubo; aprovado pela Bru)
+  const extraAlt = extraAlturaReal(STATE.fab, STATE.prod, STATE.h);
+  if(extraAlt){
+    const c = extraAlt * (1 - STATE.discReal/100);
+    total += c;
+    lines.push({label:'Altura acima de 2,00m (Real, por peça)', cost:c, costOrig:extraAlt, discLabel:STATE.discReal+'%', semDesconto:false});
+  }
 
   return {total, lines};
+}
+
+// Real: acréscimo de tabela por peça na Rolô com altura acima de 2,00m (portal da Real, 21/11/2026)
+function extraAlturaReal(fab, prod, h){
+  return (fab === 'real' && prod && prod.includes('ROLÔ') && (Number(h) || 0) > 2.00 + 1e-9) ? 20 : 0;
 }
 
 // Varre os mesmos checkboxes que calcAccCost() lê, mas guarda a SELEÇÃO (id/qty/ml/cor)
@@ -865,11 +878,17 @@ function calcular(){
 
   // Desconto
   const isPromo = colInfo.promo || data.isPromo || false;
+  // Campanha da fábrica no período (ex.: Black November): o desconto dela substitui o principal (js/campanhas.js)
+  const camp = typeof campanhaAtiva === 'function' ? campanhaAtiva(STATE.fab, STATE.prod, STATE.fam, STATE.col) : null;
   let discPct = 0, discPct2 = 0;
   let subtDesconto = 0;
   if(STATE.fab==='real'){
-    discPct = STATE.discReal;
+    discPct = camp ? Number(camp.desconto) : STATE.discReal;
     subtDesconto = subtecido * (1 - discPct/100);
+  } else if(camp){
+    discPct  = Number(camp.desconto);
+    discPct2 = STATE.discDecNorm2||3;
+    subtDesconto = subtecido * (1 - discPct/100) * (1 - discPct2/100);
   } else if(isPromo){
     discPct = STATE.discDecPromo;
     subtDesconto = subtecido * (1 - discPct/100);
@@ -918,7 +937,8 @@ function calcular(){
     extras: EXTRAS.map(e=>({...e})), extrasTotal,
     avista, tabela, cartao,
     tubo: STATE.tubo, reducao: STATE.reducao,
-    foraDoPadrao, minFab: data.minFab
+    foraDoPadrao, minFab: data.minFab,
+    campanha: typeof campResumo === 'function' ? campResumo(camp) : null
   };
 
   renderResult(STATE.lastResult);
@@ -938,8 +958,9 @@ function renderResult(r){
   rows += `<div class="brow"><span class="k">Área calculada</span><span class="v">${r.usedArea.toFixed(2)} m²${r.usedArea>r.area?' (mínimo)':''}</span></div>`;
   rows += `<div class="brow"><span class="k">Preço tabela/m²</span><span class="v">${fmtDec(r.priceM2)}</span></div>`;
   if(r.isPromo) rows += `<div class="brow"><span class="k" style="color:var(--gold)">Tabela Promocional</span><span class="v" style="color:var(--gold)">✓</span></div>`;
+  if(r.campanha) rows += `<div class="brow camp-row"><span class="k">Campanha ${escHtml(r.campanha.nome)}${r.campanha.fim ? ' · até ' + new Date(r.campanha.fim + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''}</span><span class="v">${r.campanha.desconto}% de desconto da fábrica</span></div>`;
   rows += `<div class="brow"><span class="k">Subtotal tecido (tabela)</span><span class="v">${fmtDec(r.subtecido)}</span></div>`;
-  if(r.fab==='dec' && !r.isPromo && r.discPct2){
+  if(r.fab==='dec' && (!r.isPromo || r.campanha) && r.discPct2){
     const apos1desc = r.subtecido * (1 - r.discPct/100);
     rows += `<div class="brow disc-row"><span class="k">1º Desconto ${r.discPct}%</span><span class="v">-${fmtDec(r.subtecido - apos1desc)}</span></div>`;
     rows += `<div class="brow"><span class="k">Após 1º desconto</span><span class="v">${fmtDec(apos1desc)}</span></div>`;
@@ -1407,7 +1428,7 @@ function calcCmpAccCost(otherFabKey){
     'r_m6n','r_mmaxi','r_m4f','r_mwifi','r_mbat','r_fonte',
     'r_rm6n','r_rm4f','r_rmwifi','r_rmbat','r_ph50mot','r_ph50wf','r_mcel','r_mcelwf','r_mcelbat',
     'r_rc1','r_rc15','r_rctimer','r_hub',
-    'r_junc','r_red','r_redplus','r_supduplo','r_romred',
+    'r_junc','r_red','r_redplus','r_supduplo',   // r_romred e r_redel têm o desconto da Real (portal, 21/11/2026)
     'd_mmec','d_mrf','d_mele','d_mt38','d_mt38wf','d_mwmec','d_mwele','d_rmmot','d_rmmotwf','d_ph50mot','d_ph50motwf',
     'd_dc1','d_dc16','d_bpi1','d_bpi15','d_jmt',
     'd_ph50mono','d_ph25mono','d_ph25ev','d_red',
@@ -1518,10 +1539,14 @@ function runCompare(){
   const usedArea = Math.max(r.w*r.h, otherData.minM2||1.20);
   const subtecido = usedArea * colInfo.p;
   const isPromo = colInfo.promo || otherData.isPromo || false;
+  const campCmp = typeof campanhaAtiva === 'function' ? campanhaAtiva(otherFab, r.prod, r.fam, cmpCol) : null;
   let discPct = 0, subtDesc = 0;
   if(otherFab==='real'){
-    discPct = STATE.discReal;
+    discPct = campCmp ? Number(campCmp.desconto) : STATE.discReal;
     subtDesc = subtecido * (1 - discPct/100);
+  } else if(campCmp){
+    discPct = Number(campCmp.desconto);
+    subtDesc = subtecido * (1 - discPct/100) * (1 - (STATE.discDecNorm2||3)/100);
   } else if(isPromo){
     discPct = STATE.discDecPromo;
     subtDesc = subtecido * (1 - discPct/100);
@@ -1543,6 +1568,12 @@ function runCompare(){
   if(otherFab === 'dec' && (r.prod.includes('ROLÔ') || r.prod.includes('ELEGANCE')) && (r.w >= 1.80 || r.h >= 2.00)){
     cmpAcc.total += 75;
     cmpAcc.lines.push({ label: 'Redução de Peso (auto)', cost: 75, discLabel: '', semDesc: true });
+  }
+  const extraAltCmp = extraAlturaReal(otherFab, r.prod, r.h);
+  if(extraAltCmp){
+    const c = extraAltCmp * (1 - STATE.discReal/100);
+    cmpAcc.total += c;
+    cmpAcc.lines.push({ label: 'Altura acima de 2,00m (Real)', cost: c, discLabel: STATE.discReal + '%', semDesc: false });
   }
   const cmpTotal = (subtDesc + impostoValor + cmpAcc.total) * r.qty;
 
@@ -2102,7 +2133,10 @@ function editarItemCarrinho(id){
   // de desconto agora (eles são globais da sessão, não por item — não mexe sozinho pra
   // não afetar outros itens que você ainda vai calcular).
   let avisoDesconto = '', avisoAcc = '';
-  if(item.fab === 'real' && full.discPct != null && full.discPct !== STATE.discReal){
+  if(full.campanha){
+    // item calculado com campanha: o desconto diferente é da campanha (volta ao normal quando ela acaba)
+    avisoDesconto = (typeof campItemVencida === 'function' && campItemVencida(item)) ? `\n\nℹ️ Este item usou a campanha ${full.campanha.nome}, que já acabou: ao calcular de novo, volta o desconto normal.` : '';
+  } else if(item.fab === 'real' && full.discPct != null && full.discPct !== STATE.discReal){
     avisoDesconto = `\n\n⚠️ Este item foi calculado com desconto de ${full.discPct}% (campo atual: ${STATE.discReal}%). Ajuste o campo de desconto Real se quiser manter o valor original.`;
   } else if(item.fab === 'dec' && full.discPct != null){
     const atual = full.isPromo ? STATE.discDecPromo : STATE.discDecNorm;
@@ -3074,7 +3108,7 @@ function gerarProposta(){
           <div class="pp-sec" style="${C_OBS_SEC}">💳 <u>CONDIÇÕES COMERCIAIS:</u></div>
           <div class="pp-bloco" style="${C_OBS}"><b>05. Condições de pagamento:</b> <u>PIX / À VISTA:</u> 50% de entrada + 50% restantes até 1 dia útil antes da instalação. O agendamento da instalação será confirmado somente após a quitação do saldo residual. <u>CARTÃO DE CRÉDITO:</u> 100% do valor na entrada.</div>
           <div class="pp-bloco" style="${C_OBS}"><b>06. Produção sob medida:</b> todos os produtos são fabricados exclusivamente sob medida após confirmação e pagamento da entrada. <u>Após a aprovação, não é possível realizar alterações, cancelamentos ou devoluções em razão da personalização.</u></div>
-          <div class="pp-bloco" style="${C_OBS}"><b>07. Validade:</b> proposta válida por 7 dias corridos a partir da data de emissão, sujeita a reajuste de tabela após esse prazo.</div>
+          <div class="pp-bloco" style="${C_OBS}"><b>07. Validade:</b> proposta válida por 7 dias corridos a partir da data de emissão, sujeita a reajuste de tabela após esse prazo.${typeof campTextoProposta === 'function' ? escHtml(campTextoProposta(CART)) : ''}</div>
 
           <div class="pp-sec" style="${C_OBS_SEC}">🚚 <u>ENTREGA E INSTALAÇÃO:</u></div>
           <div class="pp-bloco" style="${C_OBS}"><b>08. Prazo de fabricação, entrega e instalação:</b> <u>o prazo inicia a contagem somente após confirmação de pagamento</u>. Eventuais ajustes de agenda de entrega e instalação serão alinhados com o cliente conforme disponibilidade da equipe técnica. Para novos produtos adquiridos na Central das Persianas, a entrega e instalação profissional estão inclusas no investimento final total.</div>

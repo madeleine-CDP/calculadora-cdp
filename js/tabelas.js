@@ -69,6 +69,7 @@ async function carregarAjustesPreco(){
     if(!r.ok) return false;
     PRECOS_AJUSTES = await r.json();
     aplicarAjustesPreco();
+    if(typeof carregarCampanhas === 'function') await carregarCampanhas();
     return true;
   }catch(e){ return false; }
 }
@@ -102,6 +103,7 @@ function renderTabelasPreco(){
   box.innerHTML = `
     <div class="hist-filtros">${[['dec','Decore'],['real','Real']].map(([f,n]) => `<button type="button" class="hist-chip${TP_FAB===f?' on':''}" onclick="TP_FAB='${f}';TP_EDITADOS={};renderTabelasPreco();renderLotes()">${n}</button>`).join('')}</div>
     <div class="tp-versao">${ic('calendario',15)} <span>Tabela em uso: <b>${escHtml(info.tabela || '')}</b>${info.data ? ' · ' + escHtml(info.rotulo || '') + ' ' + escHtml(info.data) : ''}${ativos ? ' · ' + ativos + ' preço' + (ativos > 1 ? 's' : '') + ' ajustado' + (ativos > 1 ? 's' : '') + ' pela tela' : ''}</span></div>
+    ${typeof blocoCampanhas === 'function' ? blocoCampanhas(TP_FAB) : ''}
     ${PRECOS_OBSOLETOS ? `<div class="tp-aviso">${ic('info',15)} ${PRECOS_OBSOLETOS} ajuste(s) antigo(s) deixaram de valer porque a tabela base foi atualizada depois.</div>` : ''}
 
     <div class="card tp-card">

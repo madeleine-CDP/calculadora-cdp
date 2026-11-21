@@ -11,7 +11,7 @@ Plano geral do projeto (fases e jornada): https://claude.ai/code/artifact/e1ec3b
 - **Antes de mexer, apresente o plano e espere o ok.** Uma mudança por vez; pedido grande = etapas.
 - Banco (criar/alterar tabelas e colunas), login/senhas e **fórmulas de preço** = só com aprovação explícita.
 - Nunca digitar senhas, chaves ou tokens; nunca criar contas; nunca colocar chave `service_role`, senha ou dado de cliente no repositório. Ao relatar dados reais, só **contagens**, nunca nomes de clientes.
-- Equipe que usa: Bruna (admin), Mirelle (atendimento), Madeleine (dona — única que valida pagamento no extrato), Ricardo (vendas, conta ainda não criada). Pensar no uso **no celular**.
+- Equipe que usa: Bruna (admin), Mirelle (atendimento), Madeleine (dona — única que valida pagamento no extrato) (Ricardo saiu em 21/11/2026; não criar conta). Pensar no uso **no celular**.
 - Mensagens para cliente seguem o **Guia de Mensagens** da loja; padrão do sistema: mensagem para **copiar** (nunca link wa.me), botão "Já enviei" registra, **toda ação tem desfazer**.
 
 ## 2. Onde está cada coisa (acessos)
@@ -98,7 +98,7 @@ Não colocar a planilha nem dados exportados do Olist no repositório (usar a pa
 - **Tabela Novembro/2026 (vigência 16/11/2026)** recebida em 10/11 e aplicada em `js/precos.js` na `dev` em 11/11 (todos os 249 preços da Decore conferidos um a um): tecidos +3% (210 itens), bandôs e barras +3%, guias +17% sobre outubro, motores e controles +5%, Madeira 50mm +5%, Celular sem mudança, itens de preço fixo sem mudança (junção 20, redução 75, monocomandos 60/120, entre-vidros 80, junção c/ tração 47). Cor cinza/bege de bandô/guia continua +15%.
 - Promoções da Decore (a partir de 16/11) = tabela −12% em todos os 45 itens → mesmo custo final; não entram no sistema. Exceção real: PH16 e PH25 em cores específicas a R$ 91,08 (ponta de estoque).
 - **Costura Decore Novembro/2026:** os 33 tecidos +10%, trilhos +5%, regras iguais. Não está na calculadora; afeta a planilha de revisão do Olist.
-- **Publicado em 11/11/2026** (PR #3, merge da Bru; ela preferiu valer já). Falta: recalcular os orçamentos em aberto da Decore (Viviane e Anderson Torres têm guia; Douglas e Viviane com texto do detalhamento errado).
+- **Publicado em 11/11/2026** (PR #3, merge da Bru; ela preferiu valer já). Recálculo feito em 21/11/2026: 14 itens de 12 orçamentos em aberto (Decore para Novembro/2026 e Rolô da Real acima de 2,00m) foram recalculados pelo motor do sistema (`item.recalculadoEm`). Ficou de fora só a opção 2 do CDP-0022 (Bandô Box 70 com 1,72m, que o bandô não atende: a Bru escolhe outro bandô).
 - **Inclusões feitas na `dev` em 11/11 (aprovadas pela Bru, uma por commit):** (1) acessório incompatível com a medida avisa ao mudar a medida e bloqueia o Calcular (Box 70 > 1,70m; Box 70 x redução; bandô x tubo da Real); (2) Trilho da Rolô Móvel Decore (42,25 e 54,92/ml; não serve com a Barra Comum); (3) motores da Celular Real (1.001,10 · 1.230,77 · 2.367,97 + fonte; sem desconto); (4) cabeçote/base revestido da horizontal 25mm Decore como **acessório** (pedido da Bru), cobrando a diferença do m² revestido; (5) Painel Double Vision Decore (família nova na Cortina Painel); (6) Bandô do Painel Decore (6 tipos, 31,51 a 43,59/ml, PVC ou alumínio).
 - **Bug corrigido em 11/11:** o detalhamento ignorava os acessórios da Decore (conferia `'decore'`, mas é `'dec'`) e dizia "SEM BANDÔ E SEM GUIAS". Orçamentos salvos com texto errado: Viviane (nº 22) e Douglas (nº 4) — corrigir o texto ao reabrir.
 - Testes de tela: `testes/tela/_isolar/sitecustomize.py` bloqueia pedidos ao Supabase de verdade que o teste não simula (o rodar_tela.sh já usa). Nesta máquina foi preciso `pip install playwright==1.63.0` (mesma versão do Node).
@@ -110,7 +110,7 @@ Não colocar a planilha nem dados exportados do Olist no repositório (usar a pa
 ## 6C. Publicação de 12/11/2026 (PR #4)
 - No ar: redução de peso não cobrada em dobro; itens antigos recuperam acessórios ao editar; comparação com redução automática; tubo 55mm da Real pela tabela; orçamento novo abre a pasta; calculadora em gaveta no computador; Ambiente · Vão · Opção (passo 1, pasta, proposta com 3 jeitos de total); "cotar na outra fábrica como outra opção"; cores por coleção (`js/cores.js`); detalhamento acompanha as medidas.
 - Com a Bru: recalcular orçamentos da Decore em aberto (nº 1, 3, 4, 5, 6, 7, 11, 15, 18, 22, 23); nº 29 (Juliana) desmarcar a redução manual; nº 22 (Viviane) trocar o Box 70; nº 4 (Douglas) e 22 corrigir o texto "SEM BANDÔ".
-- Pendente: R\$ 20 por peça do tubo da Real (caso Joseane, nº 28) — a Bru está investigando com a Real; conversa com o gerente da Decore sobre as guias; planilhas (revisão do Olist; tradicionais e serviços) com a Bru.
+- Resolvido em 21/11/2026: os R\$ 20 por peça da Real (caso Joseane, nº 28) são da **altura acima de 2,00m** na Rolô (não do tubo); entrou no cálculo. Pendente: planilhas (revisão do Olist; tradicionais e serviços) com a Bru.
 
 ## 6D. Visual novo do sistema (protótipo aprovado em 20/11/2026)
 - Protótipo clicável: https://claude.ai/artifact/XkMRyQH9nAjdvSwubd55VP (curadoria de referências: https://claude.ai/artifact/7qok6Z9ZF3bC5zWm1uZhk3).
@@ -132,7 +132,7 @@ Não colocar a planilha nem dados exportados do Olist no repositório (usar a pa
 7. 4B: ficha do ateliê. 3B: agendar pelo sistema (adiado).
 8. Apresentação do sistema para a Madeleine.
 
-**Pendências com a Bru (não são código):** decidir tornar o repositório privado (conferir antes o impacto na Netlify); atualizar Canva e guias; criar a conta do Ricardo no Supabase Auth (ela cria com senha provisória; o Claude inclui em `perfis` e o apelido em `USUARIOS_EMAIL`); apagar o projeto vazio do Supabase; conferir saldo de créditos da Netlify após ~25/10.
+**Pendências com a Bru (não são código):** decidir tornar o repositório privado (conferir antes o impacto na Netlify); atualizar Canva e guias; apagar o projeto vazio do Supabase; conferir saldo de créditos da Netlify após ~25/10.
 
 ## 8. Como testar (antes de pedir aprovação)
 - `bash testes/rodar_tela.sh` → todos "ok" (banco/Olist simulados; 360px).
