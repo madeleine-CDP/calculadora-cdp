@@ -779,8 +779,21 @@ function calcAccCost(){
     total += 75;
     lines.push({label:'Redução de Peso (auto — sem desconto)', cost:75, costOrig:75, disc:0, semDesconto:true});
   }
+  // Real: Rolô com altura acima de 2,00m paga +R$ 20,00 por peça no preço de tabela, com o desconto da Real
+  // (conferido no portal da Real em 21/11/2026: 2,00m não paga, 2,01m paga; não depende do tubo; aprovado pela Bru)
+  const extraAlt = extraAlturaReal(STATE.fab, STATE.prod, STATE.h);
+  if(extraAlt){
+    const c = extraAlt * (1 - STATE.discReal/100);
+    total += c;
+    lines.push({label:'Altura acima de 2,00m (Real, por peça)', cost:c, costOrig:extraAlt, discLabel:STATE.discReal+'%', semDesconto:false});
+  }
 
   return {total, lines};
+}
+
+// Real: acréscimo de tabela por peça na Rolô com altura acima de 2,00m (portal da Real, 21/11/2026)
+function extraAlturaReal(fab, prod, h){
+  return (fab === 'real' && prod && prod.includes('ROLÔ') && (Number(h) || 0) > 2.00 + 1e-9) ? 20 : 0;
 }
 
 // Varre os mesmos checkboxes que calcAccCost() lê, mas guarda a SELEÇÃO (id/qty/ml/cor)
@@ -1543,6 +1556,12 @@ function runCompare(){
   if(otherFab === 'dec' && (r.prod.includes('ROLÔ') || r.prod.includes('ELEGANCE')) && (r.w >= 1.80 || r.h >= 2.00)){
     cmpAcc.total += 75;
     cmpAcc.lines.push({ label: 'Redução de Peso (auto)', cost: 75, discLabel: '', semDesc: true });
+  }
+  const extraAltCmp = extraAlturaReal(otherFab, r.prod, r.h);
+  if(extraAltCmp){
+    const c = extraAltCmp * (1 - STATE.discReal/100);
+    cmpAcc.total += c;
+    cmpAcc.lines.push({ label: 'Altura acima de 2,00m (Real)', cost: c, discLabel: STATE.discReal + '%', semDesc: false });
   }
   const cmpTotal = (subtDesc + impostoValor + cmpAcc.total) * r.qty;
 

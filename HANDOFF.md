@@ -110,7 +110,7 @@ Não colocar a planilha nem dados exportados do Olist no repositório (usar a pa
 ## 6C. Publicação de 12/11/2026 (PR #4)
 - No ar: redução de peso não cobrada em dobro; itens antigos recuperam acessórios ao editar; comparação com redução automática; tubo 55mm da Real pela tabela; orçamento novo abre a pasta; calculadora em gaveta no computador; Ambiente · Vão · Opção (passo 1, pasta, proposta com 3 jeitos de total); "cotar na outra fábrica como outra opção"; cores por coleção (`js/cores.js`); detalhamento acompanha as medidas.
 - Com a Bru: recalcular orçamentos da Decore em aberto (nº 1, 3, 4, 5, 6, 7, 11, 15, 18, 22, 23); nº 29 (Juliana) desmarcar a redução manual; nº 22 (Viviane) trocar o Box 70; nº 4 (Douglas) e 22 corrigir o texto "SEM BANDÔ".
-- Pendente: R\$ 20 por peça do tubo da Real (caso Joseane, nº 28) — a Bru está investigando com a Real; conversa com o gerente da Decore sobre as guias; planilhas (revisão do Olist; tradicionais e serviços) com a Bru.
+- Resolvido em 21/11/2026: os R\$ 20 por peça da Real (caso Joseane, nº 28) são da **altura acima de 2,00m** na Rolô (não do tubo); entrou no cálculo. Pendente: conversa com o gerente da Decore sobre as guias; planilhas (revisão do Olist; tradicionais e serviços) com a Bru.
 
 ## 6D. Visual novo do sistema (protótipo aprovado em 20/11/2026)
 - Protótipo clicável: https://claude.ai/artifact/XkMRyQH9nAjdvSwubd55VP (curadoria de referências: https://claude.ai/artifact/7qok6Z9ZF3bC5zWm1uZhk3).

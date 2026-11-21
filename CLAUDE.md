@@ -41,6 +41,7 @@ Estas fórmulas foram confirmadas pela Bru. Qualquer mudança exige confirmaçã
 - **Custo** = metragem × preço/m² × 0,80 (20%).
 - **À vista** = custo × 2 × 0,975 (desconto extra de 2,5%, só na Real).
 - Tabela e cartão são recalculados a partir desse à vista menor.
+- **Rolô com altura acima de 2,00m:** +R$ 20,00 por peça no preço de tabela, com os 20% de desconto (= +R$ 16 no custo). Conferido no portal da Real em 21/11/2026 (2,00m não paga, 2,01m paga; não depende do tubo: 2,00×1,80 com tubo 40mm não paga) e aprovado pela Bru. `extraAlturaReal()`, aplicada no cálculo normal (`calcAccCost()`) e na comparação entre fábricas. Com isso os 9 casos testados (BK Pinpoint) batem centavo a centavo com o custo do portal.
 - **Nuette** e **Persiana Horizontal 50mm PVC** só existem na Real. A calculadora já filtra por fábrica.
 
 ### Cortina Tradicional em Tecido (CDP)
