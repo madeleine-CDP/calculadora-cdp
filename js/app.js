@@ -354,7 +354,19 @@ function trocarMedidasDetalhe(texto, gerado){
   return MEDIDAS_DETALHE_RE.test(texto) ? texto.replace(MEDIDAS_DETALHE_RE, novo[0]) : novo[0] + ' ' + texto;
 }
 
-function updateDetalhamentoPreview(){
+// Partes do detalhamento que vêm dos acessórios: a linha ACIONAMENTO, o "ACESSÓRIOS: …." e o "(SEM BANDÔ E SEM GUIAS)".
+// Num texto editado à mão (ou item reaberto), marcar/desmarcar acessório troca só essas partes e mantém o resto (21/11/2026).
+function trocarAccDetalhe(texto, gerado){
+  if(!texto || !texto.trim()) return gerado;
+  const acion = (gerado || '').match(/ACIONAMENTO: [^.]*\./);
+  if(acion && /ACIONAMENTO: [^.]*\./.test(texto)) texto = texto.replace(/ACIONAMENTO: [^.]*\./, acion[0]);
+  texto = texto.replace(/\s*ACESSÓRIOS: [^.]*\./g, '').replace(/\s*\(SEM (?:BANDÔ|GUIAS?)[^)]*\)/g, '').trimEnd();
+  const outros = (gerado || '').match(/ ACESSÓRIOS: [^.]*\./), sem = (gerado || '').match(/\(SEM [^)]*\)\s*$/);
+  return texto + (outros ? outros[0] : '') + (sem ? ' ' + sem[0].trim() : '');
+}
+let RESTAURANDO_ACC = false;   // reabrindo um item: os acessórios voltam marcados sem mexer no texto salvo
+
+function updateDetalhamentoPreview(porAcessorio){
   const box = $('item-detalhamento');
   if(!box) return;
   const w = parseFloat($('i-w').value);
@@ -366,6 +378,7 @@ function updateDetalhamentoPreview(){
   if(box.dataset.editedManually){
     // Texto editado à mão (ou item aberto para editar): troca SÓ o trecho das medidas e mantém o resto (pedido da Bru, 12/11/2026)
     box.value = trocarMedidasDetalhe(box.value, gerado);
+    if(porAcessorio === true && !RESTAURANDO_ACC) box.value = trocarAccDetalhe(box.value, gerado);
   } else {
     box.value = gerado;
   }
@@ -669,10 +682,10 @@ function onAccChange(chk, id){
   if(item) item.classList.toggle('checked', chk.checked);
   if($('tipo-medida') && $('tipo-medida').value === 'janela') calcSobra();
   revalidarAcc();                // um acessório pode excluir outro (ex.: Trilho Móvel x Barra Comum)
-  updateDetalhamentoPreview();   // acessório marcado/desmarcado entra/sai do detalhamento
+  updateDetalhamentoPreview(true);   // acessório marcado/desmarcado entra/sai do detalhamento (também em texto editado)
 }
 // quantidade de um acessório mudou → atualiza o texto
-document.addEventListener('input', e => { if(e.target && /^qty_/.test(e.target.id || '')) updateDetalhamentoPreview(); });
+document.addEventListener('input', e => { if(e.target && /^qty_/.test(e.target.id || '')) updateDetalhamentoPreview(true); });
 
 function clearAcc(){
   $('acc-wrap').classList.remove('on');
@@ -825,6 +838,9 @@ function captureAccSelections(){
 // setTimeout de 50ms dentro de buildAcc) pra não ter os valores de ml sobrescritos.
 function restoreAccSelections(selections){
   if(!selections || !selections.length) return;
+  RESTAURANDO_ACC = true; try{ restoreAccSelections0(selections); } finally { RESTAURANDO_ACC = false; }
+}
+function restoreAccSelections0(selections){
   selections.forEach(s => {
     const chk = $('chk_'+s.id);
     if(!chk) return; // acessório não existe mais pra esse produto/fábrica — ignora
